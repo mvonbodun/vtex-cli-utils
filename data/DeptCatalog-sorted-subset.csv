@@ -1,0 +1,10 @@
+GroupIdentifier,ParentGroupIdentifier,TopGroup,Sequence,Name,ShortDescription,LongDescription,Thumbnail,FullImage,Field1,Published,Delete
+1-0-0,,true,15,"Men","Men",,,,,1,0
+1-2-0,1-0-0,false,5,"Mens Apparel","Mens Apparel",,,,,1,0
+1-2-3,1-2-0,false,0,"Casual Short Sleeve Shirts","Casual Short Sleeve Shirts",,,,,1,0
+1-2-7,1-2-0,false,0,"Classic Jeans","Classic Jeans",,,,,1,0
+1-31-0,1-0-0,false,25,"Accessories","Mens Accessories",,,,,1,0
+1-31-299,1-31-0,false,0,"Mens Sunglasses","Mens Sunglasses",,,,,1,0
+52-0-0,,true,5,"Women","Women",,,,,1,0
+52-105-0,52-0-0,false,20,"Juniors Apparel","Juniors Apparel",,,,,1,0
+52-105-107,52-105-0,false,0,"Tank Tops","Tank Tops",,,,,1,0

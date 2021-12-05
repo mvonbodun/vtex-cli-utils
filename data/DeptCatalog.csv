@@ -1,0 +1,562 @@
+GroupIdentifier,ParentGroupIdentifier,TopGroup,Sequence,Name,ShortDescription,LongDescription,Thumbnail,FullImage,Field1,Published,Delete
+1-0-0,,true,15,"Men","Men",,,,,1,0
+1-2-0,1-0-0,false,5,"Mens Apparel","Mens Apparel",,,,,1,0
+1-2-3,1-2-0,false,0,"Casual Short Sleeve Shirts","Casual Short Sleeve Shirts",,,,,1,0
+1-2-4,1-2-0,false,0,"Pants & Slacks","Pants & Slacks",,,,,1,0
+1-2-5,1-2-0,false,0,"Pleated Shorts","Pleated Shorts",,,,,1,0
+1-2-6,1-2-0,false,0,"Sweaters & Fleece","Sweaters & Fleece",,,,,1,0
+1-2-7,1-2-0,false,0,"Classic Jeans","Classic Jeans",,,,,1,0
+1-2-8,1-2-0,false,0,"Jackets","Jackets",,,,,1,0
+1-2-9,1-2-0,false,0,"Sportcoats","Mens Sportcoats",,,,,1,0
+1-2-303,1-2-0,false,0,"Mens Basic Tees","Mens Basic Tees",,,,,1,0
+1-2-321,1-2-0,false,0,"Dress Shirts","Mens Dress Shirts",,,,,1,0
+1-12-0,1-0-0,false,15,"Young Mens Apparel","Young Mens Apparel",,,,,1,0
+1-12-304,1-12-0,false,0,"Music Tees","Music Tees",,,,,1,0
+1-31-0,1-0-0,false,25,"Accessories","Mens Accessories",,,,,1,0
+1-31-33,1-31-0,false,0,"Ties","Mens Ties",,,,,1,0
+1-31-34,1-31-0,false,0,"Mens Belts","Mens Belts",,,,,1,0
+1-31-35,1-31-0,false,0,"Mens Wallets","Mens Wallets",,,,,1,0
+1-31-36,1-31-0,false,0,"Hats, Caps & Visors","Mens Hats, Caps & Visors",,,,,1,0
+1-31-38,1-31-0,false,0,"Mens Gifts","Mens Gifts",,,,,1,0
+1-31-299,1-31-0,false,0,"Mens Sunglasses","Mens Sunglasses",,,,,1,0
+52-0-0,,true,5,"Women","Women",,,,,1,0
+52-53-0,52-0-0,false,5,"Misses Apparel","Misses Apparel",,,,,1,0
+52-53-54,52-53-0,false,60,"Scrub Tops","Scrub Tops",,,,,1,0
+52-53-56,52-53-0,false,20,"All Misses T-Shirts","T-Shirts",,,,,1,0
+52-53-58,52-53-0,false,130,"Pants & Slacks","Pants & Slacks",,,,,1,0
+52-53-59,52-53-0,false,40,"Jeans","Jeans",,,,,1,0
+52-53-60,52-53-0,false,50,"Short Sleeve Tops","Short Sleeve Tops",,,,,1,0
+52-53-61,52-53-0,false,180,"Activewear","Activewear",,,,,1,0
+52-53-63,52-53-0,false,80,"Shrugs & Cardigans","Shrugs & Cardigans",,,,,1,0
+52-53-64,52-53-0,false,10,"Shorts","Shorts",,,,,1,0
+52-53-65,52-53-0,false,70,"Skirts","Skirts",,,,,1,0
+52-53-66,52-53-0,false,100,"Skorts","Skorts",,,,,1,0
+52-53-70,52-53-0,false,0,"Jackets & Coats","Jackets & Coats",,,,,1,0
+52-71-0,52-0-0,false,10,"Petite Apparel","Petite Apparel",,,,,1,0
+52-71-74,52-71-0,false,130,"Petite Sleeveless Tops","Petite Sleeveless Tops",,,,,1,0
+52-71-76,52-71-0,false,230,"Petite Pants & Slacks","Petite Pants & Slacks",,,,,1,0
+52-71-77,52-71-0,false,220,"Petite Jeans","Petite Jeans",,,,,1,0
+52-71-78,52-71-0,false,120,"Petite 3/4 Sleeve Tops","Petite 3/4 Sleeve Tops",,,,,1,0
+52-71-81,52-71-0,false,150,"Petite Sweaters & Cardigans","Petite Sweaters & Cardigans",,,,,1,0
+52-71-82,52-71-0,false,240,"Petite Shorts","Petite Shorts",,,,,1,0
+52-71-83,52-71-0,false,250,"Petite Skirts","Petite Skirts",,,,,1,0
+52-71-84,52-71-0,false,260,"Petite Skorts","Petite Skorts",,,,,1,0
+52-71-88,52-71-0,false,0,"Petite Jackets & Coats","Petite Jackets & Coats",,,,,1,0
+52-89-0,52-0-0,false,15,"Plus Size Apparel","Plus Size Apparel",,,,,1,0
+52-89-92,52-89-0,false,0,"Plus Size Sleeveless Tops","Plus Size Sleeveless Tops",,,,,1,0
+52-89-94,52-89-0,false,0,"Plus Size Pants & Slacks","Plus Size Pants & Slacks",,,,,1,0
+52-89-95,52-89-0,false,0,"Plus Size Jeans","Plus Size Jeans",,,,,1,0
+52-89-97,52-89-0,false,0,"Plus Size Sweaters & Cardigans","Plus Size Sweaters & Cardigans",,,,,1,0
+52-89-98,52-89-0,false,0,"Plus Size Shorts","Plus Size Shorts",,,,,1,0
+52-89-99,52-89-0,false,0,"Plus Size Skirts","Plus Size Skirts",,,,,1,0
+52-89-100,52-89-0,false,0,"Plus Size Skorts","Plus Size Skorts",,,,,1,0
+52-89-104,52-89-0,false,0,"Plus Size Jackets & Coats","Plus Size Jackets & Coats",,,,,1,0
+52-89-269,52-89-0,false,0,"Plus Size Short Sleeve Tops","Plus Size Short Sleeve Tops",,,,,1,0
+52-105-0,52-0-0,false,20,"Juniors Apparel","Juniors Apparel",,,,,1,0
+52-105-107,52-105-0,false,0,"Tank Tops","Tank Tops",,,,,1,0
+52-105-108,52-105-0,false,0,"Short Sleeve Tops","Short Sleeve Tops",,,,,1,0
+52-105-111,52-105-0,false,0,"Jeans & Pants","Jeans & Pants",,,,,1,0
+52-105-113,52-105-0,false,0,"Active & Loungewear","Active & Loungewear",,,,,1,0
+52-105-116,52-105-0,false,0,"Shorts","Shorts",,,,,1,0
+52-105-117,52-105-0,false,0,"Skirts","Skirts",,,,,1,0
+52-105-120,52-105-0,false,0,"Long Sleeve Tops","Long Sleeve Tops",,,,,1,0
+52-105-122,52-105-0,false,0,"Sweaters & Jackets","Sweaters & Jackets",,,,,1,0
+52-123-0,52-0-0,false,25,"Lingerie","Lingerie",,,,,1,0
+52-123-124,52-123-0,false,5,"Underwire Bras","Underwire Bras",,,,,1,0
+52-123-125,52-123-0,false,15,"Bikinis & Hipsters","Womens Bikinis",,,,,1,0
+52-123-126,52-123-0,false,30,"Shapewear & Girdles","Shapewear & Girdles",,,,,1,0
+52-123-127,52-123-0,false,35,"Slips & Camisoles","Slips & Camisoles",,,,,1,0
+52-123-313,52-123-0,false,17,".",".",,,,,1,0
+52-123-318,52-123-0,false,40,"Hi Cut Panties","Womens Hi Cut Panties",,,,,1,0
+52-132-0,52-0-0,false,35,"Sleepwear","Sleepwear",,,,,1,0
+52-132-133,52-132-0,false,0,"Gowns & Chemises","Womens Gowns & Chemises",,,,,1,0
+52-132-134,52-132-0,false,0,"Sets","Womens Pajama Sets",,,,,1,0
+52-132-136,52-132-0,false,0,"Robes","Womens Robes",,,,,1,0
+52-132-137,52-132-0,false,0,"Pajama Bottoms","Womens Pajama Bottoms",,,,,1,0
+52-132-307,52-132-0,false,0,"Pajama Tops","Womens Pajama Tops",,,,,1,0
+52-138-0,52-0-0,false,45,"Dresses","Dresses",,,,,1,0
+52-138-139,52-138-0,false,0,"Little Black Dresses","Little Black Dresses",,,,,1,0
+52-138-290,52-138-0,false,0,"Maxi Dresses","Maxi Dresses",,,,,1,0
+52-142-0,52-0-0,false,30,"Jewelry & Watches","Jewelry & Watches",,,,,1,0
+52-142-143,52-142-0,false,0,"Stud Earrings","Stud Earrings",,,,,1,0
+52-142-144,52-142-0,false,0,"Bangle Bracelets","Bangle Bracelets",,,,,1,0
+52-142-145,52-142-0,false,0,"Necklaces & Pendants","Necklaces & Pendants",,,,,1,0
+52-142-146,52-142-0,false,0,"Pins & Brooches","Pins & Brooches",,,,,1,0
+52-142-147,52-142-0,false,0,"Hoop Earrings","Hoop Earrings",,,,,1,0
+52-142-148,52-142-0,false,0,"Watch & Bracelet Sets","Watch & Bracelet Sets",,,,,1,0
+52-142-276,52-142-0,false,0,"Rings","Rings",,,,,1,0
+52-142-277,52-142-0,false,0,"Anklets","Anklets",,,,,1,0
+52-149-0,52-0-0,false,40,"Accessories","Womens Accessories",,,,,1,0
+52-149-151,52-149-0,false,0,"Scarves & Wraps","Scarves & Wraps",,,,,1,0
+52-149-152,52-149-0,false,0,"Womens Belts","Womens Belts",,,,,1,0
+52-149-154,52-149-0,false,0,"Womens Hats","Womens Hats",,,,,1,0
+52-149-155,52-149-0,false,0,"Totes & Satchels","Totes & Satchels",,,,,1,0
+52-149-156,52-149-0,false,0,"Electronic Cases","Electronic Cases",,,,,1,0
+52-149-157,52-149-0,false,0,"Womens Wallets","Womens Wallets & Accessories",,,,,1,0
+52-149-275,52-149-0,false,0,"Womens Sunglasses","Womens Sunglasses",,,,,1,0
+158-0-0,,true,25,"Childrens","Childrens",,,,,1,0
+158-159-0,158-0-0,false,15,"Girls 7-16","Girls 7-16",,,,,1,0
+158-159-160,158-159-0,false,0,"Jeans & Pants","Jeans & Pants",,,,,1,0
+158-159-161,158-159-0,false,0,"Skirts & Scooters","Skirts & Scooters",,,,,1,0
+158-159-162,158-159-0,false,0,"Screen Tees & Tanks","Girls 7-16 Screen Tees & Tanks",,,,,1,0
+158-159-163,158-159-0,false,0,"Dresses & Sets","Dresses & Sets",,,,,1,0
+158-159-164,158-159-0,false,0,"Outerwear & Fleece","Girls 7-16 Outerwear & Fleece",,,,,1,0
+158-159-165,158-159-0,false,0,"Sweaters","Sweaters",,,,,1,0
+158-159-167,158-159-0,false,0,"Girls 4-16 Sleepwear","Girls 4-16 Sleepwear",,,,,1,0
+158-159-168,158-159-0,false,0,"Bras","Bras",,,,,1,0
+158-169-0,158-0-0,false,20,"Boys 8-20","Boys 8-20",,,,,1,0
+158-169-170,158-169-0,false,0,"Jeans & Pants","Boys 8-20 Jeans & Pants",,,,,1,0
+158-169-171,158-169-0,false,0,"Shorts","Boys 8-20 Shorts",,,,,1,0
+158-169-173,158-169-0,false,0,"Sweaters & Outerwear","Boys 8-20 Sweaters & Outerwear",,,,,1,0
+158-169-176,158-169-0,false,0,"Boys 8-20 Sleepwear","Boys 8-20 Sleepwear",,,,,1,0
+158-169-177,158-169-0,false,0,"Underwear & Socks","Underwear & Socks",,,,,1,0
+158-169-323,158-169-0,false,0,"Button-up Shirts","Button-up Shirts",,,,,1,0
+158-169-324,158-169-0,false,0,"Polos","Boys 8-20 Polos",,,,,1,0
+158-188-0,158-0-0,false,5,"Baby Boy 0-24 Months","Baby Boy 0-24 Months",,,,,1,0
+158-188-189,158-188-0,false,0,"Sets","Baby Boy Sets",,,,,1,0
+158-188-190,158-188-0,false,0,"Bottoms","Baby Boy Bottoms",,,,,1,0
+158-188-193,158-188-0,false,0,"Sweaters & Fleece","Baby Boy Sweaters & Fleece",,,,,1,0
+158-201-0,158-0-0,false,25,"Toys & Gifts","Toys & Gifts",,,,,1,0
+158-201-202,158-201-0,false,0,"Toy Vehicles & Sets","Toy Vehicles & Sets",,,,,1,0
+158-201-203,158-201-0,false,0,"Games & Puzzles","Childrens Games & Puzzles",,,,,1,0
+158-201-204,158-201-0,false,0,"Toddler & Kids Room","Toddler & Kids Room",,,,,1,0
+158-201-205,158-201-0,false,0,"Learning & Exploration","Learning & Exploration",,,,,1,0
+158-201-206,158-201-0,false,0,"Plush & Stuffed Animals","Plush & Stuffed Animals",,,,,1,0
+158-201-309,158-201-0,false,0,"Backpacks","Backpacks",,,,,1,0
+211-0-0,,true,30,"School Uniforms","School Uniforms",,,,,1,0
+211-212-0,211-0-0,false,0,"School Uniforms","School Uniforms",,,,,1,0
+211-212-213,211-212-0,false,0,"Girls 2T-6X Uniforms","Girls 2T-6X Uniforms",,,,,1,0
+211-212-214,211-212-0,false,0,"Girls 7-16 Uniforms","Girls 7-16 Uniforms",,,,,1,0
+215-0-0,,true,10,"Shoes","Shoes",,,,,1,0
+215-216-0,215-0-0,false,10,"Mens","Mens Shoes",,,,,1,0
+215-216-217,215-216-0,false,0,"Mens Athletics","Men Athletic Shoes",,,,,1,0
+215-216-218,215-216-0,false,0,"Mens Sandals","Men Sandals",,,,,1,0
+215-216-219,215-216-0,false,0,"Oxfords & Boots","Men Oxfords & Boots",,,,,1,0
+215-216-220,215-216-0,false,0,"Loafers & Slip-Ons","Men Loafers & Slip-ons",,,,,1,0
+215-216-221,215-216-0,false,0,"Mens Boat Shoes","Men Boat Shoes",,,,,1,0
+215-216-291,215-216-0,false,0,"Slippers","Men Slippers",,,,,1,0
+215-216-311,215-216-0,false,0,"Walking & Comfort","Men Walking & Comfort",,,,,1,0
+215-222-0,215-0-0,false,5,"Womens","Womens Shoes",,,,,1,0
+215-222-223,215-222-0,false,0,"Womens Athletics","Womens Athletic Shoes",,,,,1,0
+215-222-224,215-222-0,false,0,"Casual Sandals","Womens Casual Sandals",,,,,1,0
+215-222-225,215-222-0,false,0,"Boots","Boots",,,,,1,0
+215-222-226,215-222-0,false,0,"Loafers & Slip-ons","Womens Loafers & Slip-ons",,,,,1,0
+215-222-227,215-222-0,false,0,"Heels & Pumps","Womens Heels & Pumps",,,,,1,0
+215-222-292,215-222-0,false,0,"Slippers","Womens Slippers",,,,,1,0
+215-222-298,215-222-0,false,0,"Clogs","Womens Clogs",,,,,1,0
+215-222-312,215-222-0,false,0,"Womens Golf Shoes","Womens Golf Shoes",,,,,1,0
+215-222-316,215-222-0,false,0,"Dress Sandals","Womens Dress Sandals",,,,,1,0
+215-228-0,215-0-0,false,15,"Childrens","Childrens Shoes",,,,,1,0
+215-228-229,215-228-0,false,0,"Boys Shoes","Boys Shoes",,,,,1,0
+215-228-231,215-228-0,false,0,"Girls Shoes","Girls Shoes",,,,,1,0
+233-0-0,,true,20,"At Home","At Home",,,,,1,0
+233-234-0,233-0-0,false,70,"Dining","Dining",,,,,1,0
+233-234-235,233-234-0,false,0,"Wine Glasses & Goblets","Wine Glasses & Goblets",,,,,1,0
+233-234-236,233-234-0,false,0,"Tablecloths","Tablecloths",,,,,1,0
+233-234-238,233-234-0,false,0,"Coasters","Coasters",,,,,1,0
+233-234-239,233-234-0,false,0,"Beer Glasses","Beer Glasses",,,,,1,0
+233-234-240,233-234-0,false,0,"Bowls","Bowls",,,,,1,0
+233-234-241,233-234-0,false,0,"Salad Plates","Salad Plates",,,,,1,0
+233-234-243,233-234-0,false,0,"Dinner Plates","Dinner Plates",,,,,1,0
+233-234-244,233-234-0,false,0,"Flatware","Flatware",,,,,1,0
+233-234-245,233-234-0,false,0,"Glassware Sets","Glassware Sets",,,,,1,0
+233-234-247,233-234-0,false,0,"Chips, Dips, & Veggies","Chips, Dips, & Veggies",,,,,1,0
+233-234-271,233-234-0,false,0,"Trays & Serveware","Trays & Serveware",,,,,1,0
+233-234-301,233-234-0,false,0,"Bar Accessories","Bar Accessories",,,,,1,0
+233-234-310,233-234-0,false,0,"Serving Bowls","Serving Bowls",,,,,1,0
+233-248-0,233-0-0,false,90,"Travel & Leisure","Travel & Leisure",,,,,1,0
+233-248-249,233-248-0,false,0,"Luggage","Luggage",,,,,1,0
+233-248-250,233-248-0,false,0,"Duffle and Tote Bags","Duffle and Tote Bags",,,,,1,0
+233-248-251,233-248-0,false,0,"Electronics & Gadgets","Electronics & Gadgets",,,,,1,0
+233-252-0,233-0-0,false,20,"Home Decor","Home Decor",,,,,1,0
+233-252-253,233-252-0,false,0,"Candles & Decorative Holders","Candles & Decorative Holders",,,,,1,0
+233-252-256,233-252-0,false,0,"Crystal Accents","Crystal Accents",,,,,1,0
+233-252-258,233-252-0,false,0,"Artificial Trees & Flowers","Artificial Trees & Flowers",,,,,1,0
+233-252-259,233-252-0,false,0,"Cards & Calendars","Cards & Calendars",,,,,1,0
+233-252-272,233-252-0,false,0,"Framed Art","Framed Art",,,,,1,0
+233-252-288,233-252-0,false,0,"Accent Rugs & Doormats","Accent Rugs & Doormats",,,,,1,0
+233-252-296,233-252-0,false,0,"Home Accents & Figurines","Home Accents & Figurines",,,,,1,0
+233-252-317,233-252-0,false,0,"Furniture & TV Tables","Furniture & TV Tables",,,,,1,0
+233-260-0,233-0-0,false,30,"Patio & Outdoor","Patio & Outdoor",,,,,1,0
+233-260-261,233-260-0,false,0,"Lawn & Garden","Lawn & Garden",,,,,1,0
+233-260-262,233-260-0,false,0,"Outdoor Drinkware","Outdoor Drinkware",,,,,1,0
+233-260-263,233-260-0,false,0,"Coolers","Coolers",,,,,1,0
+233-260-264,233-260-0,false,0,"Insulated Drinkware","Insulated Drinkware",,,,,1,0
+233-260-270,233-260-0,false,0,"Chairs & Beach Gear","Chairs & Beach Gear",,,,,1,0
+52-142-328,52-142-0,false,0,"Toe Rings","Toe Rings",,,,,1,0
+52-53-329,52-53-0,false,130,"Capris","Capris",,,,,1,0
+52-71-330,52-71-0,false,210,"Petite Capris & Crops","Petite Capris & Crops",,,,,1,0
+52-89-331,52-89-0,false,0,"Plus Size Capris","Plus Size Capris",,,,,1,0
+52-105-332,52-105-0,false,0,"Capris","Capris",,,,,1,0
+158-159-334,158-159-0,false,0,"Shorts & Capris","Shorts & Capris",,,,,1,0
+158-159-335,158-159-0,false,0,"Tops","Tops",,,,,1,0
+52-149-336,52-149-0,false,0,"Umbrellas","Umbrellas",,,,,1,0
+52-149-337,52-149-0,false,0,"Bath & Body","Bath & Body",,,,,1,0
+52-149-338,52-149-0,false,0,"Pre Wrapped Gifts","Pre Wrapped Gifts",,,,,1,0
+52-149-339,52-149-0,false,0,"Womens Fragrances","Womens Fragrances",,,,,1,0
+52-149-340,52-149-0,false,0,"Pantyhose & Stockings","Pantyhose & Stockings",,,,,1,0
+52-149-341,52-149-0,false,0,"Womens Socks","Womens Socks",,,,,1,0
+233-252-343,233-252-0,false,0,"Area Rugs","Area Rugs",,,,,1,0
+52-53-346,52-53-0,false,90,"Sweaters","Sweaters",,,,,1,0
+233-234-350,233-234-0,false,0,"Dinnerware Sets","Dinnerware Sets",,,,,1,0
+233-248-351,233-248-0,false,0,"Personal & Health Care","Personal & Health Care",,,,,1,0
+233-260-353,233-260-0,false,0,"Cooking & Grilling","Outdoor Cooking & Grilling",,,,,1,0
+52-149-356,52-149-0,false,0,"Beach Bags","Beach Bags",,,,,1,0
+52-105-381,52-105-0,false,0,"Tube Tops","Tube Tops",,,,,1,0
+52-123-387,52-123-0,false,10,"Wire Free Bras","Wire Free Bras",,,,,1,0
+52-138-388,52-138-0,false,0,"Junior Maxi Dresses","Junior Maxi Dresses",,,,,1,0
+1-2-390,1-2-0,false,0,"Solid Polos","Solid Polos",,,,,1,0
+158-169-429,158-169-0,false,0,"Tees & Tanks","Boys 8-20 Tees & Tanks",,,,,1,0
+158-188-434,158-188-0,false,0,"Tops","Baby Boy Tops",,,,,1,0
+158-188-442,158-188-0,false,0,"Newborn & Layette","Baby Boy Newborn & Layette",,,,,1,0
+233-444-0,233-0-0,false,60,"Kitchen","Kitchen",,,,,1,0
+233-444-446,233-444-0,false,1,"Small Appliances","Small Appliances",,,,,1,0
+233-444-447,233-444-0,false,4,"Measuring & Mixing","Measuring & Mixing",,,,,1,0
+233-444-448,233-444-0,false,0,"Gadgets","Gadgets",,,,,1,0
+233-444-449,233-444-0,false,2,"Towels, Mitts & Aprons","Towels, Mitts & Aprons",,,,,1,0
+233-444-450,233-444-0,false,5,"Bakeware","Bakeware",,,,,1,0
+233-444-451,233-444-0,false,0,"Openers & Peelers","Openers & Peelers",,,,,1,0
+233-452-0,233-0-0,false,80,"Gourmet Food","Gourmet Food",,,,,1,0
+233-452-453,233-452-0,false,10,"Spices, Dips & Marinades","Spices, Dips & Marinades",,,,,1,0
+233-452-454,233-452-0,false,20,"Gift Mixes","Gift Mixes",,,,,1,0
+233-452-455,233-452-0,false,30,"Hot Beverages","Hot Beverages",,,,,1,0
+233-452-456,233-452-0,false,40,"Nuts & Snacks","Nuts & Snacks",,,,,1,0
+233-452-457,233-452-0,false,50,"Novelty Gourmet Food","Novelty Gourmet Food",,,,,1,0
+52-123-458,52-123-0,false,20,"Brief Panties","Womens Briefs",,,,,1,0
+52-123-459,52-123-0,false,25,"Thong Panties","Womens Thong Panties",,,,,1,0
+233-248-460,233-248-0,false,0,"Games & Gifts","Games & Gifts",,,,,1,0
+52-123-461,52-123-0,false,0,".",".",,,,,1,0
+158-188-468,158-188-0,false,0,"Baby Boy Sleepwear","Baby Boy Sleepwear",,,,,1,0
+233-260-469,233-260-0,false,0,"Serveware","Serveware",,,,,1,0
+233-444-470,233-444-0,false,0,"Cooking Utensils","Cooking Utensils",,,,,1,0
+233-444-471,233-444-0,false,0,"Cuttingboards & Knives","Cuttingboards & Knives",,,,,1,0
+1-2-483,1-2-0,false,0,"Underwear & Undershirts","Mens Underwear & Undershirts",,,,,1,0
+233-484-0,233-0-0,false,10,"Holiday at Home","Holiday at Home",,,,,1,0
+233-484-485,233-484-0,false,10,"Holiday Frames","Holiday Frames",,,,,1,0
+233-484-488,233-484-0,false,0,"Holiday Greeting Cards","Holiday Greeting Cards",,,,,1,0
+233-484-489,233-484-0,false,0,"Holiday Rugs","Holiday Rugs",,,,,1,0
+233-484-490,233-484-0,false,0,"Animated Decor","Animated Decor",,,,,1,0
+233-484-491,233-484-0,false,0,"Stockings & Hangers","Stockings & Hangers",,,,,1,0
+233-484-492,233-484-0,false,0,"Holiday Candles & Holders","Holiday Candles & Holders",,,,,1,0
+233-484-494,233-484-0,false,0,"Ornaments & Tree Toppers","Ornaments",,,,,1,0
+52-53-495,52-53-0,false,0," Polo Shirts","Polo Shirts",,,,,1,0
+158-159-496,158-159-0,false,0,"Socks & Tights","Girls Socks & Tights",,,,,1,0
+52-53-498,52-53-0,false,0,"3/4 Sleeve Tops","3/4 Sleeve Tops",,,,,1,0
+52-53-499,52-53-0,false,0,"Long Sleeve Tops","Long Sleeve Tops",,,,,1,0
+52-142-514,52-142-0,false,0,"Dangle Earrings","Dangle Earrings",,,,,1,0
+52-53-518,52-53-0,false,0,"Sleeveless Tops","Sleeveless Tops",,,,,1,0
+52-149-519,52-149-0,false,0,"Cosmetic Bags","Cosmetic Bags",,,,,1,0
+52-53-539,52-53-0,false,0,"Fish Tees","Fish Tees",,,,,1,0
+52-123-543,52-123-0,false,0,"Thermal Underwear","Thermal Underwear",,,,,1,0
+233-234-547,233-234-0,false,0,"As Seen On TV","As Seen On TV",,,,,1,0
+233-252-551,233-252-0,false,0,"Clocks","Clocks",,,,,1,0
+233-252-552,233-252-0,false,0,"Unframed Wall Decor","Unframed Wall Decor",,,,,1,0
+233-484-553,233-484-0,false,0,"Novelty Gourmet Gifts","Novelty Gourmet Gifts",,,,,1,0
+158-159-555,158-159-0,false,0,"Cold Weather Accessories","Cold Weather Accessories",,,,,1,0
+52-142-557,52-142-0,false,0,"Boxed Accessories","Boxed Accessories",,,,,1,0
+1-2-560,1-2-0,false,0,"Casual Long Sleeve Shirts","Casual Long Sleeve Shirts",,,,,1,0
+1-31-562,1-31-0,false,0,"Mens Fragrances","Mens Fragrances",,,,,1,0
+52-132-563,52-132-0,false,0,"Leisure & Kaftan","Leisure & Kaftan",,,,,1,0
+1-2-569,1-2-0,false,0,"Socks","Mens Socks",,,,,1,0
+158-159-572,158-159-0,false,0,"Panties & Underwear","Panties & Underwear",,,,,1,0
+52-149-574,52-149-0,false,0,"Handbag Holders","Handbag Holders",,,,,1,0
+52-138-575,52-138-0,false,0,"Social Sets","Social Sets",,,,,1,0
+52-71-576,52-71-0,false,100,"Petite Short Sleeve Tops","Petite Short Sleeve Tops",,,,,1,0
+233-234-578,233-234-0,false,0,"Mugs","Mugs",,,,,1,0
+52-138-579,52-138-0,false,0,"Wear to Work Dresses","Wear to Work Dresses",,,,,1,0
+52-142-581,52-142-0,false,0,"Clip Earrings","Clip Earrings",,,,,1,0
+52-132-584,52-132-0,false,0,"Plus Size Sleepwear","Plus Size Sleepwear",,,,,1,0
+233-260-587,233-260-0,false,0,"Beach Towels","Beach Towels",,,,,1,0
+158-591-0,158-0-0,false,10,"Girls 4-6X","Girls 4-6X",,,,,1,0
+158-591-592,158-591-0,false,0,"Tees & Tops","4-6X Tees & Tops",,,,,1,0
+158-591-593,158-591-0,false,0,"Bottoms","Girls 4-6X Bottoms",,,,,1,0
+158-591-594,158-591-0,false,0,"Sets","Girls 4-6X Sets",,,,,1,0
+158-591-595,158-591-0,false,0,"Dresses","4-6X Dresses",,,,,1,0
+158-591-597,158-591-0,false,0,"Hats & Belts","Girls Hats & Belts",,,,,1,0
+158-591-598,158-591-0,false,0,"Outerwear & Fleece","Girls 4-6X Outerwear & Fleece",,,,,1,0
+158-591-599,158-591-0,false,0,"Sleepwear","Girls 4-6x Sleepwear",,,,,1,0
+158-600-0,158-0-0,false,19,"Boys 4-7X","Boys 4-7X",,,,,1,0
+158-600-602,158-600-0,false,0,"Shorts","Boys 4-7X Shorts",,,,,1,0
+158-600-603,158-600-0,false,0,"Sweaters & Outerwear","Boys 4-7X Sweaters & Outerwear",,,,,1,0
+158-600-604,158-600-0,false,0,"Polos","Boys 4-7X Polos",,,,,1,0
+158-600-605,158-600-0,false,0,"Sets","Boys 4-7X Sets",,,,,1,0
+158-600-606,158-600-0,false,0,"Jeans & Pants","Boys 4-7X Jeans & Pants",,,,,1,0
+158-600-607,158-600-0,false,0,"Tees & Tanks","Boys 4-7X Tees & Tanks",,,,,1,0
+158-600-609,158-600-0,false,0,"4-7X Sleepwear","Boys 4-7X Sleepwear",,,,,1,0
+158-600-611,158-600-0,false,0,"Button-Up Shirts","Boys 4-7X Button Up Shirts",,,,,1,0
+158-201-612,158-201-0,false,0,"Dolls","Childrens Dolls",,,,,1,0
+233-613-0,233-0-0,false,40,"Tervis Drinkware","Tervis",,,,,1,0
+233-613-614,233-613-0,false,0,"24 oz. Tumblers","24 oz. Tumblers",,,,,1,0
+233-613-615,233-613-0,false,0,"16 oz. Mugs","16 oz. Mugs",,,,,1,0
+233-613-616,233-613-0,false,0,"Lids & Straws","Lids & Straws",,,,,1,0
+233-613-617,233-613-0,false,0,"16 oz. Tumbler Sets","16 oz. Tumbler Sets",,,,,1,0
+233-613-618,233-613-0,false,0,"16 oz. Travel Tumblers","16 oz. Travel Tumblers",,,,,1,0
+158-591-619,158-591-0,false,0,"Sweaters","4-6X Sweaters",,,,,1,0
+158-600-624,158-600-0,false,0,"Boys Hats & Belts","Boys Hats & Belts",,,,,1,0
+158-591-625,158-591-0,false,0,"Purses & Handbags","Purses & Handbags",,,,,1,0
+158-201-626,158-201-0,false,0,"Action Toys & Figures","Action Toys & Figures",,,,,1,0
+158-201-627,158-201-0,false,0,"R/C Vehicles","R/C Vehicles",,,,,1,0
+158-201-629,158-201-0,false,0,"Preschool Toys","Preschool Toys",,,,,1,0
+158-201-630,158-201-0,false,0,"Pretend & Dress Up","Pretend & Dress Up",,,,,1,0
+158-201-631,158-201-0,false,0,"Beach & Outdoor Toys","Beach & Outdoor Toys",,,,,1,0
+158-201-632,158-201-0,false,0,"Childrens Slippers","Childrens Slippers",,,,,1,0
+52-89-634,52-89-0,false,0,"Plus Size 3/4 Sleeve Tops","Plus Size 3/4 Sleeve Tops",,,,,1,0
+52-89-635,52-89-0,false,0,"Plus Size Long Sleeve Tops","Plus Size Long Sleeve Tops",,,,,1,0
+52-71-636,52-71-0,false,110,"Petite Long Sleeve Tops","Petite Long Sleeve Tops",,,,,1,0
+158-591-697,158-591-0,false,0,"Jewelry & Hair Accessories","Jewerly & Hair Accessories",,,,,1,0
+233-444-704,233-444-0,false,0,"Spices & Shakers","Spices & Shakers",,,,,1,0
+233-705-0,233-0-0,false,50,"Bed & Bath","Bed & Bath",,,,,1,0
+233-705-707,233-705-0,false,0,"Bedding Sets","Bedding Sets",,,,,1,0
+233-705-708,233-705-0,false,0,"Blankets & Throws","Blankets & Throws",,,,,1,0
+233-705-709,233-705-0,false,0,"Bath Collections","Bath Collections",,,,,1,0
+233-705-710,233-705-0,false,0,"Sheets","Sheets",,,,,1,0
+233-705-711,233-705-0,false,0,"Bath Towels","Bath Towels",,,,,1,0
+233-705-712,233-705-0,false,0,"Pillows & Mattress Pads","Pillows & Mattress Pads",,,,,1,0
+233-260-713,233-260-0,false,0,"Chair Cushions","Chair Cushions",,,,,1,0
+52-53-714,52-53-0,false,0,"All Maternity","Maternity",,,,,1,0
+52-138-718,52-138-0,false,0,"Special Occasion Dresses","Special Occasion Dresses",,,,,1,0
+233-252-724,233-252-0,false,0,"Reed Diffusers","Reed Diffusers",,,,,1,0
+233-484-725,233-484-0,false,20,"Holiday Dining","Holiday Dining",,,,,1,0
+233-484-726,233-484-0,false,30,"Holiday Trees & Floral","Holiday Trees & Floral",,,,,1,0
+233-484-727,233-484-0,false,40,"Holiday Wall Decor","Holiday Wall Decor",,,,,1,0
+233-484-728,233-484-0,false,700,"Holiday Decor","Holiday Decor",,,,,1,0
+233-484-729,233-484-0,false,800,"Holiday Napkins & Table Linens","Holiday Napkins & Table Linens",,,,,1,0
+215-222-752,215-222-0,false,0,"Shoe Accessories","Shoe Accessories",,,,,1,0
+233-613-755,233-613-0,false,75,"10 oz. Tumblers","10 oz. Tumblers",,,,,1,0
+211-212-783,211-212-0,false,0,"Boys 2T-7 Uniforms","Boys 2T-7 Uniforms",,,,,1,0
+211-212-784,211-212-0,false,0,"Boys 8-20 Uniforms","Boys 8-20 Uniforms",,,,,1,0
+215-222-785,215-222-0,false,0,"Womens Boat Shoes","Womens Boat Shoes",,,,,1,0
+215-222-786,215-222-0,false,0,"Flats","Womens Flats",,,,,1,0
+233-613-787,233-613-0,false,0,"16 oz. Tumblers","16 oz. Tumblers",,,,,1,0
+233-444-791,233-444-0,false,0,"Cookware","Cookware",,,,,1,0
+233-444-792,233-444-0,false,0,"Glassware Sets","Glassware Sets",,,,,1,0
+233-444-793,233-444-0,false,0,"Coffee & Tea Makers","Coffee & Tea Makers",,,,,1,0
+233-444-794,233-444-0,false,0,"Toasters & Ovens","Toasters & Ovens",,,,,1,0
+233-444-795,233-444-0,false,0,"Storage Containers","Storage Containers",,,,,1,0
+233-260-796,233-260-0,false,0,"Outdoor Dinnerware","Outdoor Dinnerware",,,,,1,0
+233-613-800,233-613-0,false,0,"24 oz. Water Bottle","24 oz. Water Bottle",,,,,1,0
+233-705-801,233-705-0,false,0,"Bath Rugs","Bath Rugs",,,,,1,0
+233-705-802,233-705-0,false,0,"Quilts","Quilts",,,,,1,0
+233-705-803,233-705-0,false,0,"Towel &  Wash Cloth Sets","Towel & Wash Cloth Sets",,,,,1,0
+233-252-804,233-252-0,false,0,"Collage Frames","Collage Frames",,,,,1,0
+1-2-806,1-2-0,false,0,"Sleepwear","Sleepwear",,,,,1,0
+1-12-807,1-12-0,false,0,"Action Sport Long Sleeve","Action Sport Long Sleeve",,,,,1,0
+1-12-809,1-12-0,false,0,"Plaid Shorts","Plaid Shorts",,,,,1,0
+1-12-810,1-12-0,false,0,"Levis Jeans","Levis Jeans",,,,,1,0
+1-12-811,1-12-0,false,0,"Surf & Skate Polos","Surf & Skate Polos",,,,,1,0
+1-12-812,1-12-0,false,0,"Hoodies & Sweatshirts","Hoodies & Sweatshirts",,,,,1,0
+233-613-620,233-613-0,false,0,"24 oz. Tumbler Sets","24 oz. Tumbler Sets",,,,,1,0
+233-253-0,233-0-0,false,0,"Frames","Frames",,,,,1,0
+233-253-20,233-253-0,false,0,"Sentiment Frames","Sentiment Frames",,,,,1,0
+233-253-21,233-253-0,false,0,"Baby Frames","Baby Frames",,,,,1,0
+233-253-22,233-253-0,false,0,"Pet Frames","Pet Frames",,,,,1,0
+233-253-23,233-253-0,false,0,"Collage Frames","Collage Frames",,,,,1,0
+233-253-24,233-253-0,false,0,"Wall Frames","Wall Frames",,,,,1,0
+233-253-25,233-253-0,false,0,"Photo Coasters","Photo Coasters",,,,,1,0
+233-253-26,233-253-0,false,0,"Wedding Frames","Wedding Frames",,,,,1,0
+233-253-27,233-253-0,false,0,"Solid Wood Frames","Solid Wood Frames",,,,,1,0
+233-253-28,233-253-0,false,0,"Photo Albums","Photo Albums",,,,,1,0
+233-253-29,233-253-0,false,0,"Coastal Frames","Coastal Frames",,,,,1,0
+233-253-30,233-253-0,false,0,"Solid Metal Frames","Solid Metal Frames",,,,,1,0
+233-253-19,233-253-0,false,0,"Graduation Frames","Graduation Frames",,,,,1,0
+233-253-18,233-253-0,false,0,"Novelty Frames","Novelty Frames",,,,,1,0
+233-253-17,233-253-0,false,0,"Destination Frames","Destination Frames",,,,,1,0
+1-2-11,1-2-0,false,0,"Flat Front Shorts","Flat Front Shorts",,,,,1,0
+1-2-12,1-2-0,false,0,"Denim Shorts","Denim Shorts",,,,,1,0
+1-2-13,1-2-0,false,0,"Cargo Shorts","Cargo Shorts",,,,,1,0
+1-2-14,1-2-0,false,0,"Athletic Shorts","Athletic Shorts",,,,,1,0
+2-0-0,,true,0,"Team Shop","Team Shop",,,,,1,0
+2-3-0,2-0-0,false,0,"Mens Team","Mens Team",,,,,1,0
+2-3-901,2-3-0,false,0,"Team Tees","Team Tees",,,,,1,0
+2-3-902,2-3-0,false,0,"Team Polos","Team Polos",,,,,1,0
+2-3-903,2-3-0,false,0,"Team Shorts","Team Shorts",,,,,1,0
+2-3-904,2-3-0,false,0,"Team Hats","Team Hats",,,,,1,0
+2-3-905,2-3-0,false,0,"Team Sweatshirts & Jackets","Team Sweatshirts & Jackets",,,,,1,0
+2-3-906,2-3-0,false,0,"Team Sleepwear","Team Sleepwear",,,,,1,0
+2-4-0,2-0-0,false,0,"Womens Team","Womens Team",,,,,1,0
+2-4-907,2-4-0,false,0,"Team Tees","Team Tees",,,,,1,0
+2-4-908,2-4-0,false,0,"Team Tanks","Team Tanks",,,,,1,0
+2-4-909,2-4-0,false,0,"Team Sweatshirts & Jackets","Team Sweatshirts & Jackets",,,,,1,0
+2-4-910,2-4-0,false,0,"Team Accessories","Team Accessories",,,,,1,0
+2-4-911,2-4-0,false,0,"Team Shorts","Team Shorts",,,,,1,0
+2-5-0,2-0-0,false,0,"Junior Team","Junior Team",,,,,1,0
+2-5-912,2-5-0,false,0,"Team Tees","Team Tees",,,,,1,0
+2-5-913,2-5-0,false,0,"Team Tanks","Team Tanks",,,,,1,0
+2-5-914,2-5-0,false,0,"Team Shorts","Team Shorts",,,,,1,0
+2-5-915,2-5-0,false,0,"Team Dresses","Team Dresses",,,,,1,0
+2-6-0,2-0-0,false,0,"Kids Team","Kids Team",,,,,1,0
+2-6-916,2-6-0,false,0,"Boys Team","Boys Team",,,,,1,0
+2-6-917,2-6-0,false,0,"Girls Team","Girls Team",,,,,1,0
+2-6-918,2-6-0,false,0,"Baby Team","Baby Team",,,,,1,0
+2-7-0,2-0-0,false,0,"Home & Accessories Team","Home & Accessories Team",,,,,1,0
+2-7-919,2-7-0,false,0,"Team Dining","Team Dining",,,,,1,0
+2-7-920,2-7-0,false,0,"Team Drinkware","Team Drinkware",,,,,1,0
+2-7-921,2-7-0,false,0,"Team Blankets & Throws","Team Blankets & Throws",,,,,1,0
+2-7-922,2-7-0,false,0,"Team Luggage & Bags","Team Luggage & Bags",,,,,1,0
+2-7-923,2-7-0,false,0,"Team Accessories","Team Accessories",,,,,1,0
+2-7-924,2-7-0,false,0,"Team Tailgating","Team Tailgating",,,,,1,0
+2-7-925,2-7-0,false,0,"Team Home Decor","Team Home Decor",,,,,1,0
+158-188-185,158-188-0,false,0,"Bodysuits & One Piece","Baby Boy Bodysuits & One Piece",,,,,1,0
+158-189-0,158-0-0,false,5,"Baby Girl 0-24 Months","Baby Girl 0-24 Months",,,,,1,0
+158-190-0,158-0-0,false,5,"Baby Neutral & Gear","Baby Neutral & Gear",,,,,1,0
+158-189-191,158-189-0,false,0,"Bodysuits & One-Piece","Baby Girl Bodysuits & One-Piece",,,,,1,0
+158-189-194,158-189-0,false,0,"Bottoms","Baby Girl Bottoms",,,,,1,0
+158-189-196,158-189-0,false,0,"Tops","Baby Girl Tops",,,,,1,0
+158-189-197,158-189-0,false,0,"Baby Girl Sleepwear","Baby Girl Sleepwear",,,,,1,0
+158-189-198,158-189-0,false,0,"Dresses & Sunsuits","Baby Girl Dresses & Sunsuits",,,,,1,0
+158-189-199,158-189-0,false,0,"Newborn & Layette","Baby Girl Newborn & Layette",,,,,1,0
+158-189-200,158-189-0,false,0,"Sets","Baby Girl Sets",,,,,1,0
+158-190-186,158-190-0,false,0,"Bodysuits & One-Piece","Baby Neutral Bodysuits & One-Piece",,,,,1,0
+158-190-187,158-190-0,false,0,"Sets","Baby Neutral Sets",,,,,1,0
+158-190-188,158-190-0,false,0,"Baby Gear","Baby Gear",,,,,1,0
+158-190-201,158-190-0,false,0,"Gifts & Accessories","Gifts & Accessories",,,,,1,0
+158-190-184,158-190-0,false,0,"Shoes & Socks","Baby Shoes & Socks",,,,,1,0
+233-234-362,233-234-0,false,0,"Martini & Liquor","Martini & Liquor",,,,,1,0
+233-234-363,233-234-0,false,0,"Hi-Ball & Old Fashioned","Hi-Ball & Old Fashioned",,,,,1,0
+233-234-364,233-234-0,false,0,"Chillers & Ice Buckets","Chillers & Ice Buckets",,,,,1,0
+233-234-365,233-234-0,false,0,"Pitchers","Pitchers",,,,,1,0
+233-234-366,233-234-0,false,0,"Salt & Pepper Shakers","Salt & Pepper Shakers",,,,,1,0
+233-234-367,233-234-0,false,0,"Butter & Gravy","Butter & Gravy",,,,,1,0
+233-234-368,233-234-0,false,0,"Sugar & Creamer Sets","Sugar & Creamer Sets",,,,,1,0
+233-234-369,233-234-0,false,0,"Napkins","Napkins",,,,,1,0
+233-234-370,233-234-0,false,0,"Napkin Holders","Napkin Holders",,,,,1,0
+233-234-371,233-234-0,false,0,"Placemats","Placemats",,,,,1,0
+52-142-279,52-142-0,false,0,"Stretch Bracelet","Stretch Bracelet",,,,,1,0
+52-142-280,52-142-0,false,0,"Cuff Bracelet","Cuff Bracelet",,,,,1,0
+52-142-281,52-142-0,false,0,"Charm Bracelet","Charm Bracelet",,,,,1,0
+52-142-282,52-142-0,false,0,"Sterling Silver Bracelet","Sterling Silver Bracelet",,,,,1,0
+52-142-283,52-142-0,false,0,"Necklace & Earring Sets","Necklace & Earrings Sets",,,,,1,0
+52-142-284,52-142-0,false,0,"Cuff Watches","Cuff Watches",,,,,1,0
+52-142-285,52-142-0,false,0,"Stretch Watches","Stretch Watches",,,,,1,0
+52-142-286,52-142-0,false,0,"Bracelet Watches","Bracelet Watches",,,,,1,0
+52-142-287,52-142-0,false,0,"Strap Watches","Strap Watches",,,,,1,0
+52-142-278,52-142-0,false,0,"Slap Watches","Slap Watches",,,,,1,0
+52-123-128,52-123-0,false,0,"Junior Bras","Junior Bras",,,,,1,0
+52-123-129,52-123-0,false,0,"Junior Thongs","Junior Thongs",,,,,1,0
+52-123-130,52-123-0,false,0,"Junior Hipsters","Junior Hipsters",,,,,1,0
+52-123-131,52-123-0,false,0,"Junior Camisoles","Junior Camisoles",,,,,1,0
+1-12-813,1-12-0,false,0,"Action Sport Tees","Action Sport Tees",,,,,1,0
+1-12-814,1-12-0,false,0,"Novelty & Humor Tees","Novelty & Humor Tees",,,,,1,0
+1-12-815,1-12-0,false,0,"Fish Tees Slim Fit","Fish Tees Slim Fit",,,,,1,0
+1-12-816,1-12-0,false,0,"Car & Cycle Tees","Car & Cycle Tees",,,,,1,0
+1-12-817,1-12-0,false,0,"Movies & Games Tees","Movies & Games Tees",,,,,1,0
+1-12-818,1-12-0,false,0,"Young Mens Basic Tees","Young Mens Basic Tees",,,,,1,0
+233-613-621,233-613-0,false,0,"Handles & Accessories","Handles & Accessories",,,,,1,0
+52-149-520,52-149-0,false,0,"Clutches & Wristlets","Clutches & Wristlets",,,,,1,0
+52-149-521,52-149-0,false,0,"Crossbody & Minibags","Crossbody & Minibags",,,,,1,0
+52-149-522,52-149-0,false,0,"Hobos","Hobos",,,,,1,0
+52-149-523,52-149-0,false,0,"Quilted Handbags","Quilted Handbags",,,,,1,0
+233-248-255,233-248-0,false,0,"Books","Books",,,,,1,0
+1-12-819,1-12-0,false,0,"Hats & Accessories","Hats & Accessories",,,,,1,0
+233-248-252,233-248-0,false,0,"Travel Accessories","Travel Accessories",,,,,1,0
+233-484-730,233-484-0,false,0,"Holiday Kitchen Accessories","Holiday Kitchen Accessories",,,,,1,0
+233-484-731,233-484-0,false,0,"Holiday Pillows & Throws","Holiday Pillows & Throws",,,,,1,0
+52-149-524,52-149-0,false,0,"Cold Weather","Cold Weather",,,,,1,0
+233-444-790,233-444-0,false,0,"Keurig Refills","Keurig Refills",,,,,1,0
+158-160-0,158-0-0,false,0,"Girls 2T-4T","Girls 2T-4T",,,,,1,0
+158-160-207,158-160-0,false,0,"Shorts","Shorts",,,,,1,0
+158-160-208,158-160-0,false,0,"Dresses","Dresses",,,,,1,0
+158-160-210,158-160-0,false,0,"Sets","Sets",,,,,1,0
+158-160-211,158-160-0,false,0,"Tees & Tops","Tees & Tops",,,,,1,0
+158-160-212,158-160-0,false,0,"Sweaters & Outerwear","Sweaters & Outerwear",,,,,1,0
+158-160-215,158-160-0,false,0,"Toddler Girl Sleepwear","Toddler Girl Sleepwear",,,,,1,0
+158-160-216,158-160-0,false,0,"Jeans & Pants","Jeans & Pants",,,,,1,0
+158-170-0,158-0-0,false,0,"Boys 2T-4T","Boys 2T-4T",,,,,1,0
+158-170-501,158-170-0,false,0,"Tees & Shirts","Tees & Shirts",,,,,1,0
+158-170-502,158-170-0,false,0,"Jeans & Pants","Jeans & Pants",,,,,1,0
+158-170-503,158-170-0,false,0,"Toddler Boy Sleepwear","Toddler Boy Sleepwear",,,,,1,0
+158-170-504,158-170-0,false,0,"Sweaters & Outerwear","Sweaters & Outerwear",,,,,1,0
+158-170-505,158-170-0,false,0,"Sets","Sets",,,,,1,0
+158-170-506,158-170-0,false,0,"Shorts","Shorts",,,,,1,0
+1-31-39,1-31-0,false,0,"Mens Watches","Watches",,,,,1,0
+52-53-348,52-53-0,false,0,"Pant Suits","Pant Suits",,,,,1,0
+52-138-717,52-138-0,false,0,"Junior Special Occassion","Junior Special Occassion",,,,,1,0
+52-138-720,52-138-0,false,0,"Daytime Casual Dresses","Daytime Casual Dresses",,,,,1,0
+52-138-721,52-138-0,false,0,"Plus Size Dresses","Plus Size Dresses",,,,,1,0
+52-138-722,52-138-0,false,0,"Petite Dresses","Petite Dresses",,,,,1,0
+52-138-733,52-138-0,false,0,"Sweater Dresses","Sweater Dresses",,,,,1,0
+52-138-734,52-138-0,false,0,"Social Separate Tops","Social Separate Tops",,,,,1,0
+52-138-735,52-138-0,false,0,"Social Separate Bottoms","Social Separate Bottoms",,,,,1,0
+52-138-736,52-138-0,false,0,"Lace Dresses","Lace Dresses",,,,,1,0
+52-138-737,52-138-0,false,0,"Sundresses","Sundresses",,,,,1,0
+52-138-740,52-138-0,false,0,"Junior Casual Dresses","Junior Casual Dresses",,,,,1,0
+233-452-462,233-452-0,false,0,"Chocolate","Chocolate",,,,,1,0
+233-452-463,233-452-0,false,0,"Candy","Candy",,,,,1,0
+233-484-554,233-484-0,false,0,"Holiday Chocolate","Holiday Chocolate",,,,,1,0
+233-484-556,233-484-0,false,0,"Cookie Tins","Cookie Tins",,,,,1,0
+233-484-558,233-484-0,false,0,"Coffee, Tea, & Cocoa","Coffee, Tea, & Cocoa",,,,,1,0
+233-484-559,233-484-0,false,0,"Holiday Candy","Holiday Candy",,,,,1,0
+233-484-561,233-484-0,false,0,"Holiday Nuts & Snacks","Holiday Nuts & Snacks",,,,,1,0
+233-484-564,233-484-0,false,0,"Holiday Drink Mixes","Holiday Drink Mixes",,,,,1,0
+158-189-183,158-189-0,false,0,"Sweaters & Fleece","Baby Gril Sweaters & Fleece",,,,,1,0
+1-12-820,1-12-0,false,0,"Decals & Stickers","Decals & Stickers",,,,,1,0
+3-0-0,,true,0,"Swimwear","Swimwear",,,,,1,0
+3-15-0,3-0-0,false,0,"Misses Swim","Misses Swim",,,,,1,0
+3-16-0,3-0-0,false,0,"Plus Swim","Plus Swim",,,,,1,0
+3-17-0,3-0-0,false,0,"Junior Swim","Junior Swim",,,,,1,0
+3-18-0,3-0-0,false,0,"Mens Swim","Mens Swim",,,,,1,0
+3-19-0,3-0-0,false,0,"Kids Swim","Kids Swim",,,,,1,0
+3-15-821,3-15-0,false,0,"Bandeau Bikini Tops","Bandeau Bikini Tops",,,,,1,0
+3-15-822,3-15-0,false,0,"Bandeau One Piece","Bandeau One Piece",,,,,1,0
+3-15-823,3-15-0,false,0,"Bandeau Tankini","Bandeau Tankini",,,,,1,0
+3-15-824,3-15-0,false,0,"Bikini Top","Bikini Top",,,,,1,0
+3-15-825,3-15-0,false,0,"Blouson One Piece","Blouson One Piece",,,,,1,0
+3-15-826,3-15-0,false,0,"Briefs","Briefs",,,,,1,0
+3-15-827,3-15-0,false,0,"Dress Cover-Ups","Dress Cover-Ups",,,,,1,0
+3-15-828,3-15-0,false,0,"Faux Tankini One Piece","Faux Tankini Once Piece",,,,,1,0
+3-15-829,3-15-0,false,0,"Halter One Piece","Halter One Piece",,,,,1,0
+3-15-830,3-15-0,false,0,"Hard Cup One Piece","Hard Cup One Piece",,,,,1,0
+3-15-831,3-15-0,false,0,"Mastectomy One Piece","Mastectomy One Piece",,,,,1,0
+3-15-832,3-15-0,false,0,"Sheath One Piece","Sheath One Piece",,,,,1,0
+3-15-833,3-15-0,false,0,"Skirt Cover-Ups","Skirt Cover-Ups",,,,,1,0
+3-15-834,3-15-0,false,0,"Swim Shorts","Swim Shorts",,,,,1,0
+3-15-835,3-15-0,false,0,"Swimdress One Piece","Swimdress One Piece",,,,,1,0
+3-15-836,3-15-0,false,0,"Swim Skirt","Swim Skirt",,,,,1,0
+3-15-837,3-15-0,false,0,"Tankini Top","Tankini Top",,,,,1,0
+3-15-838,3-15-0,false,0,"Tanksuit One Piece","Tanksuit One Piece",,,,,1,0
+3-15-839,3-15-0,false,0,"Wraps & Sarongs","Wraps and Sarongs",,,,,1,0
+3-16-840,3-16-0,false,0,"Plus Bottoms","Plus Bottoms",,,,,1,0
+3-16-841,3-16-0,false,0,"Plus Cover-Ups","Plus Cover-Ups",,,,,1,0
+3-16-842,3-16-0,false,0,"Plus One Piece","Plus One Piece",,,,,1,0
+3-16-843,3-16-0,false,0,"Plus Swim Tops","Plus Swim Tops",,,,,1,0
+3-17-850,3-17-0,false,0,"Bandeau Tops","Bandeau Tops",,,,,1,0
+3-17-851,3-17-0,false,0,"Halter Tops","Halter Tops",,,,,1,0
+3-17-852,3-17-0,false,0,"Cover Ups","Cover Ups",,,,,1,0
+3-17-853,3-17-0,false,0,"Triangle Tops","Triangle Tops",,,,,1,0
+3-17-854,3-17-0,false,0,"Hipster Bottoms","Hipster Bottoms",,,,,1,0
+3-17-855,3-17-0,false,0,"Side Tie Bottoms","Side Tie Bottoms",,,,,1,0
+3-18-860,3-18-0,false,0,"Swim Shorts","Swim Shorts",,,,,1,0
+3-18-861,3-18-0,false,0,"Boardshorts","Boardshorts",,,,,1,0
+3-19-870,3-19-0,false,0,"Baby Girl Swim","Baby Girl Swim",,,,,1,0
+3-19-871,3-19-0,false,0,"Baby Boy Swim","Baby Boy Swim",,,,,1,0
+3-19-872,3-19-0,false,0,"Toddler Girl Swim","Toddler Girl Swim",,,,,1,0
+3-19-873,3-19-0,false,0,"Toddler Boy Swim","Toddler Boy Swim",,,,,1,0
+3-19-874,3-19-0,false,0,"Boys Swim","Boys Swim",,,,,1,0
+3-19-875,3-19-0,false,0,"Girls Swim","Girls Swim",,,,,1,0
+3-15-844,3-15-0,false,0,"Halter Tankini Top","Halter Tankini Top",,,,,1,0
+1-2-15,1-2-0,false,0,"Athletic Shirts","Athletic Shirts",,,,,1,0
+1-2-16,1-2-0,false,0,"Athletic Pants","Athletic Pants",,,,,1,0
+1-12-305,1-12-0,false,0,"Fashion Jeans","Fashion Jeans",,,,,1,0
+1-12-306,1-12-0,false,0,"Fashion Short Sleeve","Fashion Short Sleeve",,,,,1,0
+1-12-308,1-12-0,false,0,"Fashion Long Sleeve","Fashion Long Sleeve",,,,,1,0
+1-12-314,1-12-0,false,0,"Action Sport Shorts","Action Sport Shorts",,,,,1,0
+1-12-315,1-12-0,false,0,"Cargo Fashion Shorts","Cargo Fashion Shorts",,,,,1,0
+52-105-109,52-105-0,false,0,"T-Shirts","T-Shirts",,,,,1,0
+1-2-391,1-2-0,false,0,"Fish Tees","Fish Tees",,,,,1,0
+1-2-392,1-2-0,false,0,"Tropical Tees","Tropical Tees",,,,,1,0
+1-2-393,1-2-0,false,0,"Fish Long Sleeve Tees","Fish Long Sleeve Tees",,,,,1,0
+1-2-394,1-2-0,false,0,"Tropical Long Sleeve Tees","Tropical Long Sleeve Tees",,,,,1,0
+1-2-395,1-2-0,false,0,"Banded Bottom Polos","Banded Bottom Polos",,,,,1,0
+1-2-396,1-2-0,false,0,"Printed Polos","Printed Polos",,,,,1,0
+215-222-751,215-222-0,false,0,"Flip Flops","Flip Flops",,,,,1,0
+215-222-750,215-222-0,false,0,"Wedge Sandals","Wedge Sandals",,,,,1,0
+215-228-232,215-228-0,false,0,"Girls Sandals","Girls Sandals",,,,,1,0
+215-228-233,215-228-0,false,0,"Boy Sandals","Boy Sandals",,,,,1,0
+2-5-926,2-5-0,false,0,"Sweatshirts & Jackets","Sweatshirts & Jackets",,,,,1,0
+1-12-808,1-12-0,false,0,"Tanks","Tanks",,,,,1,0
+233-248-257,233-248-0,false,0,"Childrens Luggage","Childrens Luggage",,,,,1,0
+52-53-57,52-53-0,false,0,"Scrub Bottoms","Scrub Bottoms",,,,,1,0
+233-248-352,233-248-0,false,0,"Pet Accessories","Pet Accessories",,,,,1,0
+240-0-0,,true,0,"1Decatrend","1Decatrend",,,,,1,0
+240-241-0,240-0-0,false,0,"Decatrend","Decatrend",,,,,1,0
+240-241-242,240-241-0,false,0,"Decatrend Styles","Decatrend Styles",,,,,1,0
