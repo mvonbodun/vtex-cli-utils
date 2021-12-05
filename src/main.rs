@@ -1,11 +1,8 @@
-use std::{fs::File, collections::HashMap};
+use dotenv;
+use std::{fs::File, collections::HashMap, env};
 use std::error::Error;
 use serde::{Deserialize, Serialize};
 use reqwest::header;
-
-const URL: &str = "https://michaelvb.vtexcommercestable.com.br/api/catalog/pvt/category";
-const VTEX_API_APPKEY: &str = "vtexappkey-michaelvb-DOJTHX";
-const VTEX_API_APPTOKEN: &str = "GYKCTHMJCUBCWTQDPTYELQCZXMJGISFKHQXAADBKSAOMIVMJRTQCAMUPVLFHXGAJORVGWQCMSOLLCPRBAZOOCDKVWIEPXUMMZEYRAGNAREJMBJNGUDGXRLHKHAJOMMOY";
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -48,16 +45,21 @@ struct Category {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Retrieve the environment variables
+    dotenv::dotenv().expect("Failed to read .env file");
+    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
+    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
+    let url = env::var("URL").expect("Failed to parse URL in .env");
     // Setup the HTTP client
     let mut headers = header::HeaderMap::new();
-    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_static(VTEX_API_APPKEY));
-    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_static(VTEX_API_APPTOKEN));
+    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key)?);
+    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken)?);
     let client = reqwest::Client::builder()
         .default_headers(headers)
         .build()?;
 
     // Read data from the CSV file
-    let path = "data/DeptCatalog.csv";
+    let path = "data/DeptCatalog-sorted-subset.csv";
     let input = File::open(path)?;
     let mut rdr = csv::Reader::from_reader(input);
     let mut category_ids: HashMap<String, i32> = HashMap::new();
@@ -99,7 +101,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     
         println!("before let new_post");
         let new_post: Category = client
-            .post(URL)
+            .post(&url)
             .json(&new_post)
             .send()
             .await?
