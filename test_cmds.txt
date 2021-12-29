@@ -1,0 +1,24 @@
+curl --request POST \
+     --url https://apiexamples.vtexcommercestable.com.br/api/catalog/pvt/specification \
+     --header 'Accept: application/json' \
+     --header 'Content-Type: application/json' \
+     --header 'X-VTEX-API-AppKey: vtexappkey-michaelvb-DOJTHX' \
+     --header 'X-VTEX-API-AppToken: GYKCTHMJCUBCWTQDPTYELQCZXMJGISFKHQXAADBKSAOMIVMJRTQCAMUPVLFHXGAJORVGWQCMSOLLCPRBAZOOCDKVWIEPXUMMZEYRAGNAREJMBJNGUDGXRLHKHAJOMMOY' \
+     --data '
+{
+    "Id": null,
+     "FieldTypeId": 1,
+     "CategoryId": 3,
+     "FieldGroupId": 15,
+     "Name": "Test",
+     "Position": 1,
+     "IsFilter": false,
+     "IsRequired": false,
+     "IsOnProductDetails": true,
+     "IsStockKeepingUnit": false,
+     "IsActive": true,
+     "IsTopMenuLinkActive": false,
+     "IsSideMenuLinkActive": false,
+     "DefaultValue": null
+}
+'

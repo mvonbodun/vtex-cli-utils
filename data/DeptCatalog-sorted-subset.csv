@@ -6,5 +6,7 @@ GroupIdentifier,ParentGroupIdentifier,TopGroup,Sequence,Name,ShortDescription,Lo
 1-31-0,1-0-0,false,25,"Accessories","Mens Accessories",,,,,1,0
 1-31-299,1-31-0,false,0,"Mens Sunglasses","Mens Sunglasses",,,,,1,0
 52-0-0,,true,5,"Women","Women",,,,,1,0
+52-53-0,52-0-0,false,5,"Misses Apparel","Misses Apparel",,,,,1,0
+52-53-64,52-53-0,false,10,"Shorts","Shorts",,,,,1,0
 52-105-0,52-0-0,false,20,"Juniors Apparel","Juniors Apparel",,,,,1,0
 52-105-107,52-105-0,false,0,"Tank Tops","Tank Tops",,,,,1,0

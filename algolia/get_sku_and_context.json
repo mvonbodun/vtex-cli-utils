@@ -1,0 +1,128 @@
+{
+    "Id": 1,
+    "ProductId": 28,
+    "NameComplete": "Van Heusen Grid Sport Shirt Color GREEN TEA Size Lg",
+    "ComplementName": "",
+    "ProductName": "Van Heusen Grid Sport Shirt",
+    "ProductDescription": "Van Heusen offers a style that is comfortable & laid-back in this sport shirt. Sport shirt features an engineered left chest pocket, straight hem with side splits, short sleeves and an allover grid pattern.",
+    "ProductRefId": "P000206871",
+    "TaxCode": null,
+    "SkuName": "Color GREEN TEA Size Lg",
+    "IsActive": true,
+    "IsTransported": true,
+    "IsInventoried": true,
+    "IsGiftCardRecharge": false,
+    "ImageUrl": "https://michaelvb.vteximg.com.br/arquivos/ids/155403-55-55/Van-Heusen-Grid-Sport-Shirt.jpg?v=637759656830530000",
+    "DetailUrl": "/van-heusen-grid-sport-shirt-p000206871/p",
+    "CSCIdentification": null,
+    "BrandId": "11",
+    "BrandName": "Van Heusen",
+    "IsBrandActive": true,
+    "Dimension": {
+        "cubicweight": 0.0000,
+        "height": 0.0000,
+        "length": 0.0000,
+        "weight": 0.0000,
+        "width": 0.0000
+    },
+    "RealDimension": {
+        "realCubicWeight": 0.000000000000,
+        "realHeight": 0.0000,
+        "realLength": 0.0000,
+        "realWeight": 0.0000,
+        "realWidth": 0.0000
+    },
+    "ManufacturerCode": null,
+    "IsKit": false,
+    "KitItems": [],
+    "Services": [],
+    "Categories": [],
+    "CategoriesFullPath": [
+        "/1/2/3/",
+        "/1/2/",
+        "/1/"
+    ],
+    "Attachments": [],
+    "Collections": [],
+    "SkuSellers": [
+        {
+            "SellerId": "1",
+            "StockKeepingUnitId": 1,
+            "SellerStockKeepingUnitId": "1",
+            "IsActive": true,
+            "FreightCommissionPercentage": 0.0,
+            "ProductCommissionPercentage": 0.0
+        }
+    ],
+    "SalesChannels": [
+        1
+    ],
+    "Images": [
+        {
+            "ImageUrl": "https://michaelvb.vteximg.com.br/arquivos/ids/155403/Van-Heusen-Grid-Sport-Shirt.jpg?v=637759656830530000",
+            "ImageName": "Van-Heusen-Grid-Sport-Shirt",
+            "FileId": 155403
+        }
+    ],
+    "Videos": [],
+    "SkuSpecifications": [
+        {
+            "FieldId": 558,
+            "FieldName": "Color",
+            "FieldValueIds": [
+                406
+            ],
+            "FieldValues": [
+                "GREEN TEA"
+            ],
+            "IsFilter": true,
+            "FieldGroupId": 17,
+            "FieldGroupName": "Product Specifications"
+        },
+        {
+            "FieldId": 563,
+            "FieldName": "Size",
+            "FieldValueIds": [
+                629
+            ],
+            "FieldValues": [
+                "Lg"
+            ],
+            "IsFilter": true,
+            "FieldGroupId": 17,
+            "FieldGroupName": "Product Specifications"
+        }
+    ],
+    "ProductSpecifications": [],
+    "ProductClustersIds": "",
+    "PositionsInClusters": {},
+    "ProductClusterNames": {},
+    "ProductClusterHighlights": {},
+    "ProductCategoryIds": "/1/2/3/",
+    "IsDirectCategoryActive": true,
+    "ProductGlobalCategoryId": null,
+    "ProductCategories": {
+        "3": "Casual Short Sleeve Shirts",
+        "2": "Mens Apparel",
+        "1": "Men"
+    },
+    "CommercialConditionId": 1,
+    "RewardValue": 0.0,
+    "AlternateIds": {
+        "RefId": "0094124836"
+    },
+    "AlternateIdValues": [
+        "0094124836"
+    ],
+    "EstimatedDateArrival": null,
+    "MeasurementUnit": "un",
+    "UnitMultiplier": 1.0000,
+    "InformationSource": "Indexer",
+    "ModalType": null,
+    "KeyWords": "Van, Heusen, Grid, Sport, Shirt",
+    "ReleaseDate": "2021-10-01T00:00:00",
+    "ProductIsVisible": true,
+    "ShowIfNotAvailable": true,
+    "IsProductActive": true,
+    "ProductFinalScore": 0
+}

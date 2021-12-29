@@ -1,0 +1,11 @@
+Id,FieldTypeId,CategoryId,FieldGroupId,Name,Description,Position,IsFilter,IsRequired,IsOnProductDetails,IsStockKeepingUnit,IsWizard,IsActive,IsTopMenuLinkActive,DefaultValue
+,6,3,17,Color,Color,1,true,false,true,true,false,true,false,
+,6,4,17,Color,Color,1,true,false,true,true,false,true,false,
+,6,9,17,Color,Color,1,true,false,true,true,false,true,false,
+,6,6,17,Color,Color,1,true,false,true,true,false,true,false,
+,6,11,17,Color,Color,1,true,false,true,true,false,true,false,
+,6,3,17,Size,Size,1,true,false,true,true,false,true,false,
+,6,4,17,Size,Size,1,true,false,true,true,false,true,false,
+,6,9,17,Size,Size,1,true,false,true,true,false,true,false,
+,6,6,17,Size,Size,1,true,false,true,true,false,true,false,
+,6,11,17,Size,Size,1,true,false,true,true,false,true,false,

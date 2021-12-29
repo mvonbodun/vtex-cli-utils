@@ -1,0 +1,14 @@
+[
+    {
+        "CategoryId": null,
+        "Id": 11,
+        "Name": "Product Specifications",
+        "Position": null
+    },
+    {
+        "CategoryId": null,
+        "Id": 12,
+        "Name": "SKU Specifications",
+        "Position": null
+    }
+]

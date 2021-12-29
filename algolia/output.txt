@@ -1,0 +1,339 @@
+use algoliarecords::{HierarchicalCategories, Variant, Price};
+use dotenv;
+use log::*;
+use std::{error::Error, time::{Duration, Instant}, env, sync::Once};
+use std::io::Write;
+use futures::join;
+
+use reqwest::{header, StatusCode, Client};
+use vtex::model::{SkuAndContext, Image, SkuSpecification };
+
+use crate::algoliarecords::ItemRecord;
+
+mod algoliarecords;
+
+static INIT: Once = Once::new();
+
+pub fn setup() {
+    INIT.call_once(|| {
+        let start = std::time::Instant::now();
+        env_logger::Builder::from_default_env().format(move |buf, rec| {
+            let t = start.elapsed().as_secs_f32();
+            writeln!(buf, "{:.03} [{}] - {}", t, rec.level(),rec.args())
+        }).init();
+    })
+}
+
+
+pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut Vec<i32>) -> i32 {
+    let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitids?page={page}&pagesize=1000".to_string().replace("{page}", page.to_string().as_str());
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .unwrap();
+
+    // println!("response.status: {}", response.status());
+    match response.status() {
+        StatusCode::OK => {
+            let response_text = response.text().await.unwrap();
+            let ids = response_text.replace("[", "").replace("]", "");
+            let iter = ids.split(",");
+            let mut x = 0;
+            // println!("ids: {:?}", ids);
+            // let mut ids_response: Vec<i32> = Vec::new();
+            for v in iter {
+                sku_ids.push(v.parse::<i32>().unwrap());
+                x = x + 1;
+            }
+            x
+        },
+        _ => {
+            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
+        },
+    }
+}
+
+pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext {
+    let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1".to_string().replace("{skuId}", sku_id.to_string().as_str());
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .unwrap();
+
+    // println!("response.status: {}", response.status());
+    match response.status() {
+        StatusCode::OK => {
+            let response_text = response.text().await.unwrap();
+            // println!("response_text: {:?}", response_text);
+            let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(&response_text);
+            match result {
+                Ok(sku_and_context) => {
+                    // println!("sku_and_context: {:?}", sku_and_context);
+                    return sku_and_context
+                },
+                Err(e) => {
+                    // println!("deserialize product error: {:?}", e);
+                    panic!("deserialize product error: {:?}", e)
+                },
+            }
+        },
+        _ => {
+            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
+        },
+    }
+}
+
+pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
+    let url = "https://api.vtex.com/michaelvb/pricing/prices/{skuId}".to_string().replace("{skuId}", sku_id.to_string().as_str());
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .unwrap();
+
+    // println!("response.status: {}", response.status());
+    match response.status() {
+        StatusCode::OK => {
+            let response_text = response.text().await.unwrap();
+            // println!("response_text: {:?}", response_text);
+            let result: Result<vtex::model::PriceGet, serde_json::Error> = serde_json::from_str(&response_text);
+            match result {
+                Ok(vtex_price) => {
+                    // println!("vtex_price: {:?}", vtex_price);
+                    let price = Price {
+                        value: vtex_price.base_price.unwrap().clone(),
+                        currency: "USD".to_string(),
+                        on_sales: false,
+                        discount_level: -100.00,
+                        discounted_value: 0.00,
+                    };
+                    return price
+                },
+                Err(e) => {
+                    // println!("deserialize product error: {:?}", e);
+                    panic!("deserialize Price error: {:?}", e)
+                },
+            }
+        },
+        _ => {
+            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
+        },
+    }
+}
+
+pub async fn get_inventory(sku_id: &i32, client: &Client) -> i32 {
+    let url = "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}".to_string().replace("{skuId}", sku_id.to_string().as_str());
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .unwrap();
+
+    // println!("response.status: {}", response.status());
+    match response.status() {
+        StatusCode::OK => {
+            let response_text = response.text().await.unwrap();
+            // println!("response_text: {:?}", response_text);
+            let result: Result<vtex::model::InventoryList, serde_json::Error> = serde_json::from_str(&response_text);
+            match result {
+                Ok(vtex_inventory) => {
+                    // println!("vtex_inventory: {:?}", vtex_inventory);
+                    let mut quantity = 0;
+                    for balance in vtex_inventory.balance {
+                        if balance.warehouse_id.eq("wareshouse1") {
+                            quantity = balance.total_quantity;
+                        }
+                    }
+                    return quantity
+                },
+                Err(e) => {
+                    // println!("deserialize product error: {:?}", e);
+                    panic!("deserialize InventoryList error: {:?}", e)
+                },
+            }
+        },
+        _ => {
+            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
+        },
+    }
+}
+
+fn get_hierarchical_categories(categories: &serde_json::Value) -> HierarchicalCategories {
+    let cats = categories.as_object().unwrap();
+    let mut cat_names: Vec<String> = Vec::new();
+    for cat in cats {
+        // println!("cat: {:?}", cat.1.as_str().unwrap());
+        cat_names.push(cat.1.as_str().unwrap().to_string());
+    }
+    HierarchicalCategories {
+        lvl0: cat_names.get(0).unwrap().as_str().to_string(),
+        lvl1: cat_names.get(1).unwrap().as_str().to_string(),
+        lvl2: cat_names.get(2).unwrap().as_str().to_string(),
+    }
+}
+
+fn get_list_categories(categories: &serde_json::Value) -> Vec<String> {
+    let cats = categories.as_object().unwrap();
+    let mut cat_names: Vec<String> = Vec::new();
+    for cat in cats {
+        // println!("cat: {:?}", cat.1.as_str().unwrap());
+        cat_names.push(cat.1.as_str().unwrap().to_string());
+    }
+    let lvl0 = cat_names.get(0).unwrap().as_str().to_string();
+    let lvl1 = cat_names.get(1).unwrap().as_str().to_string();
+    let lvl2 = cat_names.get(2).unwrap().as_str().to_string();
+    vec![lvl0, lvl1, lvl2]
+}
+
+fn get_category_page_ids(categories: &serde_json::Value) -> Vec<String> {
+    let cats = categories.as_object().unwrap();
+    let mut cat_names: Vec<String> = Vec::new();
+    for cat in cats {
+        // println!("cat: {:?}", cat.1.as_str().unwrap());
+        cat_names.push(cat.1.as_str().unwrap().to_string());
+    }
+    let lvl1 = cat_names.get(0).unwrap().as_str().to_string() + " > " + cat_names.get(1).unwrap().as_str();
+    let lvl2 = lvl1.clone().to_owned() + " > " + cat_names.get(2).unwrap().as_str();
+    vec![lvl1, lvl2]
+}
+
+fn get_image_urls(images: &Option<Vec<Image>>) -> Vec<String> {
+    let mut result: Vec<String> = Vec::new();
+    for image in images.as_ref().unwrap() {
+        result.push(image.image_url.clone());
+    }
+    result
+}
+
+fn get_color(sku_specs: &Option<Vec<SkuSpecification>>) -> Option<String> {
+    let mut color: String = String::new();
+    for spec in sku_specs.as_ref().unwrap() {
+        if spec.field_name.eq("Color") {
+            color = spec.field_values[0].clone();
+        }
+    }
+    if !color.is_empty() {
+        Some(color)
+    } else {
+        None
+    }
+}
+
+fn get_size(sku_specs: &Option<Vec<SkuSpecification>>) -> Option<String> {
+    let mut size: String = String::new();
+    for spec in sku_specs.as_ref().unwrap() {
+        if spec.field_name.eq("Size") {
+            size = spec.field_values[0].clone();
+        }
+    }
+    if !size.is_empty()  {
+        Some(size)
+    } else {
+        None
+    }
+}
+
+fn get_variants(sku_ctx: &SkuAndContext) -> Vec<Variant> {
+    let variant = Variant {
+        sku_ref: sku_ctx.alternate_ids.ref_id.clone(),
+        in_stock: true,
+        abbreviated_color: get_color(&sku_ctx.sku_specifications),
+        abbreviated_size: get_size(&sku_ctx.sku_specifications),
+    };
+    vec![variant]
+}
+
+async fn create_algolia_record(sku_id: &i32) {
+    let start = Instant::now();
+
+    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
+    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
+    
+    // Setup the HTTP client
+    let mut headers = header::HeaderMap::new();
+    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key).unwrap());
+    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken).unwrap());
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(10))
+        .default_headers(headers)
+        .build().unwrap();
+
+    let sc = get_sku_and_context(&sku_id, &client).await;
+    let p = get_price(&sku_id, &client).await;
+    let i = get_inventory(&sku_id, &client).await; 
+    // let (sc ,p, i ) = join!(sku_ctx, price, inventory);
+
+    let algolia_record = ItemRecord {
+        sku_id: sc.id.clone(),
+        sku_ref: sc.alternate_ids.ref_id.clone(),
+        product_id: sc.product_id.clone(),
+        parent_ref: sc.product_ref_id.clone(),
+        name: sc.product_name.clone(),
+        description: sc.product_description.clone(),
+        slug: sc.detail_url.clone(),
+        brand: sc.brand_name.clone(),
+        hierarchical_categories: get_hierarchical_categories(&sc.product_categories),
+        list_categories: get_list_categories(&sc.product_categories),
+        category_page_id: get_category_page_ids(&sc.product_categories),
+        image_urls: get_image_urls(&sc.images),
+        image_blurred: None,
+        reviews: None,
+        color: get_color(&sc.sku_specifications),
+        available_colors: None,
+        size: get_size(&sc.sku_specifications),
+        available_sizes: None,
+        variants: get_variants(&sc),
+        price: p,
+        units_in_stock: i,
+        created_at: None,
+        updated_at: None,
+        related_products: None,
+        product_type: None,
+        object_id: sc.alternate_ids.ref_id.clone(),
+    };
+    let duration = start.elapsed();
+    // println!("algolia record: {:?}", algolia_record);
+    info!("processed: sku_id: {}, sku_ref: {}, in {:?}", algolia_record.sku_id, algolia_record.sku_ref, duration);
+}
+
+pub async fn run() -> Result<(), Box<dyn Error>> {
+
+    info!("Start of run()");
+    dotenv::dotenv().expect("Failed to read .env file");
+
+    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
+    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
+    
+    // Setup the HTTP client
+    let mut headers = header::HeaderMap::new();
+    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key)?);
+    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken)?);
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(10))
+        .default_headers(headers)
+        .build()?;
+
+    // Get all the skus
+    let sku_ids: &mut Vec<i32> = &mut Vec::new();
+    let recs = &mut 1000;
+    let page = &mut 1;
+    let start = Instant::now();
+    while *recs == 1000 {
+        *recs = get_all_sku_ids_by_page(page.clone(), &client, sku_ids).await;
+        *page += 1;
+    }
+    let duration = start.elapsed();
+    println!("Retrieved Sku List: {} records in {:?}", sku_ids.len(), duration);
+
+    // Loop through the skus to build each algolia record
+    let loop_start = Instant::now();
+    for sku in sku_ids {
+        create_algolia_record(&sku).await;
+    }
+    let loop_end = loop_start.elapsed();
+    info!("finished building algolia records in {:?}", loop_end);
+   
+    Ok(())
+}

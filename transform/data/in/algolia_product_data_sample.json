@@ -1,0 +1,48 @@
+[
+    {
+        "product_id": 1,
+        "product_reference_code": "P000007188",
+        "name": "Columbia Mens Short Sleeve Bonehead Shirt",
+        "description": "The Bonehead Shirt is designed for anglers & features a cotton Ultra-lite poplin fabric for a lived-in comfort, hook & loop-closed fly boxed pockets, rod holder, utility loop, tool holder & is fully vented.  International Shipping Prohibited.",
+        "slug": "Columbia-Mens-Short-Sleeve-Bonehead-Shirt-P000007188",
+        "brand": "Columbia Sportswear",
+        "list_categories": [
+            "Men",
+            "Mens Apparel",
+            "Casual Short Sleeve Shirts"
+        ],
+        "breadcrumbs": [
+            "Men",
+            "Men > Mens Apparel",
+            "Men > Mens Apparel > Casual Short Sleeve Shirts"
+        ],
+        "color": [
+            "801 BR PCH","LEMON YELLOW","GYPSY RED","SAIL RED","454 NT TID","455 OCEAN","MIRAGE BLUE","WHITECAP BLUE","GULFSTREAM BLUE","398-FELDSP","SAGE GREEN","FOSSIL BEIGE","WHITE","BLACK"
+        ],
+        "size": [
+            "Sm","Md","Lg","X-Lg","XX-Lg" 
+        ],
+        "variants": [
+            {
+                "sku_id": 188,
+                "item_reference_code": "0080331767",
+                "color": "BLACK",
+                "size": "Md",
+                "price": 29.00,
+                "currency": "USD",
+                "units_in_stock": 20,
+                "image": "https://michaelvb.vtexassets.com/arquivos/ids/156096-1200-auto?v=637759660667470000&width=1200&height=auto&aspect=true"
+            },
+            {
+                "sku_id": 385,
+                "item_reference_code": "0039045028",
+                "color": "SAGE GREEN",
+                "size": "LG",
+                "price": 29.00,
+                "currency": "USD",
+                "units_in_stock": 2,
+                "image": "https://michaelvb.vtexassets.com/arquivos/ids/155780-1200-auto?v=637759659125100000&width=1200&height=auto&aspect=true"
+            }
+        ]
+    }
+]

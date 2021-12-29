@@ -1,0 +1,88 @@
+[
+    {
+        "id": 1,
+        "name": "Men",
+        "hasChildren": true,
+        "url": "https://michaelvb.vtexcommercestable.com.br/men",
+        "children": [
+            {
+                "id": 2,
+                "name": "Mens Apparel",
+                "hasChildren": true,
+                "url": "https://michaelvb.vtexcommercestable.com.br/men/mens-apparel",
+                "children": [
+                    {
+                        "id": 3,
+                        "name": "Casual Short Sleeve Shirts",
+                        "hasChildren": false,
+                        "url": "https://michaelvb.vtexcommercestable.com.br/men/mens-apparel/casual-short-sleeve-shirts",
+                        "children": [],
+                        "Title": "Casual Short Sleeve Shirts",
+                        "MetaTagDescription": "Casual Short Sleeve Shirts"
+                    },
+                    {
+                        "id": 4,
+                        "name": "Classic Jeans",
+                        "hasChildren": false,
+                        "url": "https://michaelvb.vtexcommercestable.com.br/men/mens-apparel/classic-jeans",
+                        "children": [],
+                        "Title": "Classic Jeans",
+                        "MetaTagDescription": "Classic Jeans"
+                    }
+                ],
+                "Title": "Mens Apparel",
+                "MetaTagDescription": "Mens Apparel"
+            },
+            {
+                "id": 5,
+                "name": "Accessories",
+                "hasChildren": true,
+                "url": "https://michaelvb.vtexcommercestable.com.br/men/accessories",
+                "children": [
+                    {
+                        "id": 6,
+                        "name": "Mens Sunglasses",
+                        "hasChildren": false,
+                        "url": "https://michaelvb.vtexcommercestable.com.br/men/accessories/mens-sunglasses",
+                        "children": [],
+                        "Title": "Mens Sunglasses",
+                        "MetaTagDescription": "Mens Sunglasses"
+                    }
+                ],
+                "Title": "Accessories",
+                "MetaTagDescription": "Accessories"
+            }
+        ],
+        "Title": "Men",
+        "MetaTagDescription": "Men"
+    },
+    {
+        "id": 7,
+        "name": "Women",
+        "hasChildren": true,
+        "url": "https://michaelvb.vtexcommercestable.com.br/women",
+        "children": [
+            {
+                "id": 8,
+                "name": "Juniors Apparel",
+                "hasChildren": true,
+                "url": "https://michaelvb.vtexcommercestable.com.br/women/juniors-apparel",
+                "children": [
+                    {
+                        "id": 9,
+                        "name": "Tank Tops",
+                        "hasChildren": false,
+                        "url": "https://michaelvb.vtexcommercestable.com.br/women/juniors-apparel/tank-tops",
+                        "children": [],
+                        "Title": "Tank Tops",
+                        "MetaTagDescription": "Tank Tops"
+                    }
+                ],
+                "Title": "Juniors Apparel",
+                "MetaTagDescription": "Juniors Apparel"
+            }
+        ],
+        "Title": "Women",
+        "MetaTagDescription": "Women"
+    }
+]
