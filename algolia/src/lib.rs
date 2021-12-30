@@ -1,9 +1,10 @@
 use algoliarecords::{HierarchicalCategories, Variant, Price};
 use dotenv;
 use log::*;
-use std::{error::Error, time::{Duration, Instant}, env, sync::Once};
+use std::{error::Error, time::{Duration, Instant}, env, sync::Once, collections::HashMap, ops::Index};
 use std::io::Write;
-use futures::join;
+use std::sync::{Arc, Mutex};
+use futures::{join, stream, StreamExt};
 
 use reqwest::{header, StatusCode, Client};
 use vtex::model::{SkuAndContext, Image, SkuSpecification };
@@ -11,6 +12,8 @@ use vtex::model::{SkuAndContext, Image, SkuSpecification };
 use crate::algoliarecords::ItemRecord;
 
 mod algoliarecords;
+
+const CONCURRENT_REQUESTS: usize = 12;
 
 static INIT: Once = Once::new();
 
@@ -52,6 +55,19 @@ pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut V
             panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
         },
     }
+}
+
+fn build_get_sku_urls(sku_ids: &mut Vec<i32>) -> Vec<String> {
+    let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1".to_string();
+    let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
+    for sku_id in sku_ids {
+        let url = url.replace("{skuId}", sku_id.to_string().as_str());
+        urls.push(url);
+    }
+    debug!("urls.len(): {}", urls.len());
+    urls
+    //.replace("{skuId}", sku_id.to_string().as_str());
+
 }
 
 pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext {
@@ -274,48 +290,85 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     let duration = start.elapsed();
     println!("Retrieved Sku List: {} records in {:?}", sku_ids.len(), duration);
 
-    // Loop through the skus to build each algolia record
-    let loop_start = Instant::now();
-    for sku in sku_ids {
-        let start = Instant::now();
-        let sku_ctx = get_sku_and_context(&sku, &client);
-        let p = get_price(&sku, &client);
-        let i = get_inventory(&sku, &client);
-        let (sku_ctx, p, i) = join!(sku_ctx, p, i);
-        let algolia_record = ItemRecord {
-            sku_id: sku_ctx.id.clone(),
-            sku_ref: sku_ctx.alternate_ids.ref_id.clone(),
-            product_id: sku_ctx.product_id.clone(),
-            parent_ref: sku_ctx.product_ref_id.clone(),
-            name: sku_ctx.product_name.clone(),
-            description: sku_ctx.product_description.clone(),
-            slug: sku_ctx.detail_url.clone(),
-            brand: sku_ctx.brand_name.clone(),
-            hierarchical_categories: get_hierarchical_categories(&sku_ctx.product_categories),
-            list_categories: get_list_categories(&sku_ctx.product_categories),
-            category_page_id: get_category_page_ids(&sku_ctx.product_categories),
-            image_urls: get_image_urls(&sku_ctx.images),
-            image_blurred: None,
-            reviews: None,
-            color: get_color(&sku_ctx.sku_specifications),
-            available_colors: None,
-            size: get_size(&sku_ctx.sku_specifications),
-            available_sizes: None,
-            variants: get_variants(&sku_ctx),
-            price: p,
-            units_in_stock: i,
-            created_at: None,
-            updated_at: None,
-            related_products: None,
-            product_type: None,
-            object_id: sku_ctx.alternate_ids.ref_id.clone(),
-        };
-        let duration = start.elapsed();
-        // println!("algolia record: {:?}", algolia_record);
-        info!("processed: sku_id: {}, sku_ref: {}, in {:?}", algolia_record.sku_id, algolia_record.sku_ref, duration);
+    // Build the urls
+    let urls = build_get_sku_urls(sku_ids);
+    debug!("after call to build_get_sku_urls");
+    let algolia_recs: Arc<Mutex<HashMap<i32, SkuAndContext>>> = Arc::new(Mutex::new(HashMap::new()));
+    let bodies = stream::iter(urls)
+        .map(|url| {
+            let client = &client;
+            async move {
+                let resp = client
+                    .get(url.clone()).send()
+                    .await?;
+                    
+                // let sctx: SkuAndContext = resp.json().await?;
+                debug!("end of async move - url: {}", url);
+                // resp.text().await
+                resp.json::<SkuAndContext>().await
+            }
+        })
+        .buffer_unordered(CONCURRENT_REQUESTS);
+    bodies
+        .for_each(|b| async {
+            let algolia_recs = algolia_recs.clone();
+            match b {
+                Ok(b) => {
+                    // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
+                    let sku_ctx: SkuAndContext = b;
+                    let mut algolia_recs = algolia_recs.lock().unwrap();
+                    algolia_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
+                    debug!("Got {:?} json", sku_ctx)
+                },
+                Err(e) => error!("Got an error: {}", e),
+            }
+        })
+        .await;
+    {
+        debug!("finished sku_loop: algolia_recs.len(): {:?}", algolia_recs.lock().unwrap());
     }
-    let loop_end = loop_start.elapsed();
-    info!("finished building algolia records in {:?}", loop_end);
+    // // Loop through the skus to build each algolia record
+    // let loop_start = Instant::now();
+    // for sku in sku_ids {
+    //     let start = Instant::now();
+    //     let sku_ctx = get_sku_and_context(&sku, &client);
+    //     let p = get_price(&sku, &client);
+    //     let i = get_inventory(&sku, &client);
+    //     let (sku_ctx, p, i) = join!(sku_ctx, p, i);
+    //     let algolia_record = ItemRecord {
+    //         sku_id: sku_ctx.id.clone(),
+    //         sku_ref: sku_ctx.alternate_ids.ref_id.clone(),
+    //         product_id: sku_ctx.product_id.clone(),
+    //         parent_ref: sku_ctx.product_ref_id.clone(),
+    //         name: sku_ctx.product_name.clone(),
+    //         description: sku_ctx.product_description.clone(),
+    //         slug: sku_ctx.detail_url.clone(),
+    //         brand: sku_ctx.brand_name.clone(),
+    //         hierarchical_categories: get_hierarchical_categories(&sku_ctx.product_categories),
+    //         list_categories: get_list_categories(&sku_ctx.product_categories),
+    //         category_page_id: get_category_page_ids(&sku_ctx.product_categories),
+    //         image_urls: get_image_urls(&sku_ctx.images),
+    //         image_blurred: None,
+    //         reviews: None,
+    //         color: get_color(&sku_ctx.sku_specifications),
+    //         available_colors: None,
+    //         size: get_size(&sku_ctx.sku_specifications),
+    //         available_sizes: None,
+    //         variants: get_variants(&sku_ctx),
+    //         price: p,
+    //         units_in_stock: i,
+    //         created_at: None,
+    //         updated_at: None,
+    //         related_products: None,
+    //         product_type: None,
+    //         object_id: sku_ctx.alternate_ids.ref_id.clone(),
+    //     };
+    //     let duration = start.elapsed();
+    //     // println!("algolia record: {:?}", algolia_record);
+    //     info!("processed: sku_id: {}, sku_ref: {}, in {:?}", algolia_record.sku_id, algolia_record.sku_ref, duration);
+    // }
+    // let loop_end = loop_start.elapsed();
+    // info!("finished building algolia records in {:?}", loop_end);
    
     Ok(())
 }
