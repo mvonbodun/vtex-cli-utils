@@ -1,13 +1,13 @@
 use algoliarecords::{HierarchicalCategories, Variant, Price};
 use dotenv;
 use log::*;
-use std::{error::Error, time::{Duration, Instant}, env, sync::Once, collections::HashMap, ops::Index};
+use std::{error::Error, time::{Duration, Instant}, env, sync::Once, collections::HashMap, ops::Index, fs::File, io::BufWriter};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 use futures::{join, stream, StreamExt};
 
 use reqwest::{header, StatusCode, Client};
-use vtex::model::{SkuAndContext, Image, SkuSpecification };
+use vtex::model::{SkuAndContext, Image, SkuSpecification, Sku };
 
 use crate::algoliarecords::ItemRecord;
 
@@ -288,7 +288,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         *page += 1;
     }
     let duration = start.elapsed();
-    println!("Retrieved Sku List: {} records in {:?}", sku_ids.len(), duration);
+    info!("Retrieved Sku List: {} records in {:?}", sku_ids.len(), duration);
 
     // Build the urls
     let urls = build_get_sku_urls(sku_ids);
@@ -324,9 +324,46 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
             }
         })
         .await;
+
+
+
     {
-        debug!("finished sku_loop: algolia_recs.len(): {:?}", algolia_recs.lock().unwrap());
+        let l = algolia_recs.lock().unwrap().len();
+        debug!("finished sku_loop: algolia_recs.len(): {:?}", l);
     }
+    debug!("Begin writing to output file");
+    {
+        let sku_188: SkuAndContext = algolia_recs.lock().unwrap().get(&188).unwrap().to_owned();
+        info!("sku_188: {:?}", sku_188);
+    }
+    let vals = algolia_recs
+        .lock()
+        .unwrap()
+        .clone();
+
+    let out_file = File::create("data/records.json")?;
+    let mut buf_wtr = BufWriter::new(out_file);
+
+    let mut sku_ctx: Vec<SkuAndContext> = Vec::new();
+    for v in vals {
+        sku_ctx.push(v.1);
+        // let s = serde_json::to_string(&v.1)?;
+        // serde_json::to_writer(&buf_wtr, s);
+        // buf_wtr.write_all(s.as_bytes())?;
+    }
+    let result = serde_json::to_string_pretty(&sku_ctx)?;
+    buf_wtr.write_all(result.as_bytes())?;
+    buf_wtr.flush()?;
+
+
+
+    // .into_iter()
+            // .map(|(_k, v)| v).collect();
+        // let mut out_file = File::create("data/records.json")?;
+        // let buf_wtr = BufWriter::new(out_file);
+        // for sku_ctx in algolia_recs.lock().unwrap().into_iter() {
+        //     // let s =serde_json::to_writer(&buf_wtr, &sku_ctx)?;
+        // }
     // // Loop through the skus to build each algolia record
     // let loop_start = Instant::now();
     // for sku in sku_ids {
