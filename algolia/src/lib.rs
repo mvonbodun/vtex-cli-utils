@@ -1,13 +1,13 @@
 use algoliarecords::{HierarchicalCategories, Variant, Price};
 use dotenv;
 use log::*;
-use std::{error::Error, time::{Duration, Instant}, env, sync::Once, collections::HashMap, ops::Index, fs::File, io::BufWriter};
+use std::{error::Error, time::{Duration, Instant}, env, sync::Once, collections::HashMap, ops::Index, fs::File, io::BufWriter, slice::SliceIndex};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
-use futures::{join, stream, StreamExt};
+use futures::{join, stream, StreamExt, SinkExt};
 
 use reqwest::{header, StatusCode, Client};
-use vtex::model::{SkuAndContext, Image, SkuSpecification, Sku };
+use vtex::model::{SkuAndContext, Image, SkuSpecification, InventoryList, PriceGet };
 
 use crate::algoliarecords::ItemRecord;
 
@@ -57,17 +57,15 @@ pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut V
     }
 }
 
-fn build_get_sku_urls(sku_ids: &mut Vec<i32>) -> Vec<String> {
+fn build_get_sku_urls(sku_ids: &Vec<i32>) -> Vec<String> {
     let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1".to_string();
     let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
     for sku_id in sku_ids {
         let url = url.replace("{skuId}", sku_id.to_string().as_str());
         urls.push(url);
     }
-    debug!("urls.len(): {}", urls.len());
+    debug!("sku urls.len(): {}", urls.len());
     urls
-    //.replace("{skuId}", sku_id.to_string().as_str());
-
 }
 
 pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext {
@@ -99,6 +97,17 @@ pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext
             panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
         },
     }
+}
+
+fn build_get_price_urls(sku_ids: &Vec<i32>) -> Vec<String> {
+    let url = "https://api.vtex.com/michaelvb/pricing/prices/{skuId}".to_string();
+    let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
+    for sku_id in sku_ids {
+        let url = url.replace("{skuId}", sku_id.to_string().as_str());
+        urls.push(url);
+    }
+    debug!("price urls.len(): {}", urls.len());
+    urls
 }
 
 pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
@@ -137,6 +146,17 @@ pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
             panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
         },
     }
+}
+
+fn build_get_inventory_urls(sku_ids: &Vec<i32>) -> Vec<String> {
+    let url = "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}".to_string();
+    let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
+    for sku_id in sku_ids {
+        let url = url.replace("{skuId}", sku_id.to_string().as_str());
+        urls.push(url);
+    }
+    debug!("inventory urls.len(): {}", urls.len());
+    urls
 }
 
 pub async fn get_inventory(sku_id: &i32, client: &Client) -> i32 {
@@ -261,39 +281,29 @@ fn get_variants(sku_ctx: &SkuAndContext) -> Vec<Variant> {
     vec![variant]
 }
 
-pub async fn run() -> Result<(), Box<dyn Error>> {
-
-    info!("Start of run()");
-    dotenv::dotenv().expect("Failed to read .env file");
-
-    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
-    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
-    
-    // Setup the HTTP client
-    let mut headers = header::HeaderMap::new();
-    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key)?);
-    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken)?);
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(10))
-        .default_headers(headers)
-        .build()?;
-
+async fn get_all_sku_ids(client: &Client) -> Vec<i32> {
+    let start = Instant::now();
+    info!("Start get_all_sku_ids()");
     // Get all the skus
     let sku_ids: &mut Vec<i32> = &mut Vec::new();
     let recs = &mut 1000;
     let page = &mut 1;
-    let start = Instant::now();
+
     while *recs == 1000 {
         *recs = get_all_sku_ids_by_page(page.clone(), &client, sku_ids).await;
         *page += 1;
     }
     let duration = start.elapsed();
-    info!("Retrieved Sku List: {} records in {:?}", sku_ids.len(), duration);
+    info!("Finished get_all_sku_ids: {} records in {:?}", sku_ids.len(), duration);
+    sku_ids.to_vec()
+}
 
+async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) ->HashMap<i32, SkuAndContext> {
+    info!("Starting get_item_records()");
     // Build the urls
-    let urls = build_get_sku_urls(sku_ids);
+    let urls = build_get_sku_urls(&sku_ids);
     debug!("after call to build_get_sku_urls");
-    let algolia_recs: Arc<Mutex<HashMap<i32, SkuAndContext>>> = Arc::new(Mutex::new(HashMap::new()));
+    let item_recs: Arc<Mutex<HashMap<i32, SkuAndContext>>> = Arc::new(Mutex::new(HashMap::new()));
     let bodies = stream::iter(urls)
         .map(|url| {
             let client = &client;
@@ -311,49 +321,156 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         .buffer_unordered(CONCURRENT_REQUESTS);
     bodies
         .for_each(|b| async {
-            let algolia_recs = algolia_recs.clone();
+            let item_recs = item_recs.clone();
             match b {
                 Ok(b) => {
                     // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
                     let sku_ctx: SkuAndContext = b;
-                    let mut algolia_recs = algolia_recs.lock().unwrap();
-                    algolia_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
-                    debug!("Got {:?} json", sku_ctx)
+                    let mut item_recs = item_recs.lock().unwrap();
+                    item_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
+                    debug!("Got: {:?}", sku_ctx)
+                },
+                Err(e) => error!("Got an error: {}", e),
+            }
+        })
+        .await;
+    
+    let ir = item_recs.lock().unwrap().clone();
+    info!("finished get_item_records(): item_recs.len(): {:?}", ir.len());
+    ir    
+}
+
+async fn get_price_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, PriceGet> {
+    info!("Starting get_price_records()");
+    // build the urls
+    let urls = build_get_price_urls(&sku_ids);
+    let price_recs: Arc<Mutex<HashMap<i32, PriceGet>>> = Arc::new(Mutex::new(HashMap::new()));
+    let bodies = stream::iter(urls)
+        .map(|url| {
+            let client = &client;
+            async move {
+                let resp = client
+                    .get(url.clone()).send()
+                    .await?;
+                resp.json::<PriceGet>().await
+            }
+        })
+        .buffer_unordered(CONCURRENT_REQUESTS);
+    bodies
+        .for_each(|b| async {
+            let price_recs = price_recs.clone();
+            match b {
+                Ok(b) => {
+                    let price_list: PriceGet = b;
+                    let mut price_recs = price_recs.lock().unwrap();
+                    price_recs.insert(price_list.item_id.parse::<i32>().unwrap(), price_list.clone());
+                    debug!("Got price_list.item_id: {:?}", price_list.item_id)
                 },
                 Err(e) => error!("Got an error: {}", e),
             }
         })
         .await;
 
+    let pr = price_recs.lock().unwrap().clone();
+    info!("finished get_price_records(): price_recs.len(): {:?}", pr.len());
+    pr
+}
+
+async fn get_inventory_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, InventoryList>{
+    info!("Starting get_inventory_records()");
+    // build the urls
+    let urls = build_get_inventory_urls(&sku_ids);
+    let inventory_recs: Arc<Mutex<HashMap<i32, InventoryList>>> = Arc::new(Mutex::new(HashMap::new()));
+    let bodies = stream::iter(urls)
+        .map(|url| {
+            let client = &client;
+            async move {
+                let resp = client
+                    .get(url.clone()).send()
+                    .await?;
+                resp.json::<InventoryList>().await
+            }
+        })
+        .buffer_unordered(CONCURRENT_REQUESTS);
+    bodies
+        .for_each(|b| async {
+            let inventory_recs = inventory_recs.clone();
+            match b {
+                Ok(b) => {
+                    let inventory_list: InventoryList = b;
+                    let mut inventory_recs = inventory_recs.lock().unwrap();
+                    inventory_recs.insert(inventory_list.sku_id.parse::<i32>().unwrap(), inventory_list.clone());
+                    debug!("Got inventory_list.sku_id: {:?}", inventory_list.sku_id)
+                },
+                Err(e) => error!("Got an error: {}", e),
+            }
+        })
+        .await;
+
+    let invr = inventory_recs.lock().unwrap().clone();
+    info!("finished get_inventory_records(): inventory_recs.len(): {:?}", invr.len());
+    invr
+}
+
+pub async fn run() -> Result<(), Box<dyn Error>> {
+
+    info!("Start of run()");
+    dotenv::dotenv().expect("Failed to read .env file");
+
+    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
+    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
+    
+    // Setup the HTTP client
+    let mut headers = header::HeaderMap::new();
+    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key)?);
+    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken)?);
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(10))
+        .default_headers(headers)
+        .build()?;
+
+    // Get all the sku_ids in VTEX
+    let sku_ids = get_all_sku_ids(&client).await;
+    // // Get SkuAndContext records
+    // get_item_records(&sku_ids, &client).await;
+    // // Get Price records
+    // get_price_records(&sku_ids, &client).await;
+    // // Get Inventory records
+    // get_inventory_records(&sku_ids, &client).await;
+
+    //Run concurrently
+    let ir = get_item_records(&sku_ids, &client);
+    // Get Price records
+    let pr = get_price_records(&sku_ids, &client);
+    // Get Inventory records
+    let invr = get_inventory_records(&sku_ids, &client);
+    // join! all the futures to run concurrently
+    let (ir, pr, invr) = join!(ir, pr, invr);
 
 
-    {
-        let l = algolia_recs.lock().unwrap().len();
-        debug!("finished sku_loop: algolia_recs.len(): {:?}", l);
-    }
-    debug!("Begin writing to output file");
-    {
-        let sku_188: SkuAndContext = algolia_recs.lock().unwrap().get(&188).unwrap().to_owned();
-        info!("sku_188: {:?}", sku_188);
-    }
-    let vals = algolia_recs
-        .lock()
-        .unwrap()
-        .clone();
+    // debug!("Begin writing to output file");
+    // {
+    //     let sku_188: SkuAndContext = algolia_recs.lock().unwrap().get(&188).unwrap().to_owned();
+    //     info!("sku_188: {:?}", sku_188);
+    // }
+    // let vals = algolia_recs
+    //     .lock()
+    //     .unwrap()
+    //     .clone();
 
-    let out_file = File::create("data/records.json")?;
-    let mut buf_wtr = BufWriter::new(out_file);
+    // let out_file = File::create("data/records.json")?;
+    // let mut buf_wtr = BufWriter::new(out_file);
 
-    let mut sku_ctx: Vec<SkuAndContext> = Vec::new();
-    for v in vals {
-        sku_ctx.push(v.1);
-        // let s = serde_json::to_string(&v.1)?;
-        // serde_json::to_writer(&buf_wtr, s);
-        // buf_wtr.write_all(s.as_bytes())?;
-    }
-    let result = serde_json::to_string_pretty(&sku_ctx)?;
-    buf_wtr.write_all(result.as_bytes())?;
-    buf_wtr.flush()?;
+    // let mut sku_ctx: Vec<SkuAndContext> = Vec::new();
+    // for v in vals {
+    //     sku_ctx.push(v.1);
+    //     // let s = serde_json::to_string(&v.1)?;
+    //     // serde_json::to_writer(&buf_wtr, s);
+    //     // buf_wtr.write_all(s.as_bytes())?;
+    // }
+    // let result = serde_json::to_string_pretty(&sku_ctx)?;
+    // buf_wtr.write_all(result.as_bytes())?;
+    // buf_wtr.flush()?;
 
 
 
