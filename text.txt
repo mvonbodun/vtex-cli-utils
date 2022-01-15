@@ -1,0 +1,2 @@
+ 1290  ./target/debug/vtex_dataload -o skufile -f data/SkuFiles_inactive.csv
+ 1538  history 800 | grep SkuFiles_inactive.csv

@@ -16,10 +16,12 @@ name = "algolia"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "csv",
  "dotenv",
  "env_logger",
  "futures 0.3.19",
  "log",
+ "rand",
  "reqwest",
  "serde",
  "serde_json",
