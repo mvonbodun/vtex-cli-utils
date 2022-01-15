@@ -1265,6 +1265,7 @@ dependencies = [
  "clap",
  "csv",
  "dotenv",
+ "futures 0.3.19",
  "reqwest",
  "serde",
  "serde_json",

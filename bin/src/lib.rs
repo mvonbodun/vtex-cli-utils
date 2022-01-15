@@ -153,7 +153,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         println!("finished loading prices");
     } else if cmd.object.eq("inventory") {
         // Load sku files
-        inventory::load_inventory(cmd.input_file.to_string(), &client, inventory_url).await?;
+        inventory::load_inventory_concurrent(cmd.input_file.to_string(), &client, inventory_url).await?;
         println!("finished loading inventory");
     } else {
         println!("Did not enter a valid object - category or brand");
