@@ -5,7 +5,7 @@ use std::error::Error;
 async fn main() -> Result<(), Box<dyn Error>> {
     algolia::setup();
     info!("Starting Algolia Index Build");
-    algolia::run().await?;
+    algolia::test_rate_limit().await?;
     info!("Finished Algolia Index Build");
 
     Ok(())

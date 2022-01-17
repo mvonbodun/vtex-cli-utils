@@ -1,6 +1,9 @@
 use dotenv;
+use log::*;
 use std::{env, time::Duration};
 use std::error::Error;
+use std::io::Write;
+use std::sync::Once;
 use reqwest::header;
 use clap::{Arg, App, crate_version};
 
@@ -17,6 +20,20 @@ mod skufiles;
 mod csvrecords;
 mod prices;
 mod inventory;
+
+const CONCURRENT_REQUESTS: usize = 12;
+
+static INIT: Once = Once::new();
+
+pub fn setup() {
+    INIT.call_once(|| {
+        let start = std::time::Instant::now();
+        env_logger::Builder::from_default_env().format(move |buf, rec| {
+            let t = start.elapsed().as_secs_f32();
+            writeln!(buf, "{:.03} [{}] - {}", t, rec.level(),rec.args())
+        }).init();
+    })
+}
 
 struct Command {
     object: String,
@@ -48,13 +65,13 @@ impl Command {
         .get_matches();
 
         let vtex_object = matches.value_of("OBJECT").expect("-o <OBJECT> must be set (example: Category, Brand, etc.");
-        println!("vtex_object: {}", vtex_object);
+        debug!("vtex_object: {}", vtex_object);
         // let vtex_object1 = match vtex_object {
         //     Some(vtex_object1) => { vtex_object1 }
         //     None => { return Err("-o <OBJECT> must be set (example: category, brand, etc.)") }
         // };
         let input_file = matches.value_of("FILE").expect("-f <FILE> must be set to the input file (example: data/categories.csv");
-        println!("input_file: {}", input_file);
+        debug!("input_file: {}", input_file);
 
         Command { object: vtex_object.to_string(), input_file: input_file.to_string() }
     }
@@ -70,6 +87,8 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
 
     let cmd = Command::get_command();
     dotenv::dotenv().expect("Failed to read .env file");
+    let account_name = env::var("ACCOUNT_NAME").expect("Failed to parse ACCOUNT_NAME");
+    let environment = env::var("ENVIRONMENT").expect("Failed to parse ENVIRONMENT");
     let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
     let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
     let category_url = env::var("CATEGORY_URL").expect("Failed to parse CATEGORY_URL in .env");
@@ -105,7 +124,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // let result = categories::load_categories("data/DeptCatalog-sorted-subset.csv".to_string(), &client, category_url).await?;
         categories::load_categories(cmd.input_file.to_string(), &client, category_url).await?;
         // println!("after call to load_categories(): {:?}", result);
-        println!("finished loading categories");
+        info!("finished loading categories");
     
     } else if cmd.object.eq("brand") {
         // Load Brands
@@ -113,50 +132,50 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // let result = brands::load_brands("data/brands.csv".to_string(), &client, brand_url).await?;
         brands::load_brands(cmd.input_file.to_string(), &client, brand_url).await?;
         // println!("after call to load_brands(): {:?}", result);
-        println!("finished loading brands");
+        info!("finished loading brands");
     
     } else if cmd.object.eq("group") {
         // Load groups
         groups::load_groups(cmd.input_file.to_string(), &client, group_url).await?;
-        println!("finished loading groups");
+        info!("finished loading groups");
     } else if cmd.object.eq("specification") {
         // Load specifications
         specifications::load_specifications(cmd.input_file.to_string(), &client, specification_url).await?;
-        println!("finished loading specifications");
+        info!("finished loading specifications");
     } else if cmd.object.eq("fieldvalue") {
         // Load field values
         fieldvalues::load_field_values(cmd.input_file.to_string(), &client, fieldvalues_url).await?;
-        println!("finished loading fieldvalues");
+        info!("finished loading fieldvalues");
     } else if cmd.object.eq("product") {
         // Load products
         products::load_products(cmd.input_file.to_string(), &client, products_url).await?;
-        println!("finished loading products");
+        info!("finished loading products");
     } else if cmd.object.eq("sku") {
         // Load skus
         skus::load_skus(cmd.input_file.to_string(), &client, sku_url).await?;
-        println!("finished loading skus");
+        info!("finished loading skus");
     } else if cmd.object.eq("productspecification") {
         // Load product specs
         productspecifications::load_product_specs(cmd.input_file.to_string(), &client, prod_spec_url).await?;
-        println!("finished loading product specifications");
+        info!("finished loading product specifications");
     } else if cmd.object.eq("skuspecassignment") {
         // Load sku spec assignments
         skuspecassignment::load_sku_specs(cmd.input_file.to_string(), &client, sku_spec_url).await?;
-        println!("finished loading sku spec assignments");
+        info!("finished loading sku spec assignments");
     } else if cmd.object.eq("skufile") {
         // Load sku files
         skufiles::load_sku_files(cmd.input_file.to_string(), &client, sku_file_url).await?;
-        println!("finished loading sku files");
+        info!("finished loading sku files");
     } else if cmd.object.eq("price") {
         // Load sku files
         prices::load_prices(cmd.input_file.to_string(), &client, price_url).await?;
-        println!("finished loading prices");
+        info!("finished loading prices");
     } else if cmd.object.eq("inventory") {
         // Load sku files
         inventory::load_inventory_concurrent(cmd.input_file.to_string(), &client, inventory_url).await?;
-        println!("finished loading inventory");
+        info!("finished loading inventory");
     } else {
-        println!("Did not enter a valid object - category or brand");
+        info!("Did not enter a valid object - category or brand");
     }
 
     Ok(())

@@ -1,8 +1,8 @@
 warehouseId,skuId,unlimitedQuantity,dateUtcOnBalanceSystem,quantity
-warehouse1,91,false,,72
-warehouse1,48,false,,5
-warehouse1,117,false,,3
-warehouse1,188,false,,49
+warehouse1,91,false,,59
+warehouse1,48,false,,25
+warehouse1,117,false,,33
+warehouse1,188,false,,79
 warehouse1,8,false,,286
 warehouse1,271,false,,19
 warehouse1,289,false,,96
@@ -3221,4 +3221,4 @@ warehouse1,3213,false,,1
 warehouse1,3214,false,,1
 warehouse1,3215,false,,1
 warehouse1,3216,false,,1
-warehouse1,3217,false,,1
+warehouse1,3217,false,,11
