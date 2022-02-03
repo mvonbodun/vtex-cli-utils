@@ -1,2 +1,2 @@
 [workspace]
-members = ["lib", "bin", "transform", "algolia"]
+members = ["vtex", "impex", "transform", "algolia"]

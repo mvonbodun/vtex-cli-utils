@@ -3,9 +3,9 @@ use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    vtex_dataload::setup();
+    vtex_impex::setup();
     info!("Starting data load");
-    vtex_dataload::run().await?;
+    vtex_impex::run().await?;
     info!("Finished data load");
     
     Ok(())

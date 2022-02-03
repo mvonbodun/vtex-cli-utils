@@ -5,6 +5,7 @@ use reqwest::{header};
 use clap::{Arg, App, crate_version};
 
 mod utils;
+mod categories;
 mod productspecsdesc;
 mod prodspecsdefine;
 mod fieldvalues;
@@ -36,7 +37,7 @@ impl Command {
             .short("o")
             .long("object")
             .value_name("VTEX OBJECT")
-            .help("The object you are loading. Valid values: productspecsdesc, productspecsdefine, fieldvalues, product")
+            .help("The object you are loading. Valid values: category, productspecsdesc, productspecsdefine, fieldvalues, product")
             .takes_value(true))
         // .arg(Arg::with_name("FILE")
         //     .required(true)
@@ -46,8 +47,8 @@ impl Command {
         //     .help("Sets the input file to use")
         //     .takes_value(true))
         .get_matches();
-
-        let vtex_object = matches.value_of("OBJECT").expect("-o <OBJECT> must be set (example: Category, Brand, etc.");
+        println!("Test transform");
+        let vtex_object = matches.value_of("OBJECT").expect("-o <OBJECT> must be set (example: category, productspecsdesc, productspecsdefine, fieldvalues, product, sku, genskudefiningattrvalues, skuspecassign, skufile, price, inventory, geninactiveskufiles");
         println!("vtex_object: {}", vtex_object);
         // let vtex_object1 = match vtex_object {
         //     Some(vtex_object1) => { vtex_object1 }
@@ -61,9 +62,9 @@ impl Command {
 
     fn validate_vtex_object(v: String) -> Result<(), String> {
         println!("command: {}", v);
-        let valid_objects = ["productspecsdesc", "productspecsdefine", "fieldvalues", "product", "sku", "genskudefiningattrvalues", "skuspecassign", "skufile", "price", "inventory", "geninactiveskufiles"];
+        let valid_objects = ["category", "productspecsdesc", "productspecsdefine", "fieldvalues", "product", "sku", "genskudefiningattrvalues", "skuspecassign", "skufile", "price", "inventory", "geninactiveskufiles"];
         if valid_objects.contains(&v.as_str()) { return Ok(()); }
-        Err(String::from("Must set a valid VTEX object: productspecsdesc, productspecsdefine, fieldvalues, product, sku, genskudefiningattrvalues, skuspecassign, skufile, price, inventory, geninactiveskufiles"))
+        Err(String::from("Must set a valid VTEX object: category, productspecsdesc, productspecsdefine, fieldvalues, product, sku, genskudefiningattrvalues, skuspecassign, skufile, price, inventory, geninactiveskufiles"))
     }
 }
 
@@ -89,14 +90,17 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         .default_headers(headers)
         .build()?;
 
-    if cmd.object.eq("productspecsdesc") {
-        // Create Product Specifications csv
-        println!("before call to load_categories(): {:?}", env::current_dir()?);
-        // let result = categories::load_categories("data/DeptCatalog-sorted-subset.csv".to_string(), &client, category_url).await?;
-        let result = productspecsdesc::build_product_specs_file(&client, specs_group_url, category_tree_url)?;
-        println!("after call to load_categories(): {:?}", result);
+    if cmd.object.eq("category") {
+        // Create Category csv
+        let result = categories::build_category_file()?;
         println!("result: {:?}", result);
-    
+    } else if cmd.object.eq("productspecsdesc") {
+            // Create Product Specifications csv
+            println!("before call to load_categories(): {:?}", env::current_dir()?);
+            // let result = categories::load_categories("data/DeptCatalog-sorted-subset.csv".to_string(), &client, category_url).await?;
+            let result = productspecsdesc::build_product_specs_file(&client, specs_group_url, category_tree_url)?;
+            println!("after call to load_categories(): {:?}", result);
+            println!("result: {:?}", result);
     } else if cmd.object.eq("productspecsdefine") {
         // Load Defining Product Specs
         println!("before call to load_brands(): {:?}", env::current_dir()?);

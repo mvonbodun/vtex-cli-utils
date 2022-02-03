@@ -3,9 +3,9 @@ use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    algolia::setup();
+    vtex_algolia::setup();
     info!("Starting Algolia Index Build");
-    algolia::test_rate_limit().await?;
+    vtex_algolia::run().await?;
     info!("Finished Algolia Index Build");
 
     Ok(())

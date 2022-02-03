@@ -8,9 +8,8 @@ use std::io::Write;
 use std::sync::{Arc, Mutex};
 use futures::{join, stream, StreamExt };
 
-use reqwest::{header, Method, Request, Url, StatusCode, Client};
+use reqwest::{header, StatusCode, Client};
 use vtex::model::{SkuAndContext, Image, SkuSpecification, InventoryList, PriceGet };
-use tower::{ Service, ServiceExt};
 
 use crate::algoliarecords::ItemRecord;
 
@@ -675,79 +674,4 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     info!("Finished writing algolia records to file: {}", path);
   
     Ok(())
-}
-
-pub async fn test_rate_limit() -> Result<(), Box<dyn Error>> {
-    info!("Start of run()");
-    dotenv::dotenv().expect("Failed to read .env file");
-
-    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
-    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
-    
-    // Setup the HTTP client
-    let mut headers = header::HeaderMap::new();
-    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key)?);
-    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken)?);
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(10))
-        .default_headers(headers)
-        .build()?;
-
-    // Get all the sku_ids in VTEX
-    let sku_ids = get_all_sku_ids(&client).await;
-
-    let urls = build_get_sku_urls(&sku_ids);
-    debug!("after call to build_get_sku_urls");
-
-    let mut svc = tower::ServiceBuilder::new()
-        .rate_limit(160, Duration::new(1, 0)) // 100 requests every 10 seconds
-        .service(tower::service_fn(move |req| client.execute(req)));
-
-    for url in urls {
-        let req = Request::new(Method::GET, Url::parse(&url).unwrap());
-        let resp = svc.ready().await?.call(req).await?;
-        // info!("resp.status(): {:?}", resp);
-    }
-
-    // let item_recs: Arc<Mutex<HashMap<i32, SkuAndContext>>> = Arc::new(Mutex::new(HashMap::new()));
-    // let bodies = stream::iter(urls)
-    //     .map(|url| {
-    //         let svc = &mut svc;
-    //         async move {
-    //             // let u = Url::parse(&url).unwrap();
-    //             let req = Request::new(Method::GET, Url::parse(&url).unwrap());
-    //             let resp = svc.ready().await?.call(req).await?;
-    //             // let resp = client
-    //             //     .get(url.clone()).send()
-    //             //     .await?;
-                    
-    //             // let sctx: SkuAndContext = resp.json().await?;
-    //             debug!("end of async move - url: {}", url);
-    //             // resp.text().await
-    //             resp.json::<SkuAndContext>().await
-    //         }
-    //     })
-    //     .buffer_unordered(CONCURRENT_REQUESTS);
-    // bodies
-    //     .for_each(|b| async {
-    //         let item_recs = item_recs.clone();
-    //         match b {
-    //             Ok(b) => {
-    //                 // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
-    //                 let sku_ctx: SkuAndContext = b;
-    //                 let mut item_recs = item_recs.lock().unwrap();
-    //                 item_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
-    //                 debug!("Got: {:?}", sku_ctx)
-    //             },
-    //             Err(e) => error!("Got an error: {}", e),
-    //         }
-    //     })
-    //     .await;
-    
-    // let ir = item_recs.lock().unwrap().clone();
-    info!("finished get_item_records()");
-
-
-    Ok(())
-
 }

@@ -5,10 +5,14 @@ pub mod model {
     pub struct Category {
         #[serde(rename = "Id")]
         pub id: Option<i32>,
+        #[serde(rename = "UniqueIdentifier")]
+        pub unique_identifier: Option<String>,
         #[serde(rename = "Name")]
         pub name: String,
         #[serde(rename = "FatherCategoryId")]
         pub father_category_id: Option<i32>,
+        #[serde(rename = "ParentUniqueIdentifier")]
+        pub parent_unique_identifier: Option<String>,
         #[serde(rename = "Title")]
         pub title: String,
         #[serde(rename = "Description")]
@@ -42,8 +46,10 @@ pub mod model {
     impl Category {
         pub fn new(
             id: Option<i32>,
+            unique_identifier: Option<String>,
             name: String,
             father_category_id: Option<i32>,
+            parent_unique_identifier: Option<String>,
             title: String,
             description: String,
             keywords: String,
@@ -61,8 +67,10 @@ pub mod model {
         ) -> Category {
             Category {
                 id,
+                unique_identifier,
                 name,
                 father_category_id,
+                parent_unique_identifier,
                 title,
                 description,
                 keywords,
@@ -655,8 +663,10 @@ mod tests {
     fn create_new_category() {
         let category: Category = Category {
             id: None,
+            unique_identifier: Some("1234".to_string()),
             name: "Mens Clothing".to_string(),
             father_category_id: None,
+            parent_unique_identifier: None,
             title: "Mens Clothing".to_string(),
             description: "Mens Clothing".to_string(),
             keywords: "Mens Clothing".to_string(),
@@ -677,7 +687,9 @@ mod tests {
             category,
             Category::new(
                 None,
+                Some("1234".to_string()),
                 "Mens Clothing".to_string(),
+                None,
                 None,
                 "Mens Clothing".to_string(),
                 "Mens Clothing".to_string(),

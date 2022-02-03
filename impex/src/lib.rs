@@ -1,5 +1,6 @@
 use dotenv;
 use log::*;
+use std::num::NonZeroU32;
 use std::{env, time::Duration};
 use std::error::Error;
 use std::io::Write;
@@ -21,8 +22,6 @@ mod csvrecords;
 mod prices;
 mod inventory;
 
-const CONCURRENT_REQUESTS: usize = 12;
-
 static INIT: Once = Once::new();
 
 pub fn setup() {
@@ -38,6 +37,8 @@ pub fn setup() {
 struct Command {
     object: String,
     input_file: String,
+    concurrency: usize,
+    rate_limit: NonZeroU32,
 }
 
 impl Command {
@@ -62,6 +63,18 @@ impl Command {
             .value_name("FILE")
             .help("Sets the input file to use")
             .takes_value(true))
+        .arg(Arg::with_name("CONCURRENCY")
+            .short("c")
+            .long("concurrency")
+            .value_name("CONCURRENCY")
+            .help("Sets the concurrency value - default is 12")
+            .takes_value(true))
+        .arg(Arg::with_name("RATE_LIMIT")
+            .short("r")
+            .long("rate-limit")
+            .value_name("RATE_LIMIT")
+            .help("Sets the rate limit value - default is 36")
+            .takes_value(true))
         .get_matches();
 
         let vtex_object = matches.value_of("OBJECT").expect("-o <OBJECT> must be set (example: Category, Brand, etc.");
@@ -71,9 +84,18 @@ impl Command {
         //     None => { return Err("-o <OBJECT> must be set (example: category, brand, etc.)") }
         // };
         let input_file = matches.value_of("FILE").expect("-f <FILE> must be set to the input file (example: data/categories.csv");
+        let concurrency = matches.value_of("CONCURRENCY").unwrap_or("12").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24");
+        let rate_limit = matches.value_of("RATE_LIMIT").unwrap_or("36").parse::<u32>().expect("RATE_LIMIT must be a positive integer between 1 and 999");
+        info!("rate_limit: {}", rate_limit);
+        let rate_limit = NonZeroU32::new(rate_limit).unwrap();
         debug!("input_file: {}", input_file);
 
-        Command { object: vtex_object.to_string(), input_file: input_file.to_string() }
+        Command { 
+            object: vtex_object.to_string(),
+            input_file: input_file.to_string(),
+            concurrency,
+            rate_limit,
+        }
     }
 
     fn validate_vtex_object(v: String) -> Result<(), String> {
@@ -91,8 +113,8 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     let environment = env::var("ENVIRONMENT").expect("Failed to parse ENVIRONMENT");
     let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
     let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
-    let category_url = env::var("CATEGORY_URL").expect("Failed to parse CATEGORY_URL in .env");
-    let brand_url = env::var("BRAND_URL").expect("Failed to parse BRAND_URL in .env");
+    // let category_url = env::var("CATEGORY_URL").expect("Failed to parse CATEGORY_URL in .env");
+    // let brand_url = env::var("BRAND_URL").expect("Failed to parse BRAND_URL in .env");
     let group_url = env::var("GROUP_URL").expect("Failed to parse GROUP_URL in .env");
     let specification_url = env::var("SPECIFICATION_URL").expect("Failed to parse SPECIFICATION_URL in .env");
     let fieldvalues_url = env::var("FIELDVALUES_URL").expect("Failed to parse FIELDVALUES_URL in .env");
@@ -101,8 +123,8 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     let prod_spec_url = env::var("PRODUCT_SPECIFICATION_URL").expect("Failed to parse PRODUCT_SPECIFICATION_URL in .env");
     let sku_spec_url = env::var("SKU_SPECIFICATION_URL").expect("Failed to parse SKU_SPECIFICATION_URL in .env");
     let sku_file_url = env::var("SKU_FILE_URL").expect("Failed to parse SKU_FILE_URL in .env");
-    let price_url = env::var("PRICE_URL").expect("Failed to parse PRICE_URL in .env");
-    let inventory_url = env::var("INVENTORY_URL").expect("Failed to parse INVENTORY_URL in .env");
+    // let price_url = env::var("PRICE_URL").expect("Failed to parse PRICE_URL in .env");
+    // let inventory_url = env::var("INVENTORY_URL").expect("Failed to parse INVENTORY_URL in .env");
 
     // Setup the HTTP client
     let mut headers = header::HeaderMap::new();
@@ -122,7 +144,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // Load Categories
         // println!("before call to load_categories(): {:?}", env::current_dir()?);
         // let result = categories::load_categories("data/DeptCatalog-sorted-subset.csv".to_string(), &client, category_url).await?;
-        categories::load_categories(cmd.input_file.to_string(), &client, category_url).await?;
+        categories::load_categories(cmd.input_file.to_string(), &client, account_name, environment).await?;
         // println!("after call to load_categories(): {:?}", result);
         info!("finished loading categories");
     
@@ -130,7 +152,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // Load Brands
         // println!("before call to load_brands(): {:?}", env::current_dir()?);
         // let result = brands::load_brands("data/brands.csv".to_string(), &client, brand_url).await?;
-        brands::load_brands(cmd.input_file.to_string(), &client, brand_url).await?;
+        brands::load_brands(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency).await?;
         // println!("after call to load_brands(): {:?}", result);
         info!("finished loading brands");
     
@@ -168,11 +190,11 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         info!("finished loading sku files");
     } else if cmd.object.eq("price") {
         // Load sku files
-        prices::load_prices(cmd.input_file.to_string(), &client, price_url).await?;
+        prices::load_prices(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
         info!("finished loading prices");
     } else if cmd.object.eq("inventory") {
         // Load sku files
-        inventory::load_inventory_concurrent(cmd.input_file.to_string(), &client, inventory_url).await?;
+        inventory::load_inventory(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency).await?;
         info!("finished loading inventory");
     } else {
         info!("Did not enter a valid object - category or brand");
