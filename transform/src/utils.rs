@@ -1,13 +1,13 @@
 use reqwest::{blocking::Client, StatusCode};
 use std::{collections::HashMap, env};
 use std::fs::File;
-use vtex::model::{ BrandList, CategoryTree, Group };
+use vtex::model::{ BrandList, CategoryTree, SpecificationGroup };
 use crate::csvrecords::{ CatRecord, ProdHeaderRecord, ProductLookup, SkuLookup };
 
 
 // Get the in the Field Groups to store the Id and Name, store in a HashMap
-pub fn get_vtex_field_groups(client: &Client, url: String) -> Vec<vtex::model::Group> {
-    let groups: Vec<vtex::model::Group> = client.get(url)
+pub fn get_vtex_field_groups(client: &Client, url: String) -> Vec<vtex::model::SpecificationGroup> {
+    let groups: Vec<vtex::model::SpecificationGroup> = client.get(url)
             .send()
             .unwrap()
             .json()
@@ -84,7 +84,7 @@ pub fn create_brand_lookup(client: &Client, url: String) -> HashMap<String, i32>
 }
 
 // Parse the Specification Groups into a HashMap for Key Lookup
-pub fn parse_spec_groups(groups: Vec<Group>) -> HashMap<String, i32> {
+pub fn parse_spec_groups(groups: Vec<SpecificationGroup>) -> HashMap<String, i32> {
     let mut group_ids: HashMap<String, i32> = HashMap::new();
     for group in groups {
         group_ids.insert(group.name.clone(), group.id.unwrap().clone());

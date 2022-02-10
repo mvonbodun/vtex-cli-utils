@@ -92,7 +92,7 @@ mod tests {
     use std::error::Error;
     use std::io::BufReader;
     use std::collections::HashMap;
-    use vtex::model::Group;
+    use vtex::model::SpecificationGroup;
     use vtex::model::CategoryTree;
 
     use crate::csvrecords::{CatRecord, ProdHeaderRecord};
@@ -107,7 +107,7 @@ mod tests {
     fn parse_spec_groups() -> Result<(), Box<dyn Error>> {
         let file = File::open("test_data/groups.json")?;
         let reader = BufReader::new(file);
-        let result: Vec<Group> = serde_json::from_reader(reader)?;
+        let result: Vec<SpecificationGroup> = serde_json::from_reader(reader)?;
         // println!("test result Vec<Group>: {:?}", result);
         let mut group_ids: HashMap<String, i32> = HashMap::new();
         for group in result {

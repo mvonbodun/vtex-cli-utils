@@ -1,5 +1,5 @@
 use reqwest::blocking::Client;
-use vtex::model::{ CategoryTree, Group, Specification };
+use vtex::model::{ CategoryTree, SpecificationGroup, Specification };
 // use serde::{Deserialize, Serialize}; // 1.0.131
 use std::{error::Error, collections::HashSet};
 use std::collections::HashMap;
@@ -8,8 +8,8 @@ use std::env;
 use crate::csvrecords::{CatRecord, ProdHeaderRecord, ProdDescAttrRecord};
 
 // Get the in the Field Groups to store the Id and Name, store in a HashMap
-fn get_vtex_field_groups(client: &Client, url: String) -> Vec<vtex::model::Group> {
-    let groups: Vec<vtex::model::Group> = client.get(url)
+fn get_vtex_field_groups(client: &Client, url: String) -> Vec<vtex::model::SpecificationGroup> {
+    let groups: Vec<vtex::model::SpecificationGroup> = client.get(url)
             .send()
             .unwrap()
             .json()
@@ -29,7 +29,7 @@ fn get_vtex_category_tree(client: &Client, url: String) -> Vec<vtex::model::Cate
 }
 
 // Parse the Specification Groups into a HashMap for Key Lookup
-fn parse_spec_groups(groups: Vec<Group>) -> HashMap<String, i32> {
+fn parse_spec_groups(groups: Vec<SpecificationGroup>) -> HashMap<String, i32> {
     let mut group_ids: HashMap<String, i32> = HashMap::new();
     for group in groups {
         group_ids.insert(group.name.clone(), group.id.unwrap().clone());
@@ -50,6 +50,7 @@ fn parse_category_tree(cat_tree: Vec<CategoryTree>) -> HashMap<String, i32> {
                    for category3 in category2.children.expect("missing category") {
                        category_ids.insert(category3.name.clone(), category3.id.clone());
                    }
+                   // TODO: add additional sub categories
                 }
             }
 
@@ -172,7 +173,7 @@ mod tests {
     use std::error::Error;
     use std::io::BufReader;
     use std::collections::HashMap;
-    use vtex::model::Group;
+    use vtex::model::SpecificationGroup;
     use vtex::model::CategoryTree;
 
     use crate::csvrecords::{CatRecord, ProdHeaderRecord};
@@ -187,7 +188,7 @@ mod tests {
     fn parse_spec_groups() -> Result<(), Box<dyn Error>> {
         let file = File::open("test_data/groups.json")?;
         let reader = BufReader::new(file);
-        let result: Vec<Group> = serde_json::from_reader(reader)?;
+        let result: Vec<SpecificationGroup> = serde_json::from_reader(reader)?;
         // println!("test result Vec<Group>: {:?}", result);
         let mut group_ids: HashMap<String, i32> = HashMap::new();
         for group in result {

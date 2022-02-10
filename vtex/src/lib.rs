@@ -1,3 +1,6 @@
+pub mod csvrecords;
+pub mod utils;
+
 pub mod model {
     use serde::{Deserialize, Serialize};
 
@@ -191,7 +194,7 @@ pub mod model {
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-    pub struct Group {
+    pub struct SpecificationGroup {
         #[serde(rename = "Id")]
         pub id: Option<i32>,
         #[serde(rename = "Name")]
@@ -202,14 +205,14 @@ pub mod model {
         pub position: Option<i32>,
     }
 
-    impl Group {
+    impl SpecificationGroup {
         pub fn new(
             id: Option<i32>,
             name: String,
             category_id: Option<i32>,
             position: Option<i32>,
-        ) -> Group {
-            Group { 
+        ) -> SpecificationGroup {
+            SpecificationGroup { 
                 id,
                 name,
                 category_id,
@@ -226,6 +229,24 @@ pub mod model {
         pub field_id: i32,
         pub is_active: bool,
         pub is_stock_keeping_unit: bool,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct ProductSpecificationAssignment {
+        pub sku_ref_id: String,
+        pub name: String,
+        pub description: String,
+        pub value: String,
+        pub position: i32,
+        pub is_filter: bool,
+        pub is_required: bool,
+        pub is_on_product_details: bool,
+        pub is_stock_keeping_unit: bool,
+        pub is_wizard: bool,
+        pub is_active: bool,
+        pub is_top_menu_link_active: bool,
+        pub default_value: Option<String>,
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -352,7 +373,9 @@ pub mod model {
         pub name: String,
         pub department_id: Option<i32>,
         pub category_id: i32,
+        pub category_unique_identifier: Option<String>,
         pub brand_id: i32,
+        pub brand_name: Option<String>,
         pub link_id: Option<String>,
         pub ref_id: Option<String>,
         pub is_visible: Option<bool>,
