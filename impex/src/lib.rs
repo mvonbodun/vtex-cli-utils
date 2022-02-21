@@ -40,6 +40,7 @@ struct Command {
     action: String,
     input_file: String,
     prod_spec_assign_file: String,
+    sku_spec_allowed_values_file: String,
     product_file: String,
     concurrency: usize,
     rate_limit: NonZeroU32,
@@ -76,6 +77,14 @@ arg_enum! {
         import,
         genproductspecsfile,
         genskuspecsfile,
+    }
+}
+
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    enum ProductActions {
+        import
     }
 }
 
@@ -179,6 +188,12 @@ impl Command {
                 .value_name("PRODUCT_SPEC_ASSIGNMENTS_FILE")
                 .help("Sets the Product Specification Assignments file")
                 .takes_value(true))
+            .arg(Arg::with_name("SKU_SPEC_ALLOWED_VALUES_FILE")
+                .required(false)
+                .long("sku_spec_allowed_values_file")
+                .value_name("SKU_SPEC_ALLOWED_VALUES_FILE")
+                .help("Sets the SKU Specification Allowed Values file")
+                .takes_value(true))
             .arg(Arg::with_name("PRODUCT_FILE")
                 .required(false)
                 .long("product_file")
@@ -190,6 +205,37 @@ impl Command {
                 .long("concurrency")
                 .value_name("CONCURRENCY")
                 .help("Sets the concurrency value - default is 1")
+                .takes_value(true))
+        )
+        .subcommand(SubCommand::with_name("product")
+            .about("actions on the product into VTEX")
+            .version(crate_version!())
+            .arg(Arg::with_name("ACTION")
+                .required(true)
+                .possible_values(&ProductActions::variants())
+                .short("a")
+                .long("action")
+                .value_name("ACTION")
+                .help("The action to perform on the VTEX Object - import, export")
+                .takes_value(true))
+            .arg(Arg::with_name("FILE")
+                .required(true)
+                .short("f")
+                .long("file")
+                .value_name("FILE")
+                .help("Sets the input or output file to read or write to.")
+                .takes_value(true))
+            .arg(Arg::with_name("CONCURRENCY")
+                .short("c")
+                .long("concurrency")
+                .value_name("CONCURRENCY")
+                .help("Sets the concurrency value - default is 1")
+                .takes_value(true))
+            .arg(Arg::with_name("RATELIMIT")
+                .short("r")
+                .long("rate_limit")
+                .value_name("RATELIMIT")
+                .help("Sets the rate limit value (how many calls per second) - default is 200")
                 .takes_value(true))
         )
         .get_matches();
@@ -227,6 +273,7 @@ impl Command {
             action: "".to_string(),
             input_file: "".to_string(),
             prod_spec_assign_file: "".to_string(),
+            sku_spec_allowed_values_file: "".to_string(),
             product_file: "".to_string(),
             concurrency: 1,
             rate_limit: NonZeroU32::new(1).unwrap()
@@ -253,11 +300,20 @@ impl Command {
             ("specification", Some(m)) => {
                 command.object = "specification".to_string();
                 command.action = m.value_of("ACTION").unwrap().to_string();
-                command.input_file = m.value_of("FILE").expect("-f <FILE> must be set to the input file (example: data/specificationgrouops.csv").to_string();
+                command.input_file = m.value_of("FILE").expect("-f <FILE> must be set to the input file (example: data/specifications.csv").to_string();
                 debug!("input_file: {}", command.input_file);
                 command.prod_spec_assign_file = m.value_of("PRODUCT_SPEC_ASSIGNMENTS_FILE").unwrap_or("").to_string();
+                command.sku_spec_allowed_values_file = m.value_of("SKU_SPEC_ALLOWED_VALUES_FILE").unwrap_or("").to_string();
                 command.product_file = m.value_of("PRODUCT_FILE").unwrap_or("").to_string();
                 command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24");
+            },
+            ("product", Some(m)) => {
+                command.object = "product".to_string();
+                command.action = m.value_of("ACTION").unwrap().to_string();
+                command.input_file = m.value_of("FILE").expect("-f <FILE> must be set to the input file (example: data/products.csv").to_string();
+                debug!("input_file: {}", command.input_file);
+                command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 1 - Recommended");
+                command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("40").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 40 - Recommended");
             },
             _ => error!("no match"),
         }
@@ -296,9 +352,9 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     // let category_url = env::var("CATEGORY_URL").expect("Failed to parse CATEGORY_URL in .env");
     // let brand_url = env::var("BRAND_URL").expect("Failed to parse BRAND_URL in .env");
     // let group_url = env::var("GROUP_URL").expect("Failed to parse GROUP_URL in .env");
-    let specification_url = env::var("SPECIFICATION_URL").expect("Failed to parse SPECIFICATION_URL in .env");
+    // let specification_url = env::var("SPECIFICATION_URL").expect("Failed to parse SPECIFICATION_URL in .env");
     let fieldvalues_url = env::var("FIELDVALUES_URL").expect("Failed to parse FIELDVALUES_URL in .env");
-    let products_url = env::var("PRODUCTS_URL").expect("Failed to parse PRODUCTS_URL in .env");
+    // let products_url = env::var("PRODUCTS_URL").expect("Failed to parse PRODUCTS_URL in .env");
     let sku_url = env::var("SKU_URL").expect("Failed to parse SKU_URL in .env");
     let prod_spec_url = env::var("PRODUCT_SPECIFICATION_URL").expect("Failed to parse PRODUCT_SPECIFICATION_URL in .env");
     let sku_spec_url = env::var("SKU_SPECIFICATION_URL").expect("Failed to parse SKU_SPECIFICATION_URL in .env");
@@ -339,6 +395,9 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         } else if cmd.action.eq("genproductspecsfile") {
             specifications::gen_product_specifications_file(cmd.input_file.to_string(), &client, account_name, environment, cmd.prod_spec_assign_file, cmd.product_file).await?;
             info!("finished loading specifications");
+        } else if cmd.action.eq("genskuspecsfile") {
+            specifications::gen_sku_specifications_file(cmd.input_file.to_string(), &client, account_name, environment, cmd.sku_spec_allowed_values_file, cmd.product_file).await?;
+            info!("finished loading specifications");
         }
     } else if cmd.object.eq("fieldvalue") {
         // Load field values
@@ -346,8 +405,10 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         info!("finished loading fieldvalues");
     } else if cmd.object.eq("product") {
         // Load products
-        products::load_products(cmd.input_file.to_string(), &client, products_url).await?;
-        info!("finished loading products");
+        if cmd.action.eq("import") {
+            products::load_products(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
+            info!("finished loading products");
+        }
     } else if cmd.object.eq("sku") {
         // Load skus
         skus::load_skus(cmd.input_file.to_string(), &client, sku_url).await?;

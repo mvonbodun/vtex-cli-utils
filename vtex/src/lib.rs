@@ -249,6 +249,75 @@ pub mod model {
         pub default_value: Option<String>,
     }
 
+    #[derive(Debug, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct SkuSpecAllowedValues {
+        pub product_ref_id: String,
+        pub name: String,
+        pub position: i32,
+        pub allowed_value1: String,
+        pub allowed_value2: String,
+        pub allowed_value3: String,
+        pub allowed_value4: String,
+        pub allowed_value5: String,
+        pub allowed_value6: String,
+        pub allowed_value7: String,
+        pub allowed_value8: String,
+        pub allowed_value9: String,
+        pub allowed_value10: String,
+        pub allowed_value11: String,
+        pub allowed_value12: String,
+        pub allowed_value13: String,
+        pub allowed_value14: String,
+        pub allowed_value15: String,
+        pub allowed_value16: String,
+        pub allowed_value17: String,
+        pub allowed_value18: String,
+        pub allowed_value19: String,
+        pub allowed_value20: String,
+        pub allowed_value21: String,
+        pub allowed_value22: String,
+        pub allowed_value23: String,
+        pub allowed_value24: String,
+        pub allowed_value25: String,
+        pub allowed_value26: String,
+        pub allowed_value27: String,
+        pub allowed_value28: String,
+        pub allowed_value29: String,
+        pub allowed_value30: String,
+        pub allowed_value31: String,
+        pub allowed_value32: String,
+        pub allowed_value33: String,
+        pub allowed_value34: String,
+        pub allowed_value35: String,
+        pub allowed_value36: String,
+        pub allowed_value37: String,
+        pub allowed_value38: String,
+        pub allowed_value39: String,
+        pub allowed_value40: String,
+        pub allowed_value41: String,
+        pub allowed_value42: String,
+        pub allowed_value43: String,
+        pub allowed_value44: String,
+        pub allowed_value45: String,
+        pub allowed_value46: String,
+        pub allowed_value47: String,
+        pub allowed_value48: String,
+        pub allowed_value49: String,
+        pub allowed_value50: String,
+        pub allowed_value51: String,
+        pub allowed_value52: String,
+        pub allowed_value53: String,
+        pub allowed_value54: String,
+        pub allowed_value55: String,
+        pub allowed_value56: String,
+        pub allowed_value57: String,
+        pub allowed_value58: String,
+        pub allowed_value59: String,
+        pub allowed_value60: String,
+        pub delete: i32,
+    }
+
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     pub struct Specification {
         #[serde(rename = "Id")]
@@ -321,6 +390,14 @@ pub mod model {
         }
     }
 
+    #[derive(Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct SkuSpecificationValueAssignment {
+        pub sku_ref_id: String,
+        pub name: String,
+        pub value: String,
+    }
+
     #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
     pub struct SpecificationValue {
         #[serde(rename = "FieldValueId")]
@@ -372,10 +449,10 @@ pub mod model {
         pub id: Option<i32>,
         pub name: String,
         pub department_id: Option<i32>,
-        pub category_id: i32,
-        pub category_unique_identifier: Option<String>,
-        pub brand_id: i32,
-        pub brand_name: Option<String>,
+        pub category_id: Option<i32>,
+        pub category_unique_identifier: String,
+        pub brand_id: Option<i32>,
+        pub brand_name: String,
         pub link_id: Option<String>,
         pub ref_id: Option<String>,
         pub is_visible: Option<bool>,

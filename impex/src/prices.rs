@@ -1,4 +1,4 @@
-use governor::{Quota,RateLimiter, Jitter};
+use governor::{Quota, RateLimiter, Jitter};
 use log::*;
 use reqwest::{Client, StatusCode};
 use vtex::model::Price;
@@ -51,7 +51,7 @@ pub async fn load_prices(file_path: String, client: &Client, account_name: Strin
         .for_each(|b| async {
             match b {
                 Ok(_b) => (),
-                Err(e) => println!("error: {:?}", e),
+                Err(e) => error!("error: {:?}", e),
             }
         })
         .await;

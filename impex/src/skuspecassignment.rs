@@ -1,8 +1,18 @@
+use log::*;
 use reqwest::{Client, StatusCode};
 use vtex::model::SkuSpecAssignment;
 use std::error::Error;
 use std::fs::File;
 
+// pub sync fn gen_sku_specification_values_file(
+//     file_path: String,
+//     client: &Client,
+//     account_name: String,
+//     environment: String,
+//     sku_spec_assignment_file: String,
+
+
+// )
 
 pub async fn load_sku_specs(file_path: String, client: &Client, url: String) -> Result<(), Box<dyn Error>> {
 

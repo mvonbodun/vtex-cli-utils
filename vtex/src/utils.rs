@@ -168,7 +168,7 @@
             let record: Product = line.unwrap();
             product_parent_category.insert(
                 record.ref_id.unwrap().clone(),
-                record.category_unique_identifier.unwrap().clone(),
+                record.category_unique_identifier.clone(),
             );
         }
         // println!("HashMap Category Identifiers: {:?}", product_parent_category);
