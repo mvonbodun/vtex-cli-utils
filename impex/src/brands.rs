@@ -1,10 +1,55 @@
 use futures::{stream, StreamExt};
 use log::*;
-use std::error::Error;
+use std::{error::Error, collections::HashSet};
 use std::fs::File;
 
-use vtex::model::{Brand};
+use vtex::model::{Brand, Product};
 use reqwest::Client;
+
+pub fn gen_brand_file(file_path: String, product_file: String) -> Result<(), Box<dyn Error>> {
+
+    let in_file = File::open(&product_file).unwrap();
+    let mut reader = csv::Reader::from_reader(in_file);
+    let out_path = file_path;
+    let mut writer = csv::Writer::from_path(out_path)?;
+
+    let mut brand_set: HashSet<String> = HashSet::new();
+
+    // Loop through the product file to pull out the brands and store in a HashSet
+    for line in reader.deserialize() {
+        let record: Product = line?;
+        debug!("product record: {:?}", record);
+
+        if !brand_set.contains(&record.brand_name.as_ref().unwrap().clone()) {
+            brand_set.insert(record.brand_name.unwrap());
+        }
+    }
+
+    // Loop through the HashSet and create the Brand record
+    let mut x = 0;
+    for brand in brand_set {
+        let b = Brand {
+            id: None,
+            name: brand.clone(),
+            text: Some(brand.clone()),
+            keywords: Some(brand.clone()),
+            site_title: None,
+            active: true,
+            menu_home: None,
+            ad_words_remarketing_code: None,
+            lomadee_campaign_code: None,
+            score: None
+        };
+        // Write the record
+        writer.serialize(b)?;
+        x = x +1;
+    }
+    // Flush the records
+    writer.flush()?;
+    info!("Wrote {} brand records", x);
+    
+    Ok(())
+}
 
 pub async fn load_brands(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize) -> Result<(), Box<dyn Error>> {
 

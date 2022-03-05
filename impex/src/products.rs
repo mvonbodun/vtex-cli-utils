@@ -18,7 +18,7 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
     debug!("category_lookup: {:?}", category_lookup.len());
 
     // Get a lookup for the cateogory name of a category by GroupIdentifier
-    let category_identifier_name_lookup = utils::create_category_name_lookup();
+    let category_identifier_name_lookup = utils::create_category_name_lookup(&client, &account_name, &environment).await;
     println!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
 
     // Get a lookup for the brand_id by brand name
@@ -40,13 +40,15 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
         let mut record: Product = line?;
 
         // look up the category name
-        let parent_cat_name = category_identifier_name_lookup.get(&record.category_unique_identifier).unwrap();
+        let cat_unique_identifier = record.category_unique_identifier.as_ref().unwrap();
+        let parent_cat_name = category_identifier_name_lookup.get(cat_unique_identifier).unwrap();
         // Look up the VTEX Category Id
         debug!("PartNumber: {:?}  parent_cat_name: {:?}", &record.ref_id, &parent_cat_name);
         let vtex_cat_id = category_lookup.get(&parent_cat_name.clone()).unwrap();
         record.category_id = Some(*vtex_cat_id);
         // Look up the brand_id
-        let brand_id = brand_id_lookup.get(&record.brand_name).unwrap();
+        let brand_name = record.brand_name.as_ref().unwrap();
+        let brand_id = brand_id_lookup.get(brand_name).unwrap();
         record.brand_id = Some(*brand_id);
 
         product_recs.push(record);
@@ -85,7 +87,7 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
         })
         .await;
     
-    info!("finished load_prices");
+    info!("finished load_products");
 
     Ok(())
 }

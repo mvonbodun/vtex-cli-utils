@@ -34,7 +34,7 @@ pub async fn gen_product_specifications_file(
         let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
         debug!("product_parent_category_lookkup: {:?}", product_parent_category_lookup.len());
         // Get a lookup for the cateogory name of a category by GroupIdentifier
-        let category_identifier_name_lookup = utils::create_category_name_lookup();
+        let category_identifier_name_lookup = utils::create_category_name_lookup(&client, &account_name, &environment).await;
         debug!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
     
         // Setup the input and output files
@@ -51,7 +51,7 @@ pub async fn gen_product_specifications_file(
         for line in reader.deserialize() {
             let record: ProductSpecificationAssignment = line.unwrap();
             // look up the part number
-            let parent_cat_identifier = product_parent_category_lookup.get(&record.sku_ref_id).unwrap();
+            let parent_cat_identifier = product_parent_category_lookup.get(&record.product_ref_id).unwrap();
             // look up the category name
             let parent_cat_name = category_identifier_name_lookup.get(&parent_cat_identifier.to_string()).unwrap();
             // Look up the VTEX Category Id
@@ -121,7 +121,7 @@ pub async fn gen_sku_specifications_file(
     let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
     debug!("product_parent_category_lookkup: {:?}", product_parent_category_lookup.len());
     // Get a lookup for the cateogory name of a category by GroupIdentifier
-    let category_identifier_name_lookup = utils::create_category_name_lookup();
+    let category_identifier_name_lookup = utils::create_category_name_lookup(&client, &account_name, &environment).await;
     debug!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
 
     // Setup the input and output files

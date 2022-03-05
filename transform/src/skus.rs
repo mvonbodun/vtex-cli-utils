@@ -59,12 +59,16 @@ pub fn build_sku_file() -> Result<(), Box<dyn Error>> {
         let record: ProdHeaderRecord = line.unwrap();
         let product_id = product_lookup.get(&record.parent_part_number).unwrap().to_owned();
         // println!("PartNumber: {} ProductId: {}", &record.parent_part_number, product_id);
+        let image_url = "https://images.beallsflorida.com/i/beallsflorida/".to_owned() + record.ipsid.as_str() + "-yyy?w=1000&h=1000&fmt=auto&qlt=default&img404=404&v=1";
+
         let sku = Sku {
             id: None,
-            product_id: product_id,
+            product_id: Some(product_id),
+            product_ref_id: "".to_string(),
             is_active: Some(false),
             name: sku_name_lookup.get(&record.part_number).unwrap().to_string(),
-            ref_id: Some(record.part_number.clone()),
+            ref_id: record.part_number.clone(),
+            image_url: Some(image_url),
             packaged_height: 0.0,
             packaged_length: 0.0,
             packaged_width: 0.0,

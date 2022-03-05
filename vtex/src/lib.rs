@@ -234,7 +234,7 @@ pub mod model {
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     #[serde(rename_all = "PascalCase")]
     pub struct ProductSpecificationAssignment {
-        pub sku_ref_id: String,
+        pub product_ref_id: String,
         pub name: String,
         pub description: String,
         pub value: String,
@@ -315,7 +315,6 @@ pub mod model {
         pub allowed_value58: String,
         pub allowed_value59: String,
         pub allowed_value60: String,
-        pub delete: i32,
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -450,9 +449,9 @@ pub mod model {
         pub name: String,
         pub department_id: Option<i32>,
         pub category_id: Option<i32>,
-        pub category_unique_identifier: String,
+        pub category_unique_identifier: Option<String>,
         pub brand_id: Option<i32>,
-        pub brand_name: String,
+        pub brand_name: Option<String>,
         pub link_id: Option<String>,
         pub ref_id: Option<String>,
         pub is_visible: Option<bool>,
@@ -475,10 +474,12 @@ pub mod model {
     #[serde(rename_all = "PascalCase")]
     pub struct Sku {
         pub id: Option<i32>,
-        pub product_id: i32,
+        pub product_id: Option<i32>,
+        pub product_ref_id: String,
         pub is_active: Option<bool>,
         pub name: String,
-        pub ref_id: Option<String>,
+        pub ref_id: String,
+        pub image_url: Option<String>,
         pub packaged_height: f32,
         pub packaged_length: f32,
         pub packaged_width: f32,
@@ -503,7 +504,7 @@ pub mod model {
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     #[serde(rename_all = "PascalCase")]
-    pub struct ProductSpecification {
+    pub struct ProductSpecificationAssocation {
         pub id: Option<i32>,
         pub product_id: i32,
         pub field_id: i32,
@@ -513,7 +514,7 @@ pub mod model {
     
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     #[serde(rename_all = "PascalCase")]
-    pub struct SkuSpecAssignment {
+    pub struct SkuSpecificationAssociation {
         pub id: Option<i32>,
         pub sku_id: i32,
         pub field_id: i32,
@@ -536,7 +537,8 @@ pub mod model {
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     #[serde(rename_all = "camelCase")]
     pub struct Price {
-        pub sku_id: i32,
+        pub sku_id: Option<i32>,
+        pub ref_id: String,
         pub markup: Option<f32>,
         pub list_price: Option<f32>,
         pub base_price: Option<f32>,
@@ -557,7 +559,8 @@ pub mod model {
     #[serde(rename_all = "camelCase")]
     pub struct Inventory {
         pub warehouse_id: String,
-        pub sku_id: i32,
+        pub sku_id: Option<i32>,
+        pub ref_id: String,
         pub unlimited_quantity: bool,
         pub date_utc_on_balance_system: Option<String>,
         pub quantity: i32,

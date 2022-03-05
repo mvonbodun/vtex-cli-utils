@@ -9,7 +9,6 @@ pub fn build_price_file() -> Result<(), Box<dyn Error>> {
 
     // Build a Sku_id lookup fn
     let sku_id_lookup = utils::create_sku_id_lookup();
-    // println!("sku_id_lookup: {:?}", sku_id_lookup);
     // Setup the input and output files
     let in_file = File::open("transform/data/in/Pricing-sorted-subset.csv").unwrap();
     let mut reader = csv::Reader::from_reader(in_file);
@@ -23,7 +22,8 @@ pub fn build_price_file() -> Result<(), Box<dyn Error>> {
 
         if sku_id_lookup.contains_key(&record.catentry_part_number) {
             let price = Price {
-                sku_id: *sku_id_lookup.get(&record.catentry_part_number).unwrap(),
+                sku_id: Some(*sku_id_lookup.get(&record.catentry_part_number).unwrap()),
+                ref_id: record.catentry_part_number.clone(),
                 base_price: Some(record.price),
                 cost_price: Some(record.price),
                 list_price: Some(record.price),

@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fs::File;
 use reqwest::blocking::Client;
-use vtex::model::SkuSpecAssignment;
+use vtex::model::SkuSpecificationAssociation;
 
 use crate::csvrecords::SkuDefineAttrValueRecord;
 use crate::utils;
@@ -52,7 +52,7 @@ pub fn build_sku_spec_assign_file(client: &Client, category_tree_url: String, sp
         let field_value_id = field_value_id_lookup.get(&field_value_key).expect("failed to find field_value_id in field_value_id_lookup");
         println!("record.part_number {}", &record.part_number);
         if sku_id_lookup.contains_key(&record.part_number) {
-            let sku_spec_assign = SkuSpecAssignment {
+            let sku_spec_assign = SkuSpecificationAssociation {
                 id: Some(0), // Hardcode to 0, API does not work with None (null)
                 sku_id: *sku_id_lookup.get(&record.part_number).unwrap(),
                 field_id: field_id.clone(),

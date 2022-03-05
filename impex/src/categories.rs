@@ -48,7 +48,8 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
             keywords: record.keywords,
             is_active: record.is_active,
             lomadee_campaign_code: record.lomadee_campaign_code,
-            ad_words_remarketing_code: record.ad_words_remarketing_code,
+            // Store the category unique_identifier in ad_words_remarketing_code field - deprecated
+            ad_words_remarketing_code: record.unique_identifier.clone(),
             show_in_store_front: record.show_in_store_front,
             show_brand_filter: record.show_brand_filter,
             active_store_front_link: record.active_store_front_link,

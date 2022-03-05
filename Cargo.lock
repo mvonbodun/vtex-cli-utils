@@ -1210,6 +1210,7 @@ name = "vtex"
 version = "0.1.0"
 dependencies = [
  "csv",
+ "futures",
  "log",
  "reqwest",
  "serde",
@@ -1247,6 +1248,7 @@ dependencies = [
  "governor",
  "log",
  "nonzero_ext",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

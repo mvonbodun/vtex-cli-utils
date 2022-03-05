@@ -24,7 +24,8 @@ pub fn build_inventory_file() -> Result<(), Box<dyn Error>> {
         if sku_id_lookup.contains_key(&record.part_number) {
             let inventory = Inventory {
                 warehouse_id: "warehouse1".to_owned(),
-                sku_id: *sku_id_lookup.get(&record.part_number).unwrap(),
+                sku_id: Some(*sku_id_lookup.get(&record.part_number).unwrap()),
+                ref_id: record.part_number.clone(),
                 unlimited_quantity: false,
                 date_utc_on_balance_system: None,
                 quantity: record.quantity,
