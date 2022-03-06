@@ -12,6 +12,34 @@ This utility is most commonly used during an implementation when you need to per
 ## How to install
 Insert steps
 
+## Set environment variables
+To use the **vtex_impex** utility, set the following environment variables:
+```
+ACCOUNT_NAME=
+ENVIRONMENT=
+VTEX_API_APPKEY=
+VTEX_API_APPTOKEN=
+```
+### Setting variables on a Mac
+On a Mac running macOS 10.15 and later, the Zsh shell is used, Bash on previous versions.
+To temporarily set the environment variables, in a **Terminal** window:
+```
+vb@michaels-mbp-2 ~ % export ACCOUNT_NAME=<the VTEX account name>
+vb@michaels-mbp-2 ~ % export ENVIRONMENT=<the VTEX environment>
+vb@michaels-mbp-2 ~ % export VTEX_API_APPKEY=<the VTEX API key - get from the admin console>
+vb@michaels-mbp-2 ~ % export VTEX_API_APPTOKEN=<the VTEX App Token - get from the admin console>
+```
+To verify the variables are set:
+```
+vb@michaels-mbp-2 ~ % echo $ACCOUNT_NAME
+michaelvb
+```
+To permanently set the environment variables, add the variables to your shell's environment file:
+- Zsh shell: **.zshenv** in your home folder
+- Bash shell: **.bash_profile** in your home folder 
+ 
+
+
 ## How to use the utility
 The utility provides command line help
 ```
