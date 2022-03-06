@@ -6,7 +6,7 @@ use reqwest::Client;
 use vtex::model::SpecificationGroup;
 
 pub async fn load_specification_groups(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize) -> Result<(), Box<dyn Error>> {
-
+    info!("Starting specification group load");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/specificationgroup"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);

@@ -4,7 +4,6 @@ use log::*;
 use reqwest::{Client, StatusCode};
 use vtex::model::{SkuSpecificationAssociation, SkuSpecificationValueAssignment};
 use vtex::utils;
-use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::num::NonZeroU32;
@@ -22,9 +21,10 @@ pub async fn gen_sku_spec_association_file(
     sku_file: String,
 ) -> Result<(), Box<dyn Error>> {
 
+    info!("Staring generation of SKU Spec Association file");
     // Build a Sku_id lookup fn
-    // let sku_id_lookup = utils::create_sku_id_lookup();
-    // println!("sku_id_lookup: {}", sku_id_lookup.len());
+    let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
+    debug!("sku_id_lookup: {}", sku_id_lookup.len());
     // Get a lookup HashMap for the product_ref_id for a sku_ref_id
     let product_ref_id_by_sku_ref_id_lookup = utils::create_sku_product_ref_id_lookup(sku_file);
     debug!("product_ref_id_by_sku_ref_id_lookup: {:?}", product_ref_id_by_sku_ref_id_lookup.len());
@@ -50,20 +50,20 @@ pub async fn gen_sku_spec_association_file(
     let out_path = file_path;
     let mut writer = csv::Writer::from_path(out_path)?;
 
-    let mut sku_id_lookup: HashMap<String, i32> = HashMap::new();
+//    let mut sku_id_lookup: HashMap<String, i32> = HashMap::new();
     
     let mut x = 0;
     for line in reader.deserialize() {
         let record: SkuSpecificationValueAssignment = line?;
 
-        let sku_id: i32;
-        if !sku_id_lookup.contains_key(&record.sku_ref_id) {
-            sku_id = utils::get_sku_id_by_ref_id(&record.sku_ref_id, &client, &account_name, &environment).await;
-            sku_id_lookup.insert(record.sku_ref_id.clone(), sku_id.clone());
-        } else {
-            debug!("sku_id_lookup hit. sku_ref_id: {} found.", record.sku_ref_id);
-            sku_id = *sku_id_lookup.get(&record.sku_ref_id).unwrap();
-        }
+        // let sku_id: i32;
+        // if !sku_id_lookup.contains_key(&record.sku_ref_id) {
+        //     sku_id = utils::get_sku_id_by_ref_id(&record.sku_ref_id, &client, &account_name, &environment).await;
+        //     sku_id_lookup.insert(record.sku_ref_id.clone(), sku_id.clone());
+        // } else {
+        //     debug!("sku_id_lookup hit. sku_ref_id: {} found.", record.sku_ref_id);
+        //     sku_id = *sku_id_lookup.get(&record.sku_ref_id).unwrap();
+        // }
         
         // Get the product_ref_id
         let product_ref_id = product_ref_id_by_sku_ref_id_lookup.get(&record.sku_ref_id).unwrap();
@@ -84,7 +84,7 @@ pub async fn gen_sku_spec_association_file(
         // if sku_id_lookup.contains_key(&record.sku_ref_id) {
             let sku_spec_assign = SkuSpecificationAssociation {
                 id: Some(0), // Hardcode to 0, API does not work with None (null)
-                sku_id: sku_id.clone(),
+                sku_id: *sku_id_lookup.get(&record.sku_ref_id).unwrap(),
                 field_id: field_id.clone(),
                 field_value_id: Some(field_value_id.clone()),
                 text: None,
@@ -95,13 +95,15 @@ pub async fn gen_sku_spec_association_file(
     }
     // Flush the records
     writer.flush()?;
-    println!("records written: {}", x);
+    info!("records written: {}", x);
+    info!("Finished generating SKU Spec Association file");
     
     Ok(())
 }
 
-pub async fn load_sku_specs(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
+pub async fn load_sku_spec_associations(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting load of SKU Spec Associations");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/stockkeepingunit/{skuId}/specification"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
@@ -153,7 +155,7 @@ pub async fn load_sku_specs(file_path: String, client: &Client, account_name: St
         })
         .await;
     
-    info!("finished load_sku_spec_associations");
+    info!("finished load of SKU Spec Associations");
 
     Ok(())
 }

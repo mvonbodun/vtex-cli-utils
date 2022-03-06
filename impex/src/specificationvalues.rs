@@ -21,6 +21,7 @@ pub async fn gen_specification_values_file(
     product_file: String,
     ) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting generation of specification values file");
     // Read in the category tree and store in a HashMap for lookup
     let categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
     let category_lookup = utils::parse_category_tree(categories);
@@ -82,7 +83,7 @@ pub async fn gen_specification_values_file(
     }
     // Flush the records
     writer.flush()?;
-
+    info!("Finished specification values file generation");
 
     Ok(())
 
@@ -90,6 +91,7 @@ pub async fn gen_specification_values_file(
 
 pub async fn load_specification_values(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting specification values load");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/specificationvalue"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
@@ -137,39 +139,7 @@ pub async fn load_specification_values(file_path: String, client: &Client, accou
         })
         .await;
     
-    info!("finished load_prices");
+    info!("finished loading specification values");
 
     Ok(())
 }
-
-// pub async fn load_specification_values(file_path: String, client: &Client, url: String) -> Result<(), Box<dyn Error>> {
-
-//     let input = File::open(file_path)?;
-//     let mut rdr = csv::Reader::from_reader(input);
-
-//     for line in rdr.deserialize() {
-//         let record: SpecificationValue = line?;
-//         println!("SpecificationValue Record: {:?}", record);
-
-//         let response = client
-//             .post(&url)
-//             .json(&record)
-//             .send()
-//             .await?;
-            
-//         match response.status() {
-//             StatusCode::OK => {
-//                 let result: SpecificationValue = response.json().await?;
-//                 println!("FieldValueId: {:?}", result.field_value_id);
-//             },
-//             StatusCode::BAD_REQUEST => {
-//                 println!("Error: {:#?}", response.text().await?);
-//             },
-//             _ => {
-//                 println!("Error: {:#?}", response.text().await?);
-//             },
-//         }
-//     }
-
-//     Ok(())
-// }

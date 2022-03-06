@@ -747,49 +747,39 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // Load specifications
         if cmd.action.eq("import") {
             specifications::load_specifications(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency).await?;
-            info!("finished loading specifications");
         } else if cmd.action.eq("genproductspecsfile") {
             specifications::gen_product_specifications_file(cmd.input_file.to_string(), &client, account_name, environment, cmd.prod_spec_assign_file, cmd.product_file).await?;
-            info!("finished generating product specifications file");
         } else if cmd.action.eq("genskuspecsfile") {
             specifications::gen_sku_specifications_file(cmd.input_file.to_string(), &client, account_name, environment, cmd.sku_spec_allowed_values_file, cmd.product_file).await?;
-            info!("finished generating sku specifications file");
         }
     } else if cmd.object.eq("specificationvalue") {
         if cmd.action.eq("import") {
             // Load field values
             specificationvalues::load_specification_values(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading specification values");
         } else if cmd.action.eq("genspecvaluesfile") {
             specificationvalues::gen_specification_values_file(cmd.input_file.to_string(), &client, account_name, environment, cmd.sku_spec_allowed_values_file, cmd.product_file).await?;
-            info!("finished generating specifications value file")
         }
     } else if cmd.object.eq("product") {
         // Load products
         if cmd.action.eq("import") {
             products::load_products(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading products");
         }
     } else if cmd.object.eq("sku") {
         // Load skus
         if cmd.action.eq("import") {
             skus::load_skus(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading skus");
         }
     } else if cmd.object.eq("productspecassociation") {
         // Load product specs
         if cmd.action.eq("import") {
             productspecassociation::load_product_spec_associations(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading product specifications");
         } else if cmd.action.eq("genproductspecassocfile") {
             productspecassociation::gen_product_spec_association_file(cmd.input_file, &client, account_name, environment, cmd.prod_spec_assign_file, cmd.product_file).await?;
-            info!("finished generating product associations file");
         }
     } else if cmd.object.eq("skuspecassociation") {
         // Load sku spec assignments
         if cmd.action.eq("import") {
-            skuspecassociation::load_sku_specs(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading sku spec assignments");
+            skuspecassociation::load_sku_spec_associations(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
         } else if cmd.action.eq("genskuspecassocfile") {
             skuspecassociation::gen_sku_spec_association_file(cmd.input_file, &client, account_name, environment, cmd.sku_spec_assign_file, cmd.product_file, cmd.sku_file).await?;
         }
@@ -797,7 +787,6 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // Load sku files
         if cmd.action.eq("import") {
             skufiles::load_sku_files(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading sku files");
         } else if cmd.action.eq("genskufile") {
             skufiles::gen_sku_file(cmd.input_file.to_string(), &client, account_name, environment, cmd.sku_file).await?;
         }
@@ -805,13 +794,11 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         // Load sku files
         if cmd.action.eq("import") {
             prices::load_prices(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading prices");
         }
     } else if cmd.object.eq("inventory") {
         // Load sku files
         if cmd.action.eq("import") {
             inventory::load_inventory(cmd.input_file.to_string(), &client, account_name, environment, cmd.concurrency, cmd.rate_limit).await?;
-            info!("finished loading inventory");
         }
     } else {
         info!("Did not enter a valid object");

@@ -20,6 +20,7 @@ pub async fn gen_product_spec_association_file(
     product_file: String,
     ) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting generate product spec assoocation file");
     // Read in the Specificaiton Groups and store in a HashMap for lookup
     let groups = utils::get_vtex_field_groups(client, &account_name, &environment).await;
     let group_lookup = utils::parse_spec_groups(groups);
@@ -87,6 +88,7 @@ pub async fn gen_product_spec_association_file(
     }
     // Flush the records
     writer.flush()?;
+    info!("Finished generating Product Spec Association file");
 
     Ok(())
 
@@ -94,10 +96,10 @@ pub async fn gen_product_spec_association_file(
 
 pub async fn load_product_spec_associations(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting product spec association load");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/product/{productId}/specification"
     .replace("{accountName}", &account_name)
     .replace("{environment}", &environment);
-    // .replace("{productId}", record.product_ref_id.as_str());
 
     let input = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(input);
@@ -147,42 +149,7 @@ pub async fn load_product_spec_associations(file_path: String, client: &Client, 
         })
         .await;
     
-    info!("finished load_product_spec_associations");
+    info!("finished product spec association load");
 
     Ok(())
 }
-
-// pub async fn load_product_specs(file_path: String, client: &Client, url: String) -> Result<(), Box<dyn Error>> {
-
-//     let input = File::open(file_path)?;
-//     let mut rdr = csv::Reader::from_reader(input);
-
-//     for line in rdr.deserialize() {
-//         let record: ProductSpecification = line?;
-
-//         let response = client
-//             .post(&url)
-//             .json(&record)
-//             .send()
-//             .await?;
-
-//         println!("response.status: {}", response.status());
-//         match response.status() {
-//             StatusCode::OK => {
-//                 let body = response.text().await?;
-//                 // println!("body: {:?}", body);
-//                 let result: Result<ProductSpecification, serde_json::Error> = serde_json::from_str(&body);
-//                 match result {
-//                     Ok(spec) => println!("spec id: {}", spec.id.unwrap()),
-//                     Err(e) => println!("deserialize product error: {:?}", e),
-//                 }
-//             },
-//             _ => {
-//                 println!("Status Code: [{:?}] Error: [{:#?}] \n record: {:?}", response.status(), response.text().await?, record);
-//             },
-//         }
-
-//     }
-
-//     Ok(())
-// }

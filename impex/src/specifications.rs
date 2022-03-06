@@ -18,12 +18,13 @@ pub async fn gen_product_specifications_file(
         product_file: String
     ) -> Result<(), Box<dyn Error>> {
 
+        info!("Starting product specification file generation");
         // Read in the Specificaiton Groups and store in a HashMap for lookup
         let groups = utils::get_vtex_field_groups(client, &account_name, &environment).await;
         let group_lookup = utils::parse_spec_groups(groups);
         debug!("group_lookup: {:?}", group_lookup.len());
         // TODO: Need to figure out this hard-coded value
-        let prod_spec_id = group_lookup.get("Product Specifications").unwrap();
+        let prod_spec_id = group_lookup.get("Default Specification Group").expect("Expected [Default Specification Group]. Ensure you create a specification group with this value.");
     
         // Read in the category tree and store in a HashMap for lookup
         let categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
@@ -92,6 +93,7 @@ pub async fn gen_product_specifications_file(
         }
         // Flush the records
         writer.flush()?;
+        info!("Finished generating product specification file");
     
         Ok(())
 }
@@ -105,12 +107,14 @@ pub async fn gen_sku_specifications_file(
     product_file: String
 ) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting SKU specification file generation");
+
     // Read in the Specificaiton Groups and store in a HashMap for lookup
     let groups = utils::get_vtex_field_groups(client, &account_name, &environment).await;
     let group_lookup = utils::parse_spec_groups(groups);
     debug!("group_lookup: {:?}", group_lookup.len());
     // TODO: Need to figure out this hard-coded value
-    let prod_spec_id = group_lookup.get("Product Specifications").unwrap();
+    let prod_spec_id = group_lookup.get("Default Specification Group").expect("Expected [Default Specification Group]. Ensure you create a specification group with this value.");
 
     // Read in the category tree and store in a HashMap for lookup
     let categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
@@ -177,12 +181,14 @@ pub async fn gen_sku_specifications_file(
     }
     // Flush the records
     writer.flush()?;
+    info!("Finished generating SKU specification file");
 
     Ok(())
 }
 
 pub async fn load_specifications(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting specification load");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/specification"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);

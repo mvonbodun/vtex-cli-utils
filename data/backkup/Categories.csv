@@ -1,0 +1,12 @@
+Id,UniqueIdentifier,Name,FatherCategoryId,ParentUniqueIdentifier,Title,Description,Keywords,IsActive,LomadeeCampaignCode,AdWordsRemarketingCode,ShowInStoreFront,ShowBrandFilter,ActiveStoreFrontLink,GlobalCategoryId,StockKeepingUnitSelectionMode,Score,LinkId,HasChildren
+,1-0-0,Men,,,Men,Men,Men,true,,,true,true,true,,SPECIFICATION,,,
+,1-2-0,Mens Apparel,,1-0-0,Mens Apparel,Mens Apparel,Mens Apparel,true,,,true,true,true,,SPECIFICATION,,,
+,1-2-3,Casual Short Sleeve Shirts,,1-2-0,Casual Short Sleeve Shirts,Casual Short Sleeve Shirts,Casual Short Sleeve Shirts,true,,,true,true,true,,SPECIFICATION,,,
+,1-2-7,Classic Jeans,,1-2-0,Classic Jeans,Classic Jeans,Classic Jeans,true,,,true,true,true,,SPECIFICATION,,,
+,1-31-0,Accessories,,1-0-0,Accessories,Mens Accessories,Accessories,true,,,true,true,true,,SPECIFICATION,,,
+,1-31-299,Mens Sunglasses,,1-31-0,Mens Sunglasses,Mens Sunglasses,Mens Sunglasses,true,,,true,true,true,,SPECIFICATION,,,
+,52-0-0,Women,,,Women,Women,Women,true,,,true,true,true,,SPECIFICATION,,,
+,52-53-0,Misses Apparel,,52-0-0,Misses Apparel,Misses Apparel,Misses Apparel,true,,,true,true,true,,SPECIFICATION,,,
+,52-53-64,Shorts,,52-53-0,Shorts,Shorts,Shorts,true,,,true,true,true,,SPECIFICATION,,,
+,52-105-0,Juniors Apparel,,52-0-0,Juniors Apparel,Juniors Apparel,Juniors Apparel,true,,,true,true,true,,SPECIFICATION,,,
+,52-105-107,Tank Tops,,52-105-0,Tank Tops,Tank Tops,Tank Tops,true,,,true,true,true,,SPECIFICATION,,,

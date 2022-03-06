@@ -8,10 +8,10 @@ use std::sync::Arc;
 use governor::{Quota, RateLimiter, Jitter};
 use reqwest::{Client, StatusCode};
 use vtex::model::Product;
-// use crate::csvrecords::ProductLookup;
 
 pub async fn load_products(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting load of products");
     // Read in the category tree and store in a HashMap for lookup
     let categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
     let category_lookup = utils::parse_category_tree(categories);
@@ -19,7 +19,7 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
 
     // Get a lookup for the cateogory name of a category by GroupIdentifier
     let category_identifier_name_lookup = utils::create_category_name_lookup(&client, &account_name, &environment).await;
-    println!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
+    debug!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
 
     // Get a lookup for the brand_id by brand name
     let brand_id_lookup = utils::create_brand_lookup(client, &account_name, & environment).await;
@@ -31,8 +31,6 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
         .replace("{environment}", &environment);
     let input = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(input);
-    // let out_path = "data/ProductLookup.csv";
-    // let mut writer = csv::Writer::from_path(out_path)?;
         
     let mut product_recs: Vec<Product> = Vec::new();
 
@@ -43,7 +41,7 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
         let cat_unique_identifier = record.category_unique_identifier.as_ref().unwrap();
         let parent_cat_name = category_identifier_name_lookup.get(cat_unique_identifier).unwrap();
         // Look up the VTEX Category Id
-        debug!("PartNumber: {:?}  parent_cat_name: {:?}", &record.ref_id, &parent_cat_name);
+        debug!("ref_id: {:?}  parent_cat_name: {:?}", &record.ref_id, &parent_cat_name);
         let vtex_cat_id = category_lookup.get(&parent_cat_name.clone()).unwrap();
         record.category_id = Some(*vtex_cat_id);
         // Look up the brand_id
@@ -87,7 +85,7 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
         })
         .await;
     
-    info!("finished load_products");
+    info!("finished loading products");
 
     Ok(())
 }

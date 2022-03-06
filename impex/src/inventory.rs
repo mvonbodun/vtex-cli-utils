@@ -12,6 +12,7 @@ use futures::{stream, StreamExt};
 
 pub async fn load_inventory(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, _rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting load of Inventory");
     let url = "https://{accountName}.{environment}.com.br/api/logistics/pvt/inventory/skus/{skuId}/warehouses/{warehouseId}"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
@@ -66,7 +67,7 @@ pub async fn load_inventory(file_path: String, client: &Client, account_name: St
         })
         .await;
     
-    info!("finished load_inventory");
+    info!("finished loading inventory");
 
     Ok(())    
     

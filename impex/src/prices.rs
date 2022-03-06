@@ -11,6 +11,7 @@ use futures::{stream, StreamExt, executor::block_on};
 
 pub async fn load_prices(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting Price load");
     let url = "https://api.vtex.com/{accountName}/pricing/prices/{skuId}"
         .replace("{accountName}", &account_name);
     let input = File::open(file_path)?;
@@ -62,7 +63,7 @@ pub async fn load_prices(file_path: String, client: &Client, account_name: Strin
         })
         .await;
     
-    info!("finished load_prices");
+    info!("finished price load");
 
     Ok(())
 

@@ -7,7 +7,7 @@ use vtex::model::Category;
 use reqwest::{Client, StatusCode};
 
 pub async fn load_categories(file_path: String, client: &Client, account_name: String, environment: String) -> Result<(), Box<dyn Error>> {
-
+    info!("Begin loading categories");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/category"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
@@ -60,7 +60,6 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
             has_children: record.has_children
         };
     
-        println!("before let new_post");
         let response = client
             .post(&url)
             .json(&new_post)
@@ -91,6 +90,7 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
         // println!("after print new_post");
     }
     debug!("HashMap size: {}", category_ids.len());
+    info!("Finished loading categories");
 
     Ok(())
 

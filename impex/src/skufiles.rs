@@ -18,6 +18,7 @@ pub async fn gen_sku_file(
     sku_file: String
 ) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting generation of SKU Files file");
     // Build a Sku_id lookup fn
     let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
 
@@ -65,13 +66,15 @@ pub async fn gen_sku_file(
     }
     // Flush the records
     writer.flush()?;
-    println!("records writtern: {}", x);
+    info!("records writtern: {}", x);
+    info!("Finished generating SKU Files file");
 
     Ok(())
 }
 
 pub async fn load_sku_files(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
 
+    info!("Starting load of SKU Files file");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/stockkeepingunit/{skuId}/file"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
@@ -124,7 +127,7 @@ pub async fn load_sku_files(file_path: String, client: &Client, account_name: St
         })
         .await;
     
-    info!("finished load_sku_files");
+    info!("finished loading SKU Files file");
 
     Ok(())
 }
