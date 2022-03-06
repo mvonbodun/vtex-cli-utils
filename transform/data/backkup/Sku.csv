@@ -1,2 +1,0 @@
-Id,ProductId,IsActive,Name,RefId,PackagedHeight,PackagedLength,PackagedWidth,PackagedWeightKg,Height,Length,Width,WeightKg,CubicWeight,IsKit,CreationDate,RewardValue,EstimatedDateArrival,ManufacturerCode,CommercialConditionId,MeasurementUnit,UnitMultiplier,ModalType,KitItensSellApart,ActivateIfPossible
-,1,false,"Color MIRAGE BLUE Size XX-Big","0094913333",0,0,0,0,0,0,0,0,0,false,"2021-10-01T00:00:00",0,"2021-11-01T00:00:00",,,"un",1,"",false,true
