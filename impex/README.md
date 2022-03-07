@@ -10,40 +10,30 @@ The utility was developed in the RUST language because of it's high performance 
 This utility is most commonly used during an implementation when you need to perform the initial load.  It can also be used for a large batch of changes.  Ongoing updates on a daily basis are better handled by detecting changes in the source system and leveraging an integration tool like Workado, Wevo or Digibee to push the changes in to VTEX in real time.
 
 ## How to install
-Insert steps
+Download the Mac OS for Apple Silicon here:
+[vtex_impex](https://drive.google.com/file/d/114A_0RoVoNijoB69mS3ZzKsPHG1sJQFn/view?usp=sharing)
 
-## Set environment variables
-To use the **vtex_impex** utility, set the following environment variables:
+*Note*:  Windows version comming shortly.  You can build from source:
+- Download RUST for Windows
+- checkout the project from Github
+- To compile the program - from the root of the **vtex-cli-utilities** folder:
+```
+cargo build
+```
+
+### Create a .env file
+In the directory where the **vtex_impex** utility was copied, create a .env file
 ```
 ACCOUNT_NAME=
 ENVIRONMENT=
 VTEX_API_APPKEY=
 VTEX_API_APPTOKEN=
 ```
-### Setting variables on a Mac
-On a Mac running macOS 10.15 and later, the Zsh shell is used, Bash on previous versions.
-To temporarily set the environment variables, in a **Terminal** window:
-```
-vb@michaels-mbp-2 ~ % export ACCOUNT_NAME=<the VTEX account name>
-vb@michaels-mbp-2 ~ % export ENVIRONMENT=<the VTEX environment>
-vb@michaels-mbp-2 ~ % export VTEX_API_APPKEY=<the VTEX API key - get from the admin console>
-vb@michaels-mbp-2 ~ % export VTEX_API_APPTOKEN=<the VTEX App Token - get from the admin console>
-```
-To verify the variables are set:
-```
-vb@michaels-mbp-2 ~ % echo $ACCOUNT_NAME
-michaelvb
-```
-To permanently set the environment variables, add the variables to your shell's environment file:
-- Zsh shell: **.zshenv** in your home folder
-- Bash shell: **.bash_profile** in your home folder 
- 
-
 
 ## How to use the utility
-The utility provides command line help
+The utility provides command line help.  Open a **Terminal** window on Mac OS X and at the prompt type:
 ```
-vtex_impex --help
+vb@michaels-mbp-2 ~ % vtex_impex --help
 ```
 This will output the different subcommands
 ```
@@ -75,7 +65,7 @@ SUBCOMMANDS:
 ```
 Each sub command has it's own help
 ```
-vtex_impex specification --help
+vb@michaels-mbp-2 ~ % vtex_impex specification --help
 ```
 Which provides the following output
 ```
@@ -103,19 +93,19 @@ OPTIONS:
 ```
 ## Example Loading Data
 To load catalog data into VTEX, the utility supports the following steps right now.  We recommend using the order below for loading the data into VTEX.
-- [Category](##category)
-- [Brand](##brand)
-- [Specification Group](##specification-group)
-- [Product Specification](##product-specification)
-- [SKU Specification](##sku-specification)
+- [Category](#category)
+- [Brand](#brand)
+- [Specification Group](#specification-group)
+- [Product Specification](#product-specification)
+- [SKU Specification](#sku-specification)
 - [Specification Value](##specification-value)
-- [Product](##product)
-- [SKU](##sku)
-- [Product Specification Association](##product-specification-association)
-- [SKU Specification Association](##sku-specification-association)
-- [SKU File (Images)](##images)
-- [Price](##price)
-- [Inventory](##images)
+- [Product](#product)
+- [SKU](#sku)
+- [Product Specification Association](#product-specification-association)
+- [SKU Specification Association](#sku-specification-association)
+- [SKU File (Images)](#sku-files)
+- [Price](#price)
+- [Inventory](#inventory)
 
 ## Category
 Category uses a CSV layout very similar to the VTEX API for Category with a couple of new columns added:

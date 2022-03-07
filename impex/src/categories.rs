@@ -38,7 +38,7 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
         debug!("father_category_id: {:?}", father_category_id);
 
         let new_post = Category {
-            id: None,
+            id: record.id.clone(),
             unique_identifier: record.unique_identifier.clone(),
             name: record.name.to_string(),
             father_category_id: father_category_id.clone(),
