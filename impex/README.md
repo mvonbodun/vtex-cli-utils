@@ -10,19 +10,26 @@ The utility was developed in the RUST language because of it's high performance 
 This utility is most commonly used during an implementation when you need to perform the initial load.  It can also be used for a large batch of changes.  Ongoing updates on a daily basis are better handled by detecting changes in the source system and leveraging an integration tool like Workado, Wevo or Digibee to push the changes in to VTEX in real time.
 
 ## How to install
-Download the Mac OS for Apple Silicon here:
-[vtex_impex](https://drive.google.com/file/d/114A_0RoVoNijoB69mS3ZzKsPHG1sJQFn/view?usp=sharing)
 
-*Note*:  Windows version comming shortly.  You can build from source:
-- Download RUST for Windows
-- checkout the project from Github
-- To compile the program - from the root of the **vtex-cli-utilities** folder:
+### Download the executable for your OS
+1. Download the executables from the [releases](https://github.com/mvonbodun/vtex-cli-utils/releases) page for the project on Github.
+2. Make sure to add executable permissions on Mac or Linux
+```
+chmod +x ./vtex_impex
+```
+*Note*: On Mac you may get an error when trying to execute the program that it is unsigned software.  You can override this by going to **System Preferences -> Security & Privacy -> General tab** and allowing software from sources other than the App Store
+
+### Build from Source
+You can build from source:
+- Download [RUST](https://www.rust-lang.org/)
+- Checkout the project from Github
+- To compile the program - from the root of the **vtex-cli-utils** folder:
 ```
 cargo build
 ```
 
 ### Create a .env file
-In the directory where the **vtex_impex** utility was copied, create a .env file
+To run the program, several environment variables need to be set to connect with your VTEX instance.  In the directory where the **vtex_impex** utility was copied, create a .env file
 ```
 ACCOUNT_NAME=
 ENVIRONMENT=
@@ -33,7 +40,7 @@ VTEX_API_APPTOKEN=
 ## How to use the utility
 The utility provides command line help.  Open a **Terminal** window on Mac OS X and at the prompt type:
 ```
-vb@michaels-mbp-2 ~ % vtex_impex --help
+vb@michaels-mbp-2 ~ % ./vtex_impex --help
 ```
 This will output the different subcommands
 ```
@@ -65,7 +72,7 @@ SUBCOMMANDS:
 ```
 Each sub command has it's own help
 ```
-vb@michaels-mbp-2 ~ % vtex_impex specification --help
+vb@michaels-mbp-2 ~ % ./vtex_impex specification --help
 ```
 Which provides the following output
 ```
@@ -91,14 +98,64 @@ OPTIONS:
         --prod_spec_assigns_file <PRODUCT_SPEC_ASSIGNMENTS_FILE>         Sets the Product Specification Assignments file
         --sku_spec_allowed_values_file <SKU_SPEC_ALLOWED_VALUES_FILE>    Sets the SKU Specification Allowed Values file
 ```
+## Understanding the CSV file formats
+Unlike the Google Drive Format Spreadsheet that has been developed by the U.S. 1st Party Apps team, **vtex_impex** uses multiple CSV files to load the data into VTEX.  **vtex_impex** is intended for large datasets (greater than 1000 SKUs) and complex specification requirements.
+
+### The Starting CSV files
+The following CSV files are what you should create to use the **vtex_implex** utility to load data:
+- [Categories.csv](../data/Categories.csv)
+- [Products.csv](../data/Products.csv)
+- [Skus.csv](../data/Skus.csv)
+- [SpecificationGroups.csv](../data/SpecificationGroups.csv)
+- [ProductSpecificationAssignments.csv](../data/ProductSpecificationAssignments.csv)
+- [SkuSpecificationAllowedValues.csv](../data/SkuSpecificationAllowedValues.csv)
+- [SkuSpecificationValueAssignments.csv](../data/SkuSpecificationValueAssignments.csv)
+- [Prices.csv](../data/Prices.csv)
+- [Inventory.csv](../data/Inventory.csv)
+
+The CSV files above alternate identifiers to provide references across the different files since the VTEX Ids are not known in a new load.  Examples:
+- In *Categories.csv*, *UniqueIdentifier* and *ParentUniqueIdentifier* allow you to use an alternate reference for a category.  These values carry through into the *Products.csv*
+- In *Products.csv*, *RefId* is used in other files like *ProductSpecificationAssignments* and *SkuSpecificationAllowedValues.csv*
+- In *Skus.csv*, *RefId* is used in other files like *SkuSpecificationValueAssignments.csv*, *Prices.csv*, *Inventory.csv*
+
+### The Generated CSV files
+From the collection of files listed above, the utility will generate other files with VTEX Identifiers resolved so the data can be loaded into VTEX.  Files that are generated:
+- [Brands.csv](../data/Brands.csv)
+- [ProductSpecifications.csv](../data/ProductSpecifications.csv)
+- [ProductSpecificationAssociations.csv](../data/ProductSpecificationAssociations.csv)
+- [SkuSpecifications.csv](../data/SkuSpecifications.csv)
+- [SpecificationValues.csv](../data/SpecificationValues.csv)
+- [SkuSpecificationAssociations.csv](../data/SkuSpecificationAssociations.csv)
+- [SkuFiles.csv](../data/SkuFiles.csv)
+
+
 ## Example Loading Data
+To better understand how the **vtex_impex** utility works and to understand the CSV formats, we recommend you walk through the following example.  After going through this example, you can begin to change the files with your own data and load it into VTEX.
+
+We recommend you download the [data](../data) folder from the **vtex-cli-utils** project on Github.  Put the data folder in the directory where you put the **vtex_impex** binary.  The folder structure should look like the following:
+```
+vb@Michaels-MacBook-Pro-2 vtex-cli-utils % pwd
+/Users/vb/Software/vtex-cli-utils
+vb@Michaels-MacBook-Pro-2 vtex-cli-utils % ls -la
+total 57736
+drwxr-xr-x   5 vb  staff       160 Mar  7 21:47 .
+drwxr-xr-x   9 vb  staff       288 Mar  7 21:44 ..
+-rw-r--r--   1 vb  staff       505 Mar  7 21:47 .env
+drwxr-xr-x  18 vb  staff       576 Mar  7 21:12 data
+-rwxr-xr-x   1 vb  staff  29554744 Mar  7 19:40 vtex_impex
+vb@Michaels-MacBook-Pro-2 vtex-cli-utils % 
+```
+We recommend that you remove the files that will be generated from the data folder [The Generated CSV files](##the-generated-csv-files) before starting the steps below.
+
+*Note*: you will need to use "./" on Mac and Linux in front of "vtex_impex" to run the program if you are in the directory where you copied the program.
+
 To load catalog data into VTEX, the utility supports the following steps right now.  We recommend using the order below for loading the data into VTEX.
 - [Category](#category)
 - [Brand](#brand)
 - [Specification Group](#specification-group)
 - [Product Specification](#product-specification)
 - [SKU Specification](#sku-specification)
-- [Specification Value](##specification-value)
+- [Specification Value](#specification-value)
 - [Product](#product)
 - [SKU](#sku)
 - [Product Specification Association](#product-specification-association)
@@ -127,13 +184,13 @@ The format looks like the following:
 *Note*: A child category cannot be created before it's parent.  Make sure the categories are in the proper sequence of the CSV file.
 
 ### Running a category import
-To run a category import using the sample data supplied:
+To run a category import using the sample data supplied (Note: the terminal command prompt is not shown):
 ```
-RUST_LOG=info vtex_impex category -a import -f data/Categories.csv
+RUST_LOG=info ./vtex_impex category -a import -f data/Categories.csv
 ```
 To turn on debugging set *RUST_LOG=debug* Note: You can also set this once in your command line environment variable (bash or .profile depending on your operating system)
 ```
-RUST_LOG=debug vtex_impex category -a import -f data/Categories.csv
+RUST_LOG=debug ./vtex_impex category -a import -f data/Categories.csv
 ```
 The output should look similar to the following:
 ```
@@ -153,6 +210,7 @@ The output should look similar to the following:
 1.136 [INFO] - Finished loading categories
 1.136 [INFO] - Finished data load
 ```
+*Note*:  If you run the same file again, you will create duplicate categories.  Delete the categories using: [https://{accountName}.myvtex.com/admin/Site/FullCleanUp.aspx](https://{accountName}.myvtex.com/admin/Site/FullCleanUp.aspx)
 
 ## Brand
 Brand uses a CSV layout very similar to the VTEX API for Category with a couple of new columns added:
@@ -173,7 +231,7 @@ The program will loop through all the records in the Product file and extract th
 
 To generate a brand file:
 ```
-RUST_LOG=info vtex_impex brand -a genbrandfile -f Brands.csv --product_file data/Products.csv
+RUST_LOG=info ./vtex_impex brand -a genbrandfile -f Brands.csv --product_file data/Products.csv
 ```
 It should generate output like the following:
 ```
@@ -185,7 +243,7 @@ It should generate output like the following:
 ### Running a Brand import
 To run a brand import:
 ```
-RUST_LOG=info vtex_impex brand -a import -f data/Brands.csv
+RUST_LOG=info ./vtex_impex brand -a import -f data/Brands.csv
 ```
 You should see output like the following:
 ```
@@ -215,7 +273,7 @@ The format for the CSV file:
 ### Running a Specification Group import
 To run a specification group import:
 ```
-RUST_LOG=info vtex_impex specificationgroup -a import -f data/SpecificationGroups.csv
+RUST_LOG=info ./vtex_impex specificationgroup -a import -f data/SpecificationGroups.csv
 ```
 You should see output like the following:
 ```
@@ -254,6 +312,8 @@ You should see output like this:
 1.443 [INFO] - finished generating product specifications file
 1.443 [INFO] - Finished data load
 ```
+*Note*: The action **genproductspecsfile** creates all the specifications as a **FieldTypeId** of "1" which is "Text".  If you want a defined set of values for the Specification, and used a FieldTypeId of "6" which is "Radio Button" you will need to handle this manually.  This should only matter if you plan to use the VTEX Admin interface to create new products and want to be able to select a value rather than manually enter the text.
+
 ### Running a Product Specification Import
 To run a product specification import:
 ```
@@ -298,7 +358,7 @@ The program will generate the specifications and add them to the leaf level cate
 
 To generate the file:
 ```
-RUST_LOG=info vtex_impex specification -a genskuspecsfile -f data/SkuSpecifications.csv --sku_spec_allowed_values_file data/SkuSpecificationAllowedValues.csv --product_file data/Products.csv
+RUST_LOG=info ./vtex_impex specification -a genskuspecsfile -f data/SkuSpecifications.csv --sku_spec_allowed_values_file data/SkuSpecificationAllowedValues.csv --product_file data/Products.csv
 ```
 You should see output like this:
 ```
@@ -308,10 +368,12 @@ You should see output like this:
 1.531 [INFO] - finished generating sku specifications file
 1.531 [INFO] - Finished data load
 ```
+*Note*:  The action **genskuspecsfile** generates a file with FieldTypeId always set to "6" which is "Radio Button".  SKU Specificaitons have a defined set of values.  If you want to use a different FieldTypeId, you would need to manually change it.
+
 ### Running a SKU Specification Import
 To run a SKU specification import:
 ```
-RUST_LOG=info vtex_impex specification -a import -f data/SkuSpecifications.csv
+RUST_LOG=info ./vtex_impex specification -a import -f data/SkuSpecifications.csv
 ```
 You should see output like the following:
 ```
@@ -338,7 +400,7 @@ The program will ensure that the values remain unique even if specification valu
 ### To generate a Specification Value File
 To generate a Specification Value file:
 ```
-RUST_LOG=info vtex_impex specificationvalue -a genspecvaluesfile -f data/SpecificationValues.csv --product_file data/Products.csv --sku_spec_allowed_values_file data/SkuSpecificationAllowedValues.csv
+RUST_LOG=info ./vtex_impex specificationvalue -a genspecvaluesfile -f data/SpecificationValues.csv --product_file data/Products.csv --sku_spec_allowed_values_file data/SkuSpecificationAllowedValues.csv
 ```
 You should see output like the following:
 ```
@@ -351,7 +413,7 @@ You should see output like the following:
 ### Running a Specification Value Import
 To run a Specification Value import:
 ```
-RUST_LOG=info vtex_impex specificationvalue -a import -f data/SpecificationValues.csv
+RUST_LOG=info ./vtex_impex specificationvalue -a import -f data/SpecificationValues.csv
 ```
 You should see output like the following:
 ```
@@ -381,7 +443,7 @@ The format of the file looks like the following:
 ### Running a Product Import
 To run a product import:
 ```
-RUST_LOG=info vtex_impex product -a import -f data/Products.csv
+RUST_LOG=info ./vtex_impex product -a import -f data/Products.csv
 ```
 You should see output like the following:
 ```
@@ -410,7 +472,7 @@ The format looks like the following:
 ### Running a SKU Import
 To run a SKU Import:
 ```
-RUST_LOG=info vtex_impex sku -a import -f data/Skus.csv
+RUST_LOG=info ./vtex_impex sku -a import -f data/Skus.csv
 ```
 You should see output like the following:
 ```
@@ -434,7 +496,7 @@ The Product Specification Association file is generated from two files:
 ### To generate a Product Specification Association File
 To generate the file:
 ```
-RUST_LOG=info vtex_impex productspecassociation -a genproductspecassocfile -f data/ProductSpecificationAssociations.csv --prod_spec_assigns_file data/ProductSpecificationAssignments.csv --product_file data/Products.csv
+RUST_LOG=info ./vtex_impex productspecassociation -a genproductspecassocfile -f data/ProductSpecificationAssociations.csv --prod_spec_assigns_file data/ProductSpecificationAssignments.csv --product_file data/Products.csv
 ```
 You should see output like the following:
 ```
@@ -447,7 +509,7 @@ You should see output like the following:
 ### Running a Product Specification Association Import
 To run a Product Specification Association Import:
 ```
-RUST_LOG=info vtex_impex productspecassociation -a import -f data/ProductSpecificationAssociations.csv
+RUST_LOG=info ./vtex_impex productspecassociation -a import -f data/ProductSpecificationAssociations.csv
 ```
 You should see output like the following:
 ```
@@ -473,7 +535,7 @@ The SKU Specification Association file is generated from three files:
 ### To generate a SKU Specification Association File
 To generate a SKU Specification Association file:
 ```
-RUST_LOG=info vtex_impex skuspecassociation -a genskuspecassocfile -f data/SkuSpecificationAssociations.csv --sku_spec_assigns_file data/SkuSpecificationValueAssignments.csv --product_file data/Products.csv --sku_file data/Skus.csv
+RUST_LOG=info ./vtex_impex skuspecassociation -a genskuspecassocfile -f data/SkuSpecificationAssociations.csv --sku_spec_assigns_file data/SkuSpecificationValueAssignments.csv --product_file data/Products.csv --sku_file data/Skus.csv
 ```
 You should see output like the following:
 ```
@@ -493,7 +555,7 @@ You should see output like the following:
 ### Running a SKU Specification Association Import
 To run a SKU Specification Association Import
 ```
- RUST_LOG=info vtex_impex skuspecassociation -a import -f data/SkuSpecificationAssociations.csv
+ RUST_LOG=info ./vtex_impex skuspecassociation -a import -f data/SkuSpecificationAssociations.csv
 ```
 You should see output like the following:
 ```
@@ -515,7 +577,7 @@ The SKU Files CSV is generated from the Skus.csv file format which contains an I
 ### To generate the SKU Files file
 To generate the SKU Files file:
 ```
-RUST_LOG=info vtex_impex skufile -a genskufile -f data/SkuFiles.csv --sku_file data/Skus.csv
+RUST_LOG=info ./vtex_impex skufile -a genskufile -f data/SkuFiles.csv --sku_file data/Skus.csv
 ```
 You should see output like the following:
 ```
@@ -535,7 +597,7 @@ You should see output like the following:
 ### Running a SKU Files import
 To run a SKU File import:
 ```
-RUST_LOG=info vtex_impex skufile -a import -f data/SkuFiles.csv
+RUST_LOG=info ./vtex_impex skufile -a import -f data/SkuFiles.csv
 ```
 You should see output like the following:
 ```
@@ -568,7 +630,7 @@ The Price API at VTEX is rate limited to 40 inserts/updates a second.  The **-r*
 
 To run a Price import:
 ```
-RUST_LOG=info vtex_impex price -a import -f data/Prices.csv -c 4 -r 36
+RUST_LOG=info ./vtex_impex price -a import -f data/Prices.csv -c 4 -r 36
 ```
 You should see the following output:
 ```
@@ -604,9 +666,9 @@ The file is in the following format:
 ### Running an Inventory import
 The Inventory API does not appear to be rate limited.  You may want to experiment with the CONCURRENCY VALUE: **-c**
 
-To run an Inventory import:
+To run an Inventory import (this example sets the concurrency parameter to 12):
 ```
-RUST_LOG=info vtex_impex inventory -a import -f data/Inventory3.csv -c 12
+RUST_LOG=info ./vtex_impex inventory -a import -f data/Inventory.csv -c 12
 ```
 You should see the following output:
 ```
