@@ -16,12 +16,12 @@ const CONCURRENT_REQUESTS: usize = 12;
 // Get the in the Field Groups to store the Id and Name, store in a HashMap
 pub async fn get_vtex_field_groups(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> Vec<SpecificationGroup> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/specification/groupbycategory/1"
-            .replace("{accountName}", &account_name)
-            .replace("{environment}", &environment);
+            .replace("{accountName}", account_name)
+            .replace("{environment}", environment);
     let groups: Vec<SpecificationGroup> =
         client.get(url).send().await.unwrap().json().await.unwrap();
     groups
@@ -30,13 +30,13 @@ pub async fn get_vtex_field_groups(
 // Get the VTEX Category Tree - to store the Id and Name in a HashMap
 pub async fn get_vtex_category_tree(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> Vec<CategoryTree> {
     // TODO: Fix that this is hardcoded to 3 levels
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pub/category/tree/3"
-        .replace("{accountName}", &account_name)
-        .replace("{environment}", &environment);
+        .replace("{accountName}", account_name)
+        .replace("{environment}", environment);
     let categories: Vec<CategoryTree> = client.get(url).send().await.unwrap().json().await.unwrap();
     categories
 }
@@ -44,13 +44,13 @@ pub async fn get_vtex_category_tree(
 // Get the VTEX Category by Id
 pub async fn get_category_by_id(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
     id: &i32,
 ) -> Category {
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/category/"
-        .replace("{accountName}", &account_name)
-        .replace("{environment}", &environment)
+        .replace("{accountName}", account_name)
+        .replace("{environment}", environment)
         + id.to_string().as_str();
     // let category: Category =
     //     client.get(url).send().await.unwrap().json().await.unwrap();
@@ -75,13 +75,13 @@ pub async fn get_category_by_id(
 // Get the specs for a given category
 pub async fn get_spec_fields_for_category(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
     category_id: &str,
 ) -> Vec<SpecificationList> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pub/specification/field/listByCategoryId/"
-            .replace("{accountName}", &account_name)
-            .replace("{environment}", &environment)
+            .replace("{accountName}", account_name)
+            .replace("{environment}", environment)
             + category_id;
     let specs: Vec<SpecificationList> = client.get(url).send().await.unwrap().json().await.unwrap();
     specs
@@ -90,13 +90,13 @@ pub async fn get_spec_fields_for_category(
 // Get the field values for a given field
 pub async fn get_field_values_for_field_id(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
     field_id: &str,
 ) -> Vec<FieldValueList> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pub/specification/fieldvalue/"
-            .replace("{accountName}", &account_name)
-            .replace("{environment}", &environment)
+            .replace("{accountName}", account_name)
+            .replace("{environment}", environment)
             + field_id;
     let fieldvalues: Vec<FieldValueList> =
         client.get(url).send().await.unwrap().json().await.unwrap();
@@ -106,12 +106,12 @@ pub async fn get_field_values_for_field_id(
 // Get the brands
 pub async fn get_brands(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> Vec<BrandList> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/brand/list"
-        .replace("{accountName}", &account_name)
-        .replace("{environment}", &environment);
+        .replace("{accountName}", account_name)
+        .replace("{environment}", environment);
     let response = client.get(url).send().await.unwrap();
     match response.status() {
         StatusCode::OK => {
@@ -142,8 +142,8 @@ pub fn parse_brands(brands: Vec<BrandList>) -> HashMap<String, i32> {
 // Create brand lookup
 pub async fn create_brand_lookup(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<String, i32> {
     parse_brands(get_brands(client, account_name, environment).await)
 }
@@ -180,8 +180,8 @@ pub fn parse_category_tree(cat_tree: Vec<CategoryTree>) -> HashMap<String, i32> 
 // Create category id lookup HashMap
 pub async fn create_category_id_lookup(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<String, i32> {
     parse_category_tree(get_vtex_category_tree(client, account_name, environment).await)
 }
@@ -189,8 +189,8 @@ pub async fn create_category_id_lookup(
 // Create a lookup HashMap that allows lookup of Category Name from Category GroupIdentifier
 pub async fn create_category_name_lookup(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<String, String> {
     let cat_tree = get_vtex_category_tree(client, account_name, environment).await;
     let mut cat_name_lookup: HashMap<String, String> = HashMap::new();
@@ -287,8 +287,8 @@ pub fn create_sku_product_ref_id_lookup(sku_file: String) -> HashMap<String, Str
 pub async fn create_field_id_lookup(
     category_lookup: &HashMap<String, i32>,
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<String, i32> {
     // Lookup by [cat_id + field name, field-id]
     let mut field_id_lookup: HashMap<String, i32> = HashMap::new();
@@ -296,8 +296,8 @@ pub async fn create_field_id_lookup(
         // get the fields for the category
         let category_fields = get_spec_fields_for_category(
             client,
-            &account_name,
-            &environment,
+            account_name,
+            environment,
             category.1.to_string().as_str(),
         )
         .await;
@@ -311,15 +311,15 @@ pub async fn create_field_id_lookup(
 
 // Get Product by RefId
 pub async fn get_product_by_ref_id(
-    ref_id: &String,
+    ref_id: &str,
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> i32 {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/products/productgetbyrefid/"
-            .replace("{accountName}", &account_name)
-            .replace("{environment}", &environment)
-            + ref_id.as_str();
+            .replace("{accountName}", account_name)
+            .replace("{environment}", environment)
+            + ref_id;
 
     let product: Product = client.get(url).send().await.unwrap().json().await.unwrap();
     debug!(
@@ -332,15 +332,15 @@ pub async fn get_product_by_ref_id(
 
 // Get Sku by RefId
 pub async fn get_sku_id_by_ref_id(
-    ref_id: &String,
+    ref_id: &str,
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> i32 {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/"
-            .replace("{accountName}", &account_name)
-            .replace("{environment}", &environment)
-            + ref_id.as_str();
+            .replace("{accountName}", account_name)
+            .replace("{environment}", environment)
+            + ref_id;
 
     let sku_id: String = client.get(url).send().await.unwrap().json().await.unwrap();
     debug!("sku id: {} for sku ref_id: {}", sku_id, ref_id);
@@ -351,15 +351,15 @@ pub async fn get_sku_id_by_ref_id(
 pub async fn create_field_value_id_lookup(
     field_id_lookup: &HashMap<String, i32>,
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<String, i32> {
     let mut field_value_id_lookup: HashMap<String, i32> = HashMap::new();
     for field in field_id_lookup {
         let field_values = get_field_values_for_field_id(
             client,
-            &account_name,
-            &environment,
+            account_name,
+            environment,
             field.1.to_string().as_str(),
         )
         .await;
@@ -371,7 +371,7 @@ pub async fn create_field_value_id_lookup(
     field_value_id_lookup
 }
 
-async fn get_all_sku_ids(client: &Client, account_name: &String, environment: &String) -> Vec<i32> {
+async fn get_all_sku_ids(client: &Client, account_name: &str, environment: &str) -> Vec<i32> {
     let start = Instant::now();
     info!("Start get_all_sku_ids()");
     // Get all the skus
@@ -396,8 +396,8 @@ async fn get_all_sku_ids(client: &Client, account_name: &String, environment: &S
 pub async fn get_all_sku_ids_by_page(
     page: i32,
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
     sku_ids: &mut Vec<i32>,
 ) -> i32 {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitids?page={page}&pagesize=1000"
@@ -434,8 +434,8 @@ pub async fn get_all_sku_ids_by_page(
 
 fn build_get_sku_urls(
     sku_ids: &Vec<i32>,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> Vec<String> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1"
             .replace("{accountName}", account_name)
@@ -453,8 +453,8 @@ fn build_get_sku_urls(
 async fn get_item_records(
     sku_ids: &Vec<i32>,
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<i32, SkuAndContext> {
     info!("Starting get_item_records()");
     // Build the urls
@@ -514,13 +514,13 @@ async fn get_item_records(
 
 pub async fn create_sku_id_lookup(
     client: &Client,
-    account_name: &String,
-    environment: &String,
+    account_name: &str,
+    environment: &str,
 ) -> HashMap<String, i32> {
     info!("Start creating sku_id_lookup");
     let mut sku_lookup = HashMap::new();
-    let sku_ids = get_all_sku_ids(&client, &account_name, &environment).await;
-    let item_records = get_item_records(&sku_ids, &client, &account_name, &environment).await;
+    let sku_ids = get_all_sku_ids(&client, account_name, environment).await;
+    let item_records = get_item_records(&sku_ids, &client, account_name, environment).await;
     for ir in item_records {
         let sku_id = ir.0;
         let sku_context = ir.1;
