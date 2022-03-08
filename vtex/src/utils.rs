@@ -104,11 +104,7 @@ pub async fn get_field_values_for_field_id(
 }
 
 // Get the brands
-pub async fn get_brands(
-    client: &Client,
-    account_name: &str,
-    environment: &str,
-) -> Vec<BrandList> {
+pub async fn get_brands(client: &Client, account_name: &str, environment: &str) -> Vec<BrandList> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/brand/list"
         .replace("{accountName}", account_name)
         .replace("{environment}", environment);
@@ -432,11 +428,7 @@ pub async fn get_all_sku_ids_by_page(
     }
 }
 
-fn build_get_sku_urls(
-    sku_ids: &Vec<i32>,
-    account_name: &str,
-    environment: &str,
-) -> Vec<String> {
+fn build_get_sku_urls(sku_ids: &Vec<i32>, account_name: &str, environment: &str) -> Vec<String> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1"
             .replace("{accountName}", account_name)
             .replace("{environment}", environment)    
