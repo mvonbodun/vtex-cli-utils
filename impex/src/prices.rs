@@ -1,16 +1,22 @@
-use governor::{Quota, RateLimiter, Jitter};
+use futures::{executor::block_on, stream, StreamExt};
+use governor::{Jitter, Quota, RateLimiter};
 use log::*;
 use reqwest::{Client, StatusCode};
+use std::fs::File;
+use std::num::NonZeroU32;
+use std::sync::Arc;
+use std::{error::Error, time::Duration};
 use vtex::model::Price;
 use vtex::utils;
-use std::num::NonZeroU32;
-use std::{error::Error, time::Duration};
-use std::fs::File;
-use std::sync::Arc;
-use futures::{stream, StreamExt, executor::block_on};
 
-pub async fn load_prices(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
-
+pub async fn load_prices(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+    rate_limit: NonZeroU32,
+) -> Result<(), Box<dyn Error>> {
     info!("Starting Price load");
     let url = "https://api.vtex.com/{accountName}/pricing/prices/{skuId}"
         .replace("{accountName}", &account_name);
@@ -38,15 +44,16 @@ pub async fn load_prices(file_path: String, client: &Client, account_name: Strin
             let lim = Arc::clone(&lim);
             async move {
                 block_on(lim.until_ready_with_jitter(Jitter::up_to(Duration::from_millis(100))));
-                let url_with_sku_id = url.replace("{skuId}", record.sku_id.unwrap().to_string().as_str());
+                let url_with_sku_id =
+                    url.replace("{skuId}", record.sku_id.unwrap().to_string().as_str());
 
-                let response = client
-                    .put(&url_with_sku_id)
-                    .json(&record)
-                    .send()
-                    .await?;
-                
-                info!("sku: {:?}: response: {:?}", record.sku_id, response.status());
+                let response = client.put(&url_with_sku_id).json(&record).send().await?;
+
+                info!(
+                    "sku: {:?}: response: {:?}",
+                    record.sku_id,
+                    response.status()
+                );
                 if response.status() == StatusCode::TOO_MANY_REQUESTS {
                     info!("headers: {:?}", response.headers());
                 }
@@ -62,9 +69,8 @@ pub async fn load_prices(file_path: String, client: &Client, account_name: Strin
             }
         })
         .await;
-    
+
     info!("finished price load");
 
     Ok(())
-
 }

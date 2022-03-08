@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct ItemRecord {
     pub sku_id: i32,
-    #[serde(rename="sku")]
+    #[serde(rename = "sku")]
     pub sku_ref: String,
     pub product_id: i32,
-    #[serde(rename="parentID")]
+    #[serde(rename = "parentID")]
     pub parent_ref: String,
     pub name: String,
     pub description: String,
@@ -29,7 +29,7 @@ pub struct ItemRecord {
     pub updated_at: Option<String>,
     pub related_products: Option<Vec<ItemRecord>>,
     pub product_type: Option<String>,
-    #[serde(rename="objectID")]
+    #[serde(rename = "objectID")]
     pub object_id: String,
 }
 
@@ -55,7 +55,7 @@ pub struct Color {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Variant {
-    #[serde(rename="sku")]
+    #[serde(rename = "sku")]
     pub sku_ref: String,
     pub abbreviated_size: Option<String>,
     pub abbreviated_color: Option<String>,
@@ -70,4 +70,3 @@ pub struct Price {
     pub discount_level: f32,
     pub on_sales: bool,
 }
-

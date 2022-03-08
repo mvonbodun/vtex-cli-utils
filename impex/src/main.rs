@@ -7,6 +7,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     info!("Starting data load");
     vtex_impex::run().await?;
     info!("Finished data load");
-    
+
     Ok(())
 }

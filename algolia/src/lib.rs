@@ -1,15 +1,23 @@
-use algoliarecords::{HierarchicalCategories, Variant, Price, Review};
+use algoliarecords::{HierarchicalCategories, Price, Review, Variant};
 use dotenv;
+use futures::{join, stream, StreamExt};
 use log::*;
 use rand::Rng;
-use serde::{Serialize, Deserialize};
-use std::{error::Error, time::{Duration, Instant}, env, sync::Once, collections::HashMap, fs::File, io::BufWriter};
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
-use futures::{join, stream, StreamExt };
+use std::{
+    collections::HashMap,
+    env,
+    error::Error,
+    fs::File,
+    io::BufWriter,
+    sync::Once,
+    time::{Duration, Instant},
+};
 
-use reqwest::{header, StatusCode, Client};
-use vtex::model::{SkuAndContext, Image, SkuSpecification, InventoryList, PriceGet };
+use reqwest::{header, Client, StatusCode};
+use vtex::model::{Image, InventoryList, PriceGet, SkuAndContext, SkuSpecification};
 
 use crate::algoliarecords::ItemRecord;
 
@@ -22,20 +30,18 @@ static INIT: Once = Once::new();
 pub fn setup() {
     INIT.call_once(|| {
         let start = std::time::Instant::now();
-        env_logger::Builder::from_default_env().format(move |buf, rec| {
-            let t = start.elapsed().as_secs_f32();
-            writeln!(buf, "{:.03} [{}] - {}", t, rec.level(),rec.args())
-        }).init();
+        env_logger::Builder::from_default_env()
+            .format(move |buf, rec| {
+                let t = start.elapsed().as_secs_f32();
+                writeln!(buf, "{:.03} [{}] - {}", t, rec.level(), rec.args())
+            })
+            .init();
     })
 }
 
 pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut Vec<i32>) -> i32 {
     let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitids?page={page}&pagesize=1000".to_string().replace("{page}", page.to_string().as_str());
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .unwrap();
+    let response = client.get(url).send().await.unwrap();
 
     // println!("response.status: {}", response.status());
     match response.status() {
@@ -51,10 +57,14 @@ pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut V
                 x = x + 1;
             }
             x
-        },
+        }
         _ => {
-            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
-        },
+            panic!(
+                "Status Code: [{:?}] Error: [{:#?}]",
+                response.status(),
+                response.text().await
+            )
+        }
     }
 }
 
@@ -71,32 +81,33 @@ fn build_get_sku_urls(sku_ids: &Vec<i32>) -> Vec<String> {
 
 pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext {
     let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1".to_string().replace("{skuId}", sku_id.to_string().as_str());
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .unwrap();
+    let response = client.get(url).send().await.unwrap();
 
     // println!("response.status: {}", response.status());
     match response.status() {
         StatusCode::OK => {
             let response_text = response.text().await.unwrap();
             // println!("response_text: {:?}", response_text);
-            let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(&response_text);
+            let result: Result<SkuAndContext, serde_json::Error> =
+                serde_json::from_str(&response_text);
             match result {
                 Ok(sku_and_context) => {
                     // println!("sku_and_context: {:?}", sku_and_context);
-                    return sku_and_context
-                },
+                    return sku_and_context;
+                }
                 Err(e) => {
                     // println!("deserialize product error: {:?}", e);
                     panic!("deserialize product error: {:?}", e)
-                },
+                }
             }
-        },
+        }
         _ => {
-            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
-        },
+            panic!(
+                "Status Code: [{:?}] Error: [{:#?}]",
+                response.status(),
+                response.text().await
+            )
+        }
     }
 }
 
@@ -123,19 +134,18 @@ fn build_price_for_algolia(vtex_price: &PriceGet) -> Price {
 }
 
 pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
-    let url = "https://api.vtex.com/michaelvb/pricing/prices/{skuId}".to_string().replace("{skuId}", sku_id.to_string().as_str());
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .unwrap();
+    let url = "https://api.vtex.com/michaelvb/pricing/prices/{skuId}"
+        .to_string()
+        .replace("{skuId}", sku_id.to_string().as_str());
+    let response = client.get(url).send().await.unwrap();
 
     // println!("response.status: {}", response.status());
     match response.status() {
         StatusCode::OK => {
             let response_text = response.text().await.unwrap();
             // println!("response_text: {:?}", response_text);
-            let result: Result<vtex::model::PriceGet, serde_json::Error> = serde_json::from_str(&response_text);
+            let result: Result<vtex::model::PriceGet, serde_json::Error> =
+                serde_json::from_str(&response_text);
             match result {
                 Ok(vtex_price) => {
                     // println!("vtex_price: {:?}", vtex_price);
@@ -146,22 +156,28 @@ pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
                         discount_level: -100.00,
                         discounted_value: 0.00,
                     };
-                    return price
-                },
+                    return price;
+                }
                 Err(e) => {
                     // println!("deserialize product error: {:?}", e);
                     panic!("deserialize Price error: {:?}", e)
-                },
+                }
             }
-        },
+        }
         _ => {
-            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
-        },
+            panic!(
+                "Status Code: [{:?}] Error: [{:#?}]",
+                response.status(),
+                response.text().await
+            )
+        }
     }
 }
 
 fn build_get_inventory_urls(sku_ids: &Vec<i32>) -> Vec<String> {
-    let url = "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}".to_string();
+    let url =
+        "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}"
+            .to_string();
     let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
     for sku_id in sku_ids {
         let url = url.replace("{skuId}", sku_id.to_string().as_str());
@@ -182,19 +198,19 @@ fn get_inventory_for_algolia(vtex_inventory: &InventoryList) -> i32 {
 }
 
 pub async fn get_inventory(sku_id: &i32, client: &Client) -> i32 {
-    let url = "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}".to_string().replace("{skuId}", sku_id.to_string().as_str());
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .unwrap();
+    let url =
+        "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}"
+            .to_string()
+            .replace("{skuId}", sku_id.to_string().as_str());
+    let response = client.get(url).send().await.unwrap();
 
     // println!("response.status: {}", response.status());
     match response.status() {
         StatusCode::OK => {
             let response_text = response.text().await.unwrap();
             // println!("response_text: {:?}", response_text);
-            let result: Result<vtex::model::InventoryList, serde_json::Error> = serde_json::from_str(&response_text);
+            let result: Result<vtex::model::InventoryList, serde_json::Error> =
+                serde_json::from_str(&response_text);
             match result {
                 Ok(vtex_inventory) => {
                     // println!("vtex_inventory: {:?}", vtex_inventory);
@@ -204,21 +220,28 @@ pub async fn get_inventory(sku_id: &i32, client: &Client) -> i32 {
                             quantity = balance.total_quantity;
                         }
                     }
-                    return quantity
-                },
+                    return quantity;
+                }
                 Err(e) => {
                     // println!("deserialize product error: {:?}", e);
                     panic!("deserialize InventoryList error: {:?}", e)
-                },
+                }
             }
-        },
+        }
         _ => {
-            panic!("Status Code: [{:?}] Error: [{:#?}]", response.status(), response.text().await)
-        },
+            panic!(
+                "Status Code: [{:?}] Error: [{:#?}]",
+                response.status(),
+                response.text().await
+            )
+        }
     }
 }
 
-fn get_hierarchical_categories(categories: &serde_json::Value, product_category_ids: &String) -> HierarchicalCategories {
+fn get_hierarchical_categories(
+    categories: &serde_json::Value,
+    product_category_ids: &String,
+) -> HierarchicalCategories {
     let cats = categories.as_object().unwrap();
     let lvl_keys: Vec<&str> = product_category_ids.split("/").collect();
     debug!("lvl_keys: {:?}", lvl_keys);
@@ -242,7 +265,10 @@ fn get_hierarchical_categories(categories: &serde_json::Value, product_category_
     }
 }
 
-fn get_list_categories(categories: &serde_json::Value, product_category_ids: &String) -> Vec<String> {
+fn get_list_categories(
+    categories: &serde_json::Value,
+    product_category_ids: &String,
+) -> Vec<String> {
     let cats = categories.as_object().unwrap();
     let lvl_keys: Vec<&str> = product_category_ids.split("/").collect();
     debug!("lvl_keys: {:?}", lvl_keys);
@@ -263,7 +289,10 @@ fn get_list_categories(categories: &serde_json::Value, product_category_ids: &St
     vec![lvl0, lvl1, lvl2]
 }
 
-fn get_category_page_ids(categories: &serde_json::Value, product_category_ids: &String) -> Vec<String> {
+fn get_category_page_ids(
+    categories: &serde_json::Value,
+    product_category_ids: &String,
+) -> Vec<String> {
     let cats = categories.as_object().unwrap();
     let lvl_keys: Vec<&str> = product_category_ids.split("/").collect();
     debug!("lvl_keys: {:?}", lvl_keys);
@@ -313,7 +342,7 @@ fn get_size(sku_specs: &Option<Vec<SkuSpecification>>) -> Option<String> {
             size = spec.field_values[0].clone();
         }
     }
-    if !size.is_empty()  {
+    if !size.is_empty() {
         Some(size)
     } else {
         None
@@ -343,11 +372,15 @@ async fn get_all_sku_ids(client: &Client) -> Vec<i32> {
         *page += 1;
     }
     let duration = start.elapsed();
-    info!("Finished get_all_sku_ids: {} records in {:?}", sku_ids.len(), duration);
+    info!(
+        "Finished get_all_sku_ids: {} records in {:?}",
+        sku_ids.len(),
+        duration
+    );
     sku_ids.to_vec()
 }
 
-async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) ->HashMap<i32, SkuAndContext> {
+async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, SkuAndContext> {
     info!("Starting get_item_records()");
     // Build the urls
     let urls = build_get_sku_urls(&sku_ids);
@@ -357,10 +390,8 @@ async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) ->HashMap<i32, Sk
         .map(|url| {
             let client = &client;
             async move {
-                let resp = client
-                    .get(url.clone()).send()
-                    .await?;
-                    
+                let resp = client.get(url.clone()).send().await?;
+
                 // let sctx: SkuAndContext = resp.json().await?;
                 debug!("end of async move - url: {}", url);
                 // resp.text().await
@@ -378,15 +409,18 @@ async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) ->HashMap<i32, Sk
                     let mut item_recs = item_recs.lock().unwrap();
                     item_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
                     debug!("Got: {:?}", sku_ctx)
-                },
+                }
                 Err(e) => error!("Got an error: {}", e),
             }
         })
         .await;
-    
+
     let ir = item_recs.lock().unwrap().clone();
-    info!("finished get_item_records(): item_recs.len(): {:?}", ir.len());
-    ir    
+    info!(
+        "finished get_item_records(): item_recs.len(): {:?}",
+        ir.len()
+    );
+    ir
 }
 
 async fn get_price_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, PriceGet> {
@@ -398,9 +432,7 @@ async fn get_price_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, 
         .map(|url| {
             let client = &client;
             async move {
-                let resp = client
-                    .get(url.clone()).send()
-                    .await?;
+                let resp = client.get(url.clone()).send().await?;
                 resp.json::<PriceGet>().await
             }
         })
@@ -412,31 +444,36 @@ async fn get_price_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, 
                 Ok(b) => {
                     let price_list: PriceGet = b;
                     let mut price_recs = price_recs.lock().unwrap();
-                    price_recs.insert(price_list.item_id.parse::<i32>().unwrap(), price_list.clone());
+                    price_recs.insert(
+                        price_list.item_id.parse::<i32>().unwrap(),
+                        price_list.clone(),
+                    );
                     debug!("Got price_list.item_id: {:?}", price_list.item_id)
-                },
+                }
                 Err(e) => error!("Got an error: {}", e),
             }
         })
         .await;
 
     let pr = price_recs.lock().unwrap().clone();
-    info!("finished get_price_records(): price_recs.len(): {:?}", pr.len());
+    info!(
+        "finished get_price_records(): price_recs.len(): {:?}",
+        pr.len()
+    );
     pr
 }
 
-async fn get_inventory_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, InventoryList>{
+async fn get_inventory_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, InventoryList> {
     info!("Starting get_inventory_records()");
     // build the urls
     let urls = build_get_inventory_urls(&sku_ids);
-    let inventory_recs: Arc<Mutex<HashMap<i32, InventoryList>>> = Arc::new(Mutex::new(HashMap::new()));
+    let inventory_recs: Arc<Mutex<HashMap<i32, InventoryList>>> =
+        Arc::new(Mutex::new(HashMap::new()));
     let bodies = stream::iter(urls)
         .map(|url| {
             let client = &client;
             async move {
-                let resp = client
-                    .get(url.clone()).send()
-                    .await?;
+                let resp = client.get(url.clone()).send().await?;
                 resp.json::<InventoryList>().await
             }
         })
@@ -448,16 +485,22 @@ async fn get_inventory_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i
                 Ok(b) => {
                     let inventory_list: InventoryList = b;
                     let mut inventory_recs = inventory_recs.lock().unwrap();
-                    inventory_recs.insert(inventory_list.sku_id.parse::<i32>().unwrap(), inventory_list.clone());
+                    inventory_recs.insert(
+                        inventory_list.sku_id.parse::<i32>().unwrap(),
+                        inventory_list.clone(),
+                    );
                     debug!("Got inventory_list.sku_id: {:?}", inventory_list.sku_id)
-                },
+                }
                 Err(e) => error!("Got an error: {}", e),
             }
         })
         .await;
 
     let invr = inventory_recs.lock().unwrap().clone();
-    info!("finished get_inventory_records(): inventory_recs.len(): {:?}", invr.len());
+    info!(
+        "finished get_inventory_records(): inventory_recs.len(): {:?}",
+        invr.len()
+    );
     invr
 }
 
@@ -473,78 +516,111 @@ struct ProductVariant {
 fn build_product_variant_map(
     sku_ids: &Vec<i32>,
     item_records: &HashMap<i32, SkuAndContext>,
-    inventory_records: &HashMap<i32, InventoryList>)
-    -> HashMap<String, ProductVariant> {
-        info!("Start build_product_variant_map()");
-        let mut product_variants: HashMap<String, ProductVariant> = HashMap::with_capacity(sku_ids.len());
-        // Loop through every sku and build the structure
-        for sku_id in sku_ids {
-            // Lookup key values
-            let item_record = item_records.get(sku_id).unwrap();
-            let sku_specs = &item_record.sku_specifications;
-            let color = get_color(&sku_specs.clone());
-            let size = get_size(sku_specs);
-            let inventory_record = inventory_records.get(sku_id).unwrap();
-            let in_stock: bool;
-            if get_inventory_for_algolia(inventory_record) > 0 
-            { 
-                in_stock = true;
-            } else { 
-                in_stock = false;
+    inventory_records: &HashMap<i32, InventoryList>,
+) -> HashMap<String, ProductVariant> {
+    info!("Start build_product_variant_map()");
+    let mut product_variants: HashMap<String, ProductVariant> =
+        HashMap::with_capacity(sku_ids.len());
+    // Loop through every sku and build the structure
+    for sku_id in sku_ids {
+        // Lookup key values
+        let item_record = item_records.get(sku_id).unwrap();
+        let sku_specs = &item_record.sku_specifications;
+        let color = get_color(&sku_specs.clone());
+        let size = get_size(sku_specs);
+        let inventory_record = inventory_records.get(sku_id).unwrap();
+        let in_stock: bool;
+        if get_inventory_for_algolia(inventory_record) > 0 {
+            in_stock = true;
+        } else {
+            in_stock = false;
+        };
+        let variant: Variant = Variant {
+            sku_ref: item_record.alternate_ids.ref_id.clone(),
+            abbreviated_color: color.clone(),
+            abbreviated_size: size.clone(),
+            in_stock: in_stock,
+        };
+        // First Product Variant or not
+        if !product_variants.contains_key(&item_record.product_ref_id) {
+            let mut available_colors = Vec::new();
+            let mut available_sizes = Vec::new();
+            let mut variants = Vec::new();
+            if color.is_some() {
+                available_colors.push(color.unwrap().clone())
             };
-            let variant: Variant = Variant {
-                 sku_ref: item_record.alternate_ids.ref_id.clone(),
-                 abbreviated_color: color.clone(),
-                 abbreviated_size: size.clone(),
-                 in_stock: in_stock,
+            // available_colors.push(color.clone());
+            // let option_avail_colors: Option<Vec<String>> =
+            //     available_colors.m
+            if size.is_some() {
+                available_sizes.push(size.unwrap().clone())
             };
-            // First Product Variant or not
-            if !product_variants.contains_key(&item_record.product_ref_id) {
-                let mut available_colors = Vec::new();
-                let mut available_sizes = Vec::new();
-                let mut variants = Vec::new();
-                if color.is_some() { available_colors.push(color.unwrap().clone()) };
-                // available_colors.push(color.clone());
-                // let option_avail_colors: Option<Vec<String>> = 
-                //     available_colors.m
-                if size.is_some() { available_sizes.push(size.unwrap().clone()) };
-                // available_sizes.push(size.clone());
-                variants.push(variant);
-                let prod_variant: ProductVariant = ProductVariant {
-                    product_ref_id: item_record.product_ref_id.clone(),
-                    available_colors: Some(available_colors),
-                    available_sizes: Some(available_sizes),
-                    variants: variants,
-                };
-                product_variants.insert(item_record.product_ref_id.clone(), prod_variant);
-                debug!("inserted new product_variant: {}", item_record.product_ref_id);
-            } else {
-                let product_variant = product_variants.get_mut(&item_record.product_ref_id).unwrap();
-                if product_variant.available_colors.is_some() {
-                    if color.is_some() {
-                        //product_variant.available_colors.as_ref().unwrap().push(color.unwrap());
-                        if !product_variant.available_colors.as_ref().unwrap().contains(color.as_ref().unwrap()) {
-                            product_variant.available_colors.as_mut().unwrap().push(color.unwrap().clone());
-                        }
+            // available_sizes.push(size.clone());
+            variants.push(variant);
+            let prod_variant: ProductVariant = ProductVariant {
+                product_ref_id: item_record.product_ref_id.clone(),
+                available_colors: Some(available_colors),
+                available_sizes: Some(available_sizes),
+                variants: variants,
+            };
+            product_variants.insert(item_record.product_ref_id.clone(), prod_variant);
+            debug!(
+                "inserted new product_variant: {}",
+                item_record.product_ref_id
+            );
+        } else {
+            let product_variant = product_variants
+                .get_mut(&item_record.product_ref_id)
+                .unwrap();
+            if product_variant.available_colors.is_some() {
+                if color.is_some() {
+                    //product_variant.available_colors.as_ref().unwrap().push(color.unwrap());
+                    if !product_variant
+                        .available_colors
+                        .as_ref()
+                        .unwrap()
+                        .contains(color.as_ref().unwrap())
+                    {
+                        product_variant
+                            .available_colors
+                            .as_mut()
+                            .unwrap()
+                            .push(color.unwrap().clone());
                     }
                 }
-                if product_variant.available_sizes.is_some() {
-                    if size.is_some() {
-                        // product_variant.available_sizes.unwrap().push(size.unwrap());
-                        if !product_variant.available_sizes.as_ref().unwrap().contains(size.as_ref().unwrap()) {
-                            product_variant.available_sizes.as_mut().unwrap().push(size.unwrap());
-                        }
-                    }
-                }
-                // let v: &mut Vec<Variant> = product_variant.variants.as_mut();
-                // info!("product_variant value: {:?}", v);
-                // v.push(variant);
-                product_variant.variants.push(variant);
-                debug!("updated product_variant: {}", product_variant.product_ref_id);
             }
+            if product_variant.available_sizes.is_some() {
+                if size.is_some() {
+                    // product_variant.available_sizes.unwrap().push(size.unwrap());
+                    if !product_variant
+                        .available_sizes
+                        .as_ref()
+                        .unwrap()
+                        .contains(size.as_ref().unwrap())
+                    {
+                        product_variant
+                            .available_sizes
+                            .as_mut()
+                            .unwrap()
+                            .push(size.unwrap());
+                    }
+                }
+            }
+            // let v: &mut Vec<Variant> = product_variant.variants.as_mut();
+            // info!("product_variant value: {:?}", v);
+            // v.push(variant);
+            product_variant.variants.push(variant);
+            debug!(
+                "updated product_variant: {}",
+                product_variant.product_ref_id
+            );
         }
-        info!("Finished build_product_variant_map(): {} records", product_variants.len());
-        product_variants
+    }
+    info!(
+        "Finished build_product_variant_map(): {} records",
+        product_variants.len()
+    );
+    product_variants
 }
 
 // #[derive(Debug, Serialize, Deserialize)]
@@ -572,7 +648,9 @@ fn build_product_variant_map(
 
 fn generate_review() -> Review {
     let mut rng = rand::thread_rng();
-    let bay_avg = format!("{:.1$}", rng.gen_range(0.0..5.0), 2).parse::<f32>().unwrap();
+    let bay_avg = format!("{:.1$}", rng.gen_range(0.0..5.0), 2)
+        .parse::<f32>()
+        .unwrap();
     // let rating = format!("{:.1$}", bay_avg, 0);
     Review {
         rating: bay_avg.round() as i32,
@@ -582,17 +660,24 @@ fn generate_review() -> Review {
 }
 
 pub async fn run() -> Result<(), Box<dyn Error>> {
-
     info!("Start of run()");
     dotenv::dotenv().expect("Failed to read .env file");
 
-    let vtex_api_key = env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
-    let vtex_api_apptoken = env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
-    
+    let vtex_api_key =
+        env::var("VTEX_API_APPKEY").expect("Failed to parse VTEX_API_APPKEY in .env");
+    let vtex_api_apptoken =
+        env::var("VTEX_API_APPTOKEN").expect("Failed to parse VTEX_API_APPTOKEN in .env");
+
     // Setup the HTTP client
     let mut headers = header::HeaderMap::new();
-    headers.insert("X-VTEX-API-AppKey", header::HeaderValue::from_str(&vtex_api_key)?);
-    headers.insert("X-VTEX-API-AppToken", header::HeaderValue::from_str(&vtex_api_apptoken)?);
+    headers.insert(
+        "X-VTEX-API-AppKey",
+        header::HeaderValue::from_str(&vtex_api_key)?,
+    );
+    headers.insert(
+        "X-VTEX-API-AppToken",
+        header::HeaderValue::from_str(&vtex_api_apptoken)?,
+    );
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(10))
         .default_headers(headers)
@@ -618,7 +703,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     debug!("inventory map: {:?}", invr);
     // Generate the list of sku's with missing images
     // gen_skus_missing_images_file(&sku_ids, &ir);
-    
+
     let mut algolia_recs: Vec<ItemRecord> = Vec::with_capacity(sku_ids.len());
     let path = "data/algolia_records.json";
     let out_file = File::create(path)?;
@@ -634,7 +719,9 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         let inventory_list = invr.get(&sku_id).unwrap();
         debug!("product_variants: {:?}", product_variants);
         debug!("Retrieving product variant: {}", sku_ctx.product_ref_id);
-        let product_variant = product_variants.get(&sku_ctx.product_ref_id.clone()).unwrap();
+        let product_variant = product_variants
+            .get(&sku_ctx.product_ref_id.clone())
+            .unwrap();
 
         // Build the Algolia Record
         let algolia_record = ItemRecord {
@@ -646,9 +733,18 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
             description: sku_ctx.product_description.clone(),
             slug: sku_ctx.detail_url.clone(),
             brand: sku_ctx.brand_name.clone(),
-            hierarchical_categories: get_hierarchical_categories(&sku_ctx.product_categories, &sku_ctx.product_category_ids),
-            list_categories: get_list_categories(&sku_ctx.product_categories, &sku_ctx.product_category_ids),
-            category_page_id: get_category_page_ids(&sku_ctx.product_categories, &sku_ctx.product_category_ids),
+            hierarchical_categories: get_hierarchical_categories(
+                &sku_ctx.product_categories,
+                &sku_ctx.product_category_ids,
+            ),
+            list_categories: get_list_categories(
+                &sku_ctx.product_categories,
+                &sku_ctx.product_category_ids,
+            ),
+            category_page_id: get_category_page_ids(
+                &sku_ctx.product_categories,
+                &sku_ctx.product_category_ids,
+            ),
             image_urls: get_image_urls(&sku_ctx.images),
             image_blurred: None,
             reviews: Some(generate_review()),
@@ -672,6 +768,6 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
     buf_wtr.write_all(result.as_bytes())?;
     buf_wtr.flush()?;
     info!("Finished writing algolia records to file: {}", path);
-  
+
     Ok(())
 }

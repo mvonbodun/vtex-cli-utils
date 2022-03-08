@@ -1,15 +1,14 @@
-use futures::{stream, StreamExt, executor::block_on};
-use governor::{RateLimiter, Quota, Jitter};
+use futures::{executor::block_on, stream, StreamExt};
+use governor::{Jitter, Quota, RateLimiter};
 use log::*;
 use reqwest::{Client, StatusCode};
-use vtex::model::{SkuSpecificationAssociation, SkuSpecificationValueAssignment};
-use vtex::utils;
 use std::error::Error;
 use std::fs::File;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
-
+use vtex::model::{SkuSpecificationAssociation, SkuSpecificationValueAssignment};
+use vtex::utils;
 
 pub async fn gen_sku_spec_association_file(
     file_path: String,
@@ -20,28 +19,39 @@ pub async fn gen_sku_spec_association_file(
     product_file: String,
     sku_file: String,
 ) -> Result<(), Box<dyn Error>> {
-
     info!("Staring generation of SKU Spec Association file");
     // Build a Sku_id lookup fn
     let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
     debug!("sku_id_lookup: {}", sku_id_lookup.len());
     // Get a lookup HashMap for the product_ref_id for a sku_ref_id
     let product_ref_id_by_sku_ref_id_lookup = utils::create_sku_product_ref_id_lookup(sku_file);
-    debug!("product_ref_id_by_sku_ref_id_lookup: {:?}", product_ref_id_by_sku_ref_id_lookup.len());
+    debug!(
+        "product_ref_id_by_sku_ref_id_lookup: {:?}",
+        product_ref_id_by_sku_ref_id_lookup.len()
+    );
     // Get a lookup HashMap for the parent category of a product
     let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
-    debug!("product_parent_category_lookkup: {:?}", product_parent_category_lookup.len());
+    debug!(
+        "product_parent_category_lookkup: {:?}",
+        product_parent_category_lookup.len()
+    );
     // Build a category name lookup
-    let category_name_lookup = utils::create_category_name_lookup(client, &account_name, &environment).await;
+    let category_name_lookup =
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
     debug!("category_name_lookup: {}", category_name_lookup.len());
     // Build category id lookup
-    let category_id_lookup = utils::create_category_id_lookup(client, &account_name, &environment).await;
+    let category_id_lookup =
+        utils::create_category_id_lookup(client, &account_name, &environment).await;
     debug!("category_id_lookup: {}", category_id_lookup.len());
     // Build a field id lookup fn get the fields for a category
-    let field_id_lookup = utils::create_field_id_lookup(&category_id_lookup, client, &account_name, &environment).await;
+    let field_id_lookup =
+        utils::create_field_id_lookup(&category_id_lookup, client, &account_name, &environment)
+            .await;
     debug!("field_id_lookup: {:?}", field_id_lookup.len());
     // Build a field value id lookup table
-    let field_value_id_lookup = utils::create_field_value_id_lookup(&field_id_lookup, client, &account_name, &environment).await;
+    let field_value_id_lookup =
+        utils::create_field_value_id_lookup(&field_id_lookup, client, &account_name, &environment)
+            .await;
     debug!("field_value_id_lookup: {:?}", field_value_id_lookup.len());
 
     // Setup the input and output files
@@ -50,8 +60,8 @@ pub async fn gen_sku_spec_association_file(
     let out_path = file_path;
     let mut writer = csv::Writer::from_path(out_path)?;
 
-//    let mut sku_id_lookup: HashMap<String, i32> = HashMap::new();
-    
+    //    let mut sku_id_lookup: HashMap<String, i32> = HashMap::new();
+
     let mut x = 0;
     for line in reader.deserialize() {
         let record: SkuSpecificationValueAssignment = line?;
@@ -64,45 +74,61 @@ pub async fn gen_sku_spec_association_file(
         //     debug!("sku_id_lookup hit. sku_ref_id: {} found.", record.sku_ref_id);
         //     sku_id = *sku_id_lookup.get(&record.sku_ref_id).unwrap();
         // }
-        
+
         // Get the product_ref_id
-        let product_ref_id = product_ref_id_by_sku_ref_id_lookup.get(&record.sku_ref_id).unwrap();
+        let product_ref_id = product_ref_id_by_sku_ref_id_lookup
+            .get(&record.sku_ref_id)
+            .unwrap();
         // Get the category identifier for the partnumber
-        let parent_category_identifier = product_parent_category_lookup.get(product_ref_id).unwrap();
+        let parent_category_identifier =
+            product_parent_category_lookup.get(product_ref_id).unwrap();
         // Get category name
-        let parent_cat_name = category_name_lookup.get(parent_category_identifier).unwrap();
+        let parent_cat_name = category_name_lookup
+            .get(parent_category_identifier)
+            .unwrap();
         // Get the VTEX Category Id
         let vtex_cat_id = category_id_lookup.get(parent_cat_name).unwrap();
         // Build the key to use with field_id_lookup
         let key = vtex_cat_id.to_string().to_owned() + "|" + record.name.as_str();
         // Get the field_id
-        let field_id = field_id_lookup.get(&key).expect("failed to find field_id in field_id_lookup");
+        let field_id = field_id_lookup
+            .get(&key)
+            .expect("failed to find field_id in field_id_lookup");
         // Build the key to use with the field_value_id_lookup
-        let field_value_key = field_id.to_string().as_str().to_owned() + "|" + record.value.as_str().trim();
-        let field_value_id = field_value_id_lookup.get(&field_value_key).expect("failed to find field_value_id in field_value_id_lookup");
+        let field_value_key =
+            field_id.to_string().as_str().to_owned() + "|" + record.value.as_str().trim();
+        let field_value_id = field_value_id_lookup
+            .get(&field_value_key)
+            .expect("failed to find field_value_id in field_value_id_lookup");
         debug!("record.sku_ref_id {}", &record.sku_ref_id);
         // if sku_id_lookup.contains_key(&record.sku_ref_id) {
-            let sku_spec_assign = SkuSpecificationAssociation {
-                id: Some(0), // Hardcode to 0, API does not work with None (null)
-                sku_id: *sku_id_lookup.get(&record.sku_ref_id).unwrap(),
-                field_id: field_id.clone(),
-                field_value_id: Some(field_value_id.clone()),
-                text: None,
-            };
-            writer.serialize(sku_spec_assign)?;
-            x = x + 1;
+        let sku_spec_assign = SkuSpecificationAssociation {
+            id: Some(0), // Hardcode to 0, API does not work with None (null)
+            sku_id: *sku_id_lookup.get(&record.sku_ref_id).unwrap(),
+            field_id: field_id.clone(),
+            field_value_id: Some(field_value_id.clone()),
+            text: None,
+        };
+        writer.serialize(sku_spec_assign)?;
+        x = x + 1;
         // }
     }
     // Flush the records
     writer.flush()?;
     info!("records written: {}", x);
     info!("Finished generating SKU Spec Association file");
-    
+
     Ok(())
 }
 
-pub async fn load_sku_spec_associations(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
-
+pub async fn load_sku_spec_associations(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+    rate_limit: NonZeroU32,
+) -> Result<(), Box<dyn Error>> {
     info!("Starting load of SKU Spec Associations");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/stockkeepingunit/{skuId}/specification"
         .replace("{accountName}", &account_name)
@@ -130,18 +156,17 @@ pub async fn load_sku_spec_associations(file_path: String, client: &Client, acco
 
                 let url = url.replace("{skuId}", record.sku_id.to_string().as_str());
 
-                let response = client
-                    .post(url)
-                    .json(&record)
-                    .send()
-                    .await?;
+                let response = client.post(url).json(&record).send().await?;
 
-                    let status = response.status();
-                    info!("product: {:?}  text: {:?}:  response: {:?}", record.sku_id, record.text, status);
-                    let text = response.text().await;
-                    if status != StatusCode::OK {
-                        info!("text: {:?}", text);
-                    }
+                let status = response.status();
+                info!(
+                    "product: {:?}  text: {:?}:  response: {:?}",
+                    record.sku_id, record.text, status
+                );
+                let text = response.text().await;
+                if status != StatusCode::OK {
+                    info!("text: {:?}", text);
+                }
                 text
             }
         })
@@ -154,7 +179,7 @@ pub async fn load_sku_spec_associations(file_path: String, client: &Client, acco
             }
         })
         .await;
-    
+
     info!("finished load of SKU Spec Associations");
 
     Ok(())

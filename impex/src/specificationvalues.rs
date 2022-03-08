@@ -1,11 +1,11 @@
 use csv::StringRecord;
-use futures::{stream, StreamExt, executor::block_on};
-use governor::{RateLimiter, Quota, Jitter};
+use futures::{executor::block_on, stream, StreamExt};
+use governor::{Jitter, Quota, RateLimiter};
 use log::*;
 use reqwest::{Client, StatusCode};
+use std::collections::HashSet;
 use std::error::Error;
 use std::fs::File;
-use std::collections::HashSet;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
@@ -19,23 +19,30 @@ pub async fn gen_specification_values_file(
     environment: String,
     sku_spec_allowed_values_file: String,
     product_file: String,
-    ) -> Result<(), Box<dyn Error>> {
-
+) -> Result<(), Box<dyn Error>> {
     info!("Starting generation of specification values file");
     // Read in the category tree and store in a HashMap for lookup
     let categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
     let category_lookup = utils::parse_category_tree(categories);
     debug!("category_lookup: {:?}", category_lookup.len());
-    
+
     // Need HashMap to get Field Id
-    let field_id_lookup = utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
+    let field_id_lookup =
+        utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
     debug!("field_id_lookup: {:?}", field_id_lookup.len());
     // Get a lookup HashMap for the parent category of a product
     let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
-    debug!("product_parent_category_lookkup: {:?}", product_parent_category_lookup.len());
+    debug!(
+        "product_parent_category_lookkup: {:?}",
+        product_parent_category_lookup.len()
+    );
     // Get a lookup for the cateogory name of a category by GroupIdentifier
-    let category_identifier_name_lookup = utils::create_category_name_lookup(&client, &account_name, &environment).await;
-    debug!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
+    let category_identifier_name_lookup =
+        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+    debug!(
+        "category_identifier_name_lookup: {:?}",
+        category_identifier_name_lookup.len()
+    );
 
     let in_file = File::open(&sku_spec_allowed_values_file).unwrap();
     let mut reader = csv::Reader::from_reader(in_file);
@@ -51,15 +58,19 @@ pub async fn gen_specification_values_file(
         // look up the part number
         let parent_cat_identifier = product_parent_category_lookup.get(&product_ref_id).unwrap();
         // look up the category name
-        let parent_cat_name = category_identifier_name_lookup.get(&parent_cat_identifier.to_string()).unwrap();
+        let parent_cat_name = category_identifier_name_lookup
+            .get(&parent_cat_identifier.to_string())
+            .unwrap();
         // Look up the VTEX Category Id
         let vtex_cat_id = category_lookup.get(&parent_cat_name.to_string()).unwrap();
         debug!("vtex_cat_id: {}", vtex_cat_id);
         // Name starts in the Column 2 - index starts at 0 so position 1
         let name = record.get(1).unwrap().to_string();
         let key = vtex_cat_id.to_string().to_owned() + "|" + name.as_str();
-        let field_id = field_id_lookup.get(&key).expect("failed to find field_id for category in field_id_lookup");
-        
+        let field_id = field_id_lookup
+            .get(&key)
+            .expect("failed to find field_id for category in field_id_lookup");
+
         // The AllowedValues fields start in the 4th postion of the file - range begins at 3 in for loop
         for number in 3..record.len() {
             let value = record.get(number).unwrap().trim();
@@ -86,11 +97,16 @@ pub async fn gen_specification_values_file(
     info!("Finished specification values file generation");
 
     Ok(())
-
 }
 
-pub async fn load_specification_values(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
-
+pub async fn load_specification_values(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+    rate_limit: NonZeroU32,
+) -> Result<(), Box<dyn Error>> {
     info!("Starting specification values load");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/specificationvalue"
         .replace("{accountName}", &account_name)
@@ -116,11 +132,7 @@ pub async fn load_specification_values(file_path: String, client: &Client, accou
             async move {
                 block_on(lim.until_ready_with_jitter(Jitter::up_to(Duration::from_millis(100))));
 
-            let response = client
-                .post(url)
-                .json(&record)
-                .send()
-                .await?;
+                let response = client.post(url).json(&record).send().await?;
 
                 info!("name: {:?}: response: {:?}", record.name, response.status());
                 if response.status() == StatusCode::TOO_MANY_REQUESTS {
@@ -138,7 +150,7 @@ pub async fn load_specification_values(file_path: String, client: &Client, accou
             }
         })
         .await;
-    
+
     info!("finished loading specification values");
 
     Ok(())

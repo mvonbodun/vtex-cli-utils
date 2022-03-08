@@ -212,7 +212,7 @@ pub mod model {
             category_id: Option<i32>,
             position: Option<i32>,
         ) -> SpecificationGroup {
-            SpecificationGroup { 
+            SpecificationGroup {
                 id,
                 name,
                 category_id,
@@ -511,7 +511,7 @@ pub mod model {
         pub field_value_id: Option<i32>,
         pub text: Option<String>,
     }
-    
+
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     #[serde(rename_all = "PascalCase")]
     pub struct SkuSpecificationAssociation {
@@ -585,7 +585,6 @@ pub mod model {
         pub date_of_supply_utc: Option<String>,
     }
 
-
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     #[serde(rename_all = "PascalCase")]
     pub struct SkuAndContext {
@@ -604,7 +603,7 @@ pub mod model {
         pub is_gift_card_recharge: bool,
         pub image_url: Option<String>,
         pub detail_url: String,
-        #[serde(rename="CSCIdentification")]
+        #[serde(rename = "CSCIdentification")]
         pub csc_identification: Option<String>,
         pub brand_id: String,
         pub brand_name: String,
@@ -667,7 +666,6 @@ pub mod model {
         pub real_length: f32,
         pub real_weight: f32,
         pub real_width: f32,
-
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -703,13 +701,12 @@ pub mod model {
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     pub struct ProductCategories {
-        #[serde(rename="3")]
+        #[serde(rename = "3")]
         pub three: String,
-        #[serde(rename="2")]
+        #[serde(rename = "2")]
         pub two: String,
-        #[serde(rename="1")]
+        #[serde(rename = "1")]
         pub one: String,
-
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]

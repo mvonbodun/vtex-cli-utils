@@ -1,23 +1,22 @@
-use futures::{stream, StreamExt, executor::block_on};
-use governor::{RateLimiter, Quota, Jitter};
+use futures::{executor::block_on, stream, StreamExt};
+use governor::{Jitter, Quota, RateLimiter};
 use log::*;
 use regex::Regex;
 use reqwest::{Client, StatusCode};
-use vtex::model::{SkuFile, Sku};
-use vtex::utils;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
-use std::{error::Error, fs::File, collections::HashSet};
+use std::{collections::HashSet, error::Error, fs::File};
+use vtex::model::{Sku, SkuFile};
+use vtex::utils;
 
 pub async fn gen_sku_file(
     file_path: String,
     client: &Client,
     account_name: String,
     environment: String,
-    sku_file: String
+    sku_file: String,
 ) -> Result<(), Box<dyn Error>> {
-
     info!("Starting generation of SKU Files file");
     // Build a Sku_id lookup fn
     let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
@@ -62,7 +61,6 @@ pub async fn gen_sku_file(
             part_number_set.insert(record.product_ref_id);
             x = x + 1;
         }
-    
     }
     // Flush the records
     writer.flush()?;
@@ -72,12 +70,19 @@ pub async fn gen_sku_file(
     Ok(())
 }
 
-pub async fn load_sku_files(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
-
+pub async fn load_sku_files(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+    rate_limit: NonZeroU32,
+) -> Result<(), Box<dyn Error>> {
     info!("Starting load of SKU Files file");
-    let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/stockkeepingunit/{skuId}/file"
-        .replace("{accountName}", &account_name)
-        .replace("{environment}", &environment);
+    let url =
+        "https://{accountName}.{environment}.com.br/api/catalog/pvt/stockkeepingunit/{skuId}/file"
+            .replace("{accountName}", &account_name)
+            .replace("{environment}", &environment);
 
     let input = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(input);
@@ -102,18 +107,17 @@ pub async fn load_sku_files(file_path: String, client: &Client, account_name: St
 
                 let url = url.replace("{skuId}", record.sku_id.to_string().as_str());
 
-                let response = client
-                    .post(url)
-                    .json(&record)
-                    .send()
-                    .await?;
+                let response = client.post(url).json(&record).send().await?;
 
-                    let status = response.status();
-                    info!("sku_id: {:?}  image: {:?}:  response: {:?}", record.sku_id, record.url, status);
-                    let text = response.text().await;
-                    if status != StatusCode::OK {
-                        info!("text: {:?}", text);
-                    }
+                let status = response.status();
+                info!(
+                    "sku_id: {:?}  image: {:?}:  response: {:?}",
+                    record.sku_id, record.url, status
+                );
+                let text = response.text().await;
+                if status != StatusCode::OK {
+                    info!("text: {:?}", text);
+                }
                 text
             }
         })
@@ -126,7 +130,7 @@ pub async fn load_sku_files(file_path: String, client: &Client, account_name: St
             }
         })
         .await;
-    
+
     info!("finished loading SKU Files file");
 
     Ok(())

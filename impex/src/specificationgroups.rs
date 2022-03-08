@@ -1,11 +1,17 @@
-use std::error::Error;
-use std::fs::File;
 use futures::{stream, StreamExt};
 use log::*;
 use reqwest::Client;
+use std::error::Error;
+use std::fs::File;
 use vtex::model::SpecificationGroup;
 
-pub async fn load_specification_groups(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize) -> Result<(), Box<dyn Error>> {
+pub async fn load_specification_groups(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+) -> Result<(), Box<dyn Error>> {
     info!("Starting specification group load");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/specificationgroup"
         .replace("{accountName}", &account_name)
@@ -28,13 +34,13 @@ pub async fn load_specification_groups(file_path: String, client: &Client, accou
             let client = &client;
             let url = &url;
             async move {
-                let response = client
-                    .post(url)
-                    .json(&record)
-                    .send()
-                    .await?;
+                let response = client.post(url).json(&record).send().await?;
 
-                info!("specification group: {:?}: repsonse: {:?}", record.id, response.status());
+                info!(
+                    "specification group: {:?}: repsonse: {:?}",
+                    record.id,
+                    response.status()
+                );
 
                 response.json::<SpecificationGroup>().await
             }
@@ -49,7 +55,7 @@ pub async fn load_specification_groups(file_path: String, client: &Client, accou
         })
         .await;
 
-        info!("Finished loading specification groups");
+    info!("Finished loading specification groups");
 
     Ok(())
 }

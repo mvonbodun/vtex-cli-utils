@@ -1,16 +1,22 @@
-use futures::{stream, StreamExt, executor::block_on};
+use futures::{executor::block_on, stream, StreamExt};
+use governor::{Jitter, Quota, RateLimiter};
 use log::*;
-use vtex::utils;
-use std::num::NonZeroU32;
-use std::{error::Error, time::Duration};
-use std::fs::File;
-use std::sync::Arc;
-use governor::{Quota, RateLimiter, Jitter};
 use reqwest::{Client, StatusCode};
+use std::fs::File;
+use std::num::NonZeroU32;
+use std::sync::Arc;
+use std::{error::Error, time::Duration};
 use vtex::model::Product;
+use vtex::utils;
 
-pub async fn load_products(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize, rate_limit: NonZeroU32) -> Result<(), Box<dyn Error>> {
-
+pub async fn load_products(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+    rate_limit: NonZeroU32,
+) -> Result<(), Box<dyn Error>> {
     info!("Starting load of products");
     // Read in the category tree and store in a HashMap for lookup
     let categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
@@ -18,20 +24,23 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
     debug!("category_lookup: {:?}", category_lookup.len());
 
     // Get a lookup for the cateogory name of a category by GroupIdentifier
-    let category_identifier_name_lookup = utils::create_category_name_lookup(&client, &account_name, &environment).await;
-    debug!("category_identifier_name_lookup: {:?}", category_identifier_name_lookup.len());
+    let category_identifier_name_lookup =
+        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+    debug!(
+        "category_identifier_name_lookup: {:?}",
+        category_identifier_name_lookup.len()
+    );
 
     // Get a lookup for the brand_id by brand name
-    let brand_id_lookup = utils::create_brand_lookup(client, &account_name, & environment).await;
+    let brand_id_lookup = utils::create_brand_lookup(client, &account_name, &environment).await;
     debug!("brand_id_lookup: {}", brand_id_lookup.len());
-    
-    
+
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/product"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
     let input = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(input);
-        
+
     let mut product_recs: Vec<Product> = Vec::new();
 
     for line in rdr.deserialize() {
@@ -39,9 +48,14 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
 
         // look up the category name
         let cat_unique_identifier = record.category_unique_identifier.as_ref().unwrap();
-        let parent_cat_name = category_identifier_name_lookup.get(cat_unique_identifier).unwrap();
+        let parent_cat_name = category_identifier_name_lookup
+            .get(cat_unique_identifier)
+            .unwrap();
         // Look up the VTEX Category Id
-        debug!("ref_id: {:?}  parent_cat_name: {:?}", &record.ref_id, &parent_cat_name);
+        debug!(
+            "ref_id: {:?}  parent_cat_name: {:?}",
+            &record.ref_id, &parent_cat_name
+        );
         let vtex_cat_id = category_lookup.get(&parent_cat_name.clone()).unwrap();
         record.category_id = Some(*vtex_cat_id);
         // Look up the brand_id
@@ -62,13 +76,13 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
             async move {
                 block_on(lim.until_ready_with_jitter(Jitter::up_to(Duration::from_millis(100))));
 
-                let response = client
-                    .post(url)
-                    .json(&record)
-                    .send()
-                    .await?;
-                
-                info!("product: {:?}: response: {:?}", record.ref_id, response.status());
+                let response = client.post(url).json(&record).send().await?;
+
+                info!(
+                    "product: {:?}: response: {:?}",
+                    record.ref_id,
+                    response.status()
+                );
                 if response.status() == StatusCode::TOO_MANY_REQUESTS {
                     info!("headers: {:?}", response.headers());
                 }
@@ -84,7 +98,7 @@ pub async fn load_products(file_path: String, client: &Client, account_name: Str
             }
         })
         .await;
-    
+
     info!("finished loading products");
 
     Ok(())

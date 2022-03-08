@@ -1,13 +1,12 @@
 use futures::{stream, StreamExt};
 use log::*;
-use std::{error::Error, collections::HashSet};
 use std::fs::File;
+use std::{collections::HashSet, error::Error};
 
-use vtex::model::{Brand, Product};
 use reqwest::Client;
+use vtex::model::{Brand, Product};
 
 pub fn gen_brand_file(file_path: String, product_file: String) -> Result<(), Box<dyn Error>> {
-
     let in_file = File::open(&product_file).unwrap();
     let mut reader = csv::Reader::from_reader(in_file);
     let out_path = file_path;
@@ -38,21 +37,26 @@ pub fn gen_brand_file(file_path: String, product_file: String) -> Result<(), Box
             menu_home: None,
             ad_words_remarketing_code: None,
             lomadee_campaign_code: None,
-            score: None
+            score: None,
         };
         // Write the record
         writer.serialize(b)?;
-        x = x +1;
+        x = x + 1;
     }
     // Flush the records
     writer.flush()?;
     info!("Wrote {} brand records", x);
-    
+
     Ok(())
 }
 
-pub async fn load_brands(file_path: String, client: &Client, account_name: String, environment: String, concurrent_requests: usize) -> Result<(), Box<dyn Error>> {
-
+pub async fn load_brands(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    concurrent_requests: usize,
+) -> Result<(), Box<dyn Error>> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/brand"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
@@ -72,16 +76,11 @@ pub async fn load_brands(file_path: String, client: &Client, account_name: Strin
             let client = &client;
             let url = &url;
             async move {
-                let response = client
-                .post(url)
-                .json(&record)
-                .send()
-                .await?;
+                let response = client.post(url).json(&record).send().await?;
 
-            info!("brand: {:?}: response: {:?}", record.id, response.status());
+                info!("brand: {:?}: response: {:?}", record.id, response.status());
 
-            response.json::<Brand>().await
-  
+                response.json::<Brand>().await
             }
         })
         .buffer_unordered(concurrent_requests);
@@ -94,6 +93,6 @@ pub async fn load_brands(file_path: String, client: &Client, account_name: Strin
         })
         .await;
 
-        info!("Finished loading brands");
+    info!("Finished loading brands");
     Ok(())
 }

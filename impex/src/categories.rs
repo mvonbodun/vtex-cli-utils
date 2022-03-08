@@ -1,12 +1,17 @@
+use log::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
-use log::*;
 
-use vtex::model::Category;
 use reqwest::{Client, StatusCode};
+use vtex::model::Category;
 
-pub async fn load_categories(file_path: String, client: &Client, account_name: String, environment: String) -> Result<(), Box<dyn Error>> {
+pub async fn load_categories(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+) -> Result<(), Box<dyn Error>> {
     info!("Begin loading categories");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/category"
         .replace("{accountName}", &account_name)
@@ -26,7 +31,7 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
             None => parent_unique_identifier = "".to_string(),
         }
 
-        let mut father_category_id: Option<i32> = None; 
+        let mut father_category_id: Option<i32> = None;
         if parent_unique_identifier.len() > 0 {
             let cat_id = category_ids.get(&parent_unique_identifier);
             match cat_id {
@@ -57,34 +62,42 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
             stock_keeping_unit_selection_mode: record.stock_keeping_unit_selection_mode,
             score: record.score,
             link_id: record.link_id,
-            has_children: record.has_children
+            has_children: record.has_children,
         };
-    
-        let response = client
-            .post(&url)
-            .json(&new_post)
-            .send()
-            .await?;
 
-            match response.status() {
-                StatusCode::OK => {
-                    // println!("response.text() {:#?}", response.text().await?);
-                    let result = response.json::<Category>().await;
-                    match result {
-                        Ok(category) => { 
-                            category_ids.insert(record.unique_identifier.unwrap().clone(), category.id.unwrap().clone());
-                            info!("category id: {}: response: {:?}", category.id.unwrap(), StatusCode::OK);
-                        },
-                        Err(e) => error!("deserialize category error: {:?}", e),
+        let response = client.post(&url).json(&new_post).send().await?;
+
+        match response.status() {
+            StatusCode::OK => {
+                // println!("response.text() {:#?}", response.text().await?);
+                let result = response.json::<Category>().await;
+                match result {
+                    Ok(category) => {
+                        category_ids.insert(
+                            record.unique_identifier.unwrap().clone(),
+                            category.id.unwrap().clone(),
+                        );
+                        info!(
+                            "category id: {}: response: {:?}",
+                            category.id.unwrap(),
+                            StatusCode::OK
+                        );
                     }
-                },
-                _ => {
-                    println!("Status Code: [{:?}] Error: [{:#?}] \n record: {:?}", response.status(), response.text().await?, new_post);
-                },
+                    Err(e) => error!("deserialize category error: {:?}", e),
+                }
             }
-    
+            _ => {
+                println!(
+                    "Status Code: [{:?}] Error: [{:#?}] \n record: {:?}",
+                    response.status(),
+                    response.text().await?,
+                    new_post
+                );
+            }
+        }
+
         // let new_post: Category = response.json().await?;
-    
+
         // info!("category: {:?}: response: {:?}", new_post.id, response.status());
         debug!("{:#?}", new_post);
         // println!("after print new_post");
@@ -93,5 +106,4 @@ pub async fn load_categories(file_path: String, client: &Client, account_name: S
     info!("Finished loading categories");
 
     Ok(())
-
 }
