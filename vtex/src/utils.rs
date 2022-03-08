@@ -1,4 +1,3 @@
-
 use crate::model::{
     BrandList, Category, CategoryTree, FieldValueList, Product, Sku, SkuAndContext,
     SpecificationGroup, SpecificationList,
