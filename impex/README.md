@@ -302,7 +302,7 @@ The program will generate the specifications and add them to the leaf level cate
 
 To generate the file:
 ```
-RUST_LOG=info ./target/debug/vtex_impex specification -a genproductspecsfile -f data/ProductSpecifications.csv --prod_spec_assigns_file data/ProductSpecificationAssignments.csv --product_file transform/data/out/Products.csv
+RUST_LOG=info ./vtex_impex specification -a genproductspecsfile -f data/ProductSpecifications.csv --prod_spec_assigns_file data/ProductSpecificationAssignments.csv --product_file transform/data/out/Products.csv
 ```
 You should see output like this:
 ```
@@ -317,7 +317,7 @@ You should see output like this:
 ### Running a Product Specification Import
 To run a product specification import:
 ```
-RUST_LOG=info ./target/debug/vtex_impex specification -a import -f data/ProductSpecifications.csv
+RUST_LOG=info ./vtex_impex specification -a import -f data/ProductSpecifications.csv
 ```
 You should see output like the following:
 ```

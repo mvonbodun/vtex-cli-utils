@@ -19,7 +19,7 @@ pub async fn get_vtex_field_groups(
     account_name: &str,
     environment: &str,
 ) -> Vec<SpecificationGroup> {
-    let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/specification/groupbycategory/1"
+    let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/specification/groupbycategory/0"
             .replace("{accountName}", account_name)
             .replace("{environment}", environment);
     let groups: Vec<SpecificationGroup> =
@@ -34,7 +34,7 @@ pub async fn get_vtex_category_tree(
     environment: &str,
 ) -> Vec<CategoryTree> {
     // TODO: Fix that this is hardcoded to 3 levels
-    let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pub/category/tree/3"
+    let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pub/category/tree/5"
         .replace("{accountName}", account_name)
         .replace("{environment}", environment);
     let categories: Vec<CategoryTree> = client.get(url).send().await.unwrap().json().await.unwrap();
@@ -165,6 +165,17 @@ pub fn parse_category_tree(cat_tree: Vec<CategoryTree>) -> HashMap<String, i32> 
                 if category2.has_children {
                     for category3 in category2.children.expect("missing category") {
                         category_ids.insert(category3.name.clone(), category3.id.clone());
+                        if category3.has_children {
+                            for category4 in category3.children.expect("missing category") {
+                                category_ids.insert(category4.name.clone(), category4.id.clone());
+                                if category4.has_children {
+                                    for category5 in category4.children.expect("missing category") {
+                                        category_ids
+                                            .insert(category5.name.clone(), category5.id.clone());
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -217,6 +228,38 @@ pub async fn create_category_name_lookup(
                                 .unwrap(),
                             category3.name.clone(),
                         );
+                        if category3.has_children {
+                            for category4 in category3.children.expect("missing category") {
+                                cat_name_lookup.insert(
+                                    get_category_by_id(
+                                        client,
+                                        account_name,
+                                        environment,
+                                        &category4.id,
+                                    )
+                                    .await
+                                    .ad_words_remarketing_code
+                                    .unwrap(),
+                                    category4.name.clone(),
+                                );
+                                if category4.has_children {
+                                    for category5 in category4.children.expect("missing category") {
+                                        cat_name_lookup.insert(
+                                            get_category_by_id(
+                                                client,
+                                                account_name,
+                                                environment,
+                                                &category5.id,
+                                            )
+                                            .await
+                                            .ad_words_remarketing_code
+                                            .unwrap(),
+                                            category5.name.clone(),
+                                        );
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

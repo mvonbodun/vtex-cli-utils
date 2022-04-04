@@ -34,7 +34,8 @@ pub fn gen_brand_file(file_path: String, product_file: String) -> Result<(), Box
             keywords: Some(brand.clone()),
             site_title: None,
             active: true,
-            menu_home: None,
+            // Set to false instead of None or the admin doesn't work properly
+            menu_home: Some("false".to_string()),
             ad_words_remarketing_code: None,
             lomadee_campaign_code: None,
             score: None,

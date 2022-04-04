@@ -36,6 +36,7 @@ pub async fn gen_sku_file(
     for line in reader.deserialize() {
         let record: Sku = line?;
         debug!("sku record: {:?}", record);
+
         let is_main: bool;
         if part_number_set.contains(&record.product_ref_id) {
             is_main = false;
@@ -47,19 +48,29 @@ pub async fn gen_sku_file(
         debug!("name: {}", name);
         let name = re.replace_all(&name, "");
         debug!("after regex pattern replacement: {}", name);
-        if sku_id_lookup.contains_key(&record.ref_id) {
-            let sku_file = SkuFile {
-                id: None,
-                sku_id: *sku_id_lookup.get(&record.ref_id).unwrap(),
-                is_main: Some(is_main),
-                archive_id: None,
-                name: Some(name.to_string()),
-                label: Some(name.to_string()),
-                url: record.image_url,
-            };
-            writer.serialize(sku_file)?;
-            part_number_set.insert(record.product_ref_id);
-            x = x + 1;
+        // Determine if there is more than one image for the SKU
+        let img_url = record.image_url.expect("missing Image Url for SKU");
+        let iter = img_url.split(";");
+        let mut y = 0;
+        for i in iter {
+            y = y + 1;
+            if sku_id_lookup.contains_key(&record.ref_id) {
+                let mut name_with_number = name.to_string();
+                name_with_number.push_str("_");
+                name_with_number.push_str(&y.to_string());
+                let sku_file = SkuFile {
+                    id: None,
+                    sku_id: *sku_id_lookup.get(&record.ref_id).unwrap(),
+                    is_main: Some(is_main),
+                    archive_id: None,
+                    name: Some(name_with_number.to_string()),
+                    label: Some(name_with_number.to_string()),
+                    url: Some(i.to_string()),
+                };
+                writer.serialize(sku_file)?;
+                part_number_set.insert(record.product_ref_id.clone());
+                x = x + 1;
+            }
         }
     }
     // Flush the records
@@ -134,4 +145,15 @@ pub async fn load_sku_files(
     info!("finished loading SKU Files file");
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_split() {
+        let urls = "https://www.google.com";
+        let iter = urls.split(";");
+        println!("count: {}", iter.count());
+    }
 }
