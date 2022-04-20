@@ -32,7 +32,7 @@ pub async fn load_categories(
         }
 
         let mut father_category_id: Option<i32> = None;
-        if parent_unique_identifier.len() > 0 {
+        if !parent_unique_identifier.is_empty() {
             let cat_id = category_ids.get(&parent_unique_identifier);
             match cat_id {
                 Some(v) => father_category_id = Some(*v),
@@ -43,10 +43,10 @@ pub async fn load_categories(
         debug!("father_category_id: {:?}", father_category_id);
 
         let new_post = Category {
-            id: record.id.clone(),
+            id: record.id,
             unique_identifier: record.unique_identifier.clone(),
             name: record.name.to_string(),
-            father_category_id: father_category_id.clone(),
+            father_category_id,
             parent_unique_identifier: Some(parent_unique_identifier),
             title: record.title.to_string(),
             description: record.description.to_string(),
@@ -75,7 +75,7 @@ pub async fn load_categories(
                     Ok(category) => {
                         category_ids.insert(
                             record.unique_identifier.unwrap().clone(),
-                            category.id.unwrap().clone(),
+                            category.id.unwrap(),
                         );
                         info!(
                             "category id: {}: response: {:?}",

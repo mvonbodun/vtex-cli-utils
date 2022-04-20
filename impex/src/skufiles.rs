@@ -50,13 +50,14 @@ pub async fn gen_sku_file(
         debug!("after regex pattern replacement: {}", name);
         // Determine if there is more than one image for the SKU
         let img_url = record.image_url.expect("missing Image Url for SKU");
-        let iter = img_url.split(";");
+        let semicolon: char = ';';
+        let iter = img_url.split(semicolon);
         let mut y = 0;
         for i in iter {
-            y = y + 1;
+            y += 1;
             if sku_id_lookup.contains_key(&record.ref_id) {
                 let mut name_with_number = name.to_string();
-                name_with_number.push_str("_");
+                name_with_number.push('_');
                 name_with_number.push_str(&y.to_string());
                 let sku_file = SkuFile {
                     id: None,
@@ -69,7 +70,7 @@ pub async fn gen_sku_file(
                 };
                 writer.serialize(sku_file)?;
                 part_number_set.insert(record.product_ref_id.clone());
-                x = x + 1;
+                x += 1;
             }
         }
     }

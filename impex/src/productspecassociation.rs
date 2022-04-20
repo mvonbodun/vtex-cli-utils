@@ -8,8 +8,164 @@ use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{error::Error, fs::File};
+use vtex::csvrecords::ProductSpecificationAssignmentAlternate;
 use vtex::model::{ProductSpecificationAssignment, ProductSpecificationAssocation};
 use vtex::utils;
+
+pub async fn gen_product_spec_association_file_root_category(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    prod_specs_assignment_file: String,
+) -> Result<(), Box<dyn Error>> {
+    info!("Begin gen_product_spec_association_file_root_category()");
+    let mut category_lookup: HashMap<String, i32> = HashMap::new();
+    category_lookup.insert("Root Category".to_string(), 0);
+    debug!("category_lookup: {:?}", category_lookup.len());
+
+    // Need HashMap to get Field Id
+    let field_id_lookup =
+        utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
+    debug!("field_id_lookup: {:?}", field_id_lookup);
+
+    // Setup the input and output files
+    debug!("current_directory: {:?}", env::current_dir());
+    let in_file = File::open(prod_specs_assignment_file).unwrap();
+    let mut reader = csv::Reader::from_reader(in_file);
+    let out_path = file_path;
+    let mut writer = csv::Writer::from_path(out_path)?;
+
+    for line in reader.deserialize() {
+        let record: ProductSpecificationAssignmentAlternate = line.unwrap();
+
+        if record.short_desc.is_some() {
+            debug!(
+                "Found ShortDesc for product_ref_id: {}",
+                record.product_ref_id
+            );
+            let short_desc: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id: record.product_ref_id,
+                field_id: *field_id_lookup.get("0|ShortDesc").unwrap(),
+                field_value_id: None,
+                text: Some(record.short_desc.unwrap()),
+            };
+            writer.serialize(short_desc)?;
+        }
+        if record.ship_message.is_some() {
+            debug!(
+                "Found ship_message for product_ref_id: {}",
+                record.product_ref_id
+            );
+            let ship_message: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id: record.product_ref_id,
+                field_id: *field_id_lookup.get("0|ship_message").unwrap(),
+                field_value_id: None,
+                text: Some(record.ship_message.unwrap()),
+            };
+            writer.serialize(ship_message)?;
+        }
+        if record.availability_remarks.is_some() {
+            debug!(
+                "Found Availability Remarks for product_ref_id: {}",
+                record.product_ref_id
+            );
+            let availability_remarks: ProductSpecificationAssocation =
+                ProductSpecificationAssocation {
+                    // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                    id: Some(0),
+                    product_id: record.product_ref_id,
+                    field_id: *field_id_lookup.get("0|Availability Remarks").unwrap(),
+                    field_value_id: None,
+                    text: Some(record.availability_remarks.unwrap()),
+                };
+            writer.serialize(availability_remarks)?;
+        }
+        if record.weight.is_some() {
+            debug!(
+                "Found Weight Remarks for product_ref_id: {}",
+                record.product_ref_id
+            );
+            let weight: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id: record.product_ref_id,
+                field_id: *field_id_lookup.get("0|Weight").unwrap(),
+                field_value_id: None,
+                text: Some(record.weight.unwrap()),
+            };
+            writer.serialize(weight)?;
+        }
+        if record.package_dimensions.is_some() {
+            debug!(
+                "Found Package Dimensions for product_ref_id: {}",
+                record.product_ref_id
+            );
+            let package_dimensions: ProductSpecificationAssocation =
+                ProductSpecificationAssocation {
+                    // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                    id: Some(0),
+                    product_id: record.product_ref_id,
+                    field_id: *field_id_lookup.get("0|Package Dimensions").unwrap(),
+                    field_value_id: None,
+                    text: Some(record.package_dimensions.unwrap()),
+                };
+            writer.serialize(package_dimensions)?;
+        }
+        if record.shipping_remarks.is_some() {
+            debug!(
+                "Found Shipping Remarks for product_ref_id: {}",
+                record.product_ref_id
+            );
+            let shipping_remarks: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id: record.product_ref_id,
+                field_id: *field_id_lookup.get("0|Shipping Remarks").unwrap(),
+                field_value_id: None,
+                text: Some(record.shipping_remarks.unwrap()),
+            };
+            writer.serialize(shipping_remarks)?;
+        }
+        if record.prop_65.is_some() {
+            debug!("Found Prop65 for product_ref_id: {}", record.product_ref_id);
+            let prop_65: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id: record.product_ref_id,
+                field_id: *field_id_lookup.get("0|Prop65").unwrap(),
+                field_value_id: None,
+                text: Some(record.prop_65.unwrap()),
+            };
+            writer.serialize(prop_65)?;
+        }
+        if record.attachment.is_some() {
+            debug!(
+                "Found Attachmentfor product_ref_id: {}",
+                record.product_ref_id
+            );
+            let attachment: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id: record.product_ref_id,
+                field_id: *field_id_lookup.get("0|Attachment").unwrap(),
+                field_value_id: None,
+                text: Some(record.attachment.unwrap()),
+            };
+            writer.serialize(attachment)?;
+        }
+    }
+
+    // Flush the records
+    writer.flush()?;
+    info!("Finished generating Product Spec Association file");
+
+    Ok(())
+}
 
 pub async fn gen_product_spec_association_file(
     file_path: String,
@@ -43,7 +199,7 @@ pub async fn gen_product_spec_association_file(
     );
     // Get a lookup for the cateogory name of a category by GroupIdentifier
     let category_identifier_name_lookup =
-        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
     debug!(
         "category_identifier_name_lookup: {:?}",
         category_identifier_name_lookup.len()
@@ -87,12 +243,12 @@ pub async fn gen_product_spec_association_file(
         if !product_lookup.contains_key(&record.product_ref_id) {
             product_id = utils::get_product_by_ref_id(
                 &record.product_ref_id,
-                &client,
+                client,
                 &account_name,
                 &environment,
             )
             .await;
-            product_lookup.insert(record.product_ref_id.clone(), product_id.clone());
+            product_lookup.insert(record.product_ref_id.clone(), product_id);
         } else {
             debug!(
                 "product_lookup hit. product_ref_id: {} found.",
@@ -104,7 +260,7 @@ pub async fn gen_product_spec_association_file(
         let prod_spec: ProductSpecificationAssocation = ProductSpecificationAssocation {
             // Hardcode 0. If None (null), then the Post API fails with a parseInt error
             id: Some(0),
-            product_id: product_id,
+            product_id,
             field_id: *field_id,
             field_value_id: None,
             text: Some(record.value),

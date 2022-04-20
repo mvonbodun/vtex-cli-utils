@@ -59,7 +59,7 @@ pub async fn get_category_by_id(
         StatusCode::OK => {
             let result: Category = response.json().await.unwrap();
             debug!("category: {:?}", result);
-            return result;
+            result
         }
         _ => {
             debug!(
@@ -113,7 +113,7 @@ pub async fn get_brands(client: &Client, account_name: &str, environment: &str) 
         StatusCode::OK => {
             let result: Vec<BrandList> = response.json().await.unwrap();
             debug!("Vec<Brand> length: {}", result.len());
-            return result;
+            result
         }
         _ => {
             debug!(
@@ -130,7 +130,7 @@ pub async fn get_brands(client: &Client, account_name: &str, environment: &str) 
 pub fn parse_brands(brands: Vec<BrandList>) -> HashMap<String, i32> {
     let mut brand_ids: HashMap<String, i32> = HashMap::new();
     for brand in brands {
-        brand_ids.insert(brand.name.clone(), brand.id.clone());
+        brand_ids.insert(brand.name.clone(), brand.id);
     }
     brand_ids
 }
@@ -148,7 +148,7 @@ pub async fn create_brand_lookup(
 pub fn parse_spec_groups(groups: Vec<SpecificationGroup>) -> HashMap<String, i32> {
     let mut group_ids: HashMap<String, i32> = HashMap::new();
     for group in groups {
-        group_ids.insert(group.name.clone(), group.id.unwrap().clone());
+        group_ids.insert(group.name.clone(), group.id.unwrap());
     }
     group_ids
 }
@@ -158,20 +158,19 @@ pub fn parse_spec_groups(groups: Vec<SpecificationGroup>) -> HashMap<String, i32
 pub fn parse_category_tree(cat_tree: Vec<CategoryTree>) -> HashMap<String, i32> {
     let mut category_ids: HashMap<String, i32> = HashMap::new();
     for category in cat_tree {
-        category_ids.insert(category.name.clone(), category.id.clone());
+        category_ids.insert(category.name.clone(), category.id);
         if category.has_children {
             for category2 in category.children.expect("missing category") {
-                category_ids.insert(category2.name.clone(), category2.id.clone());
+                category_ids.insert(category2.name.clone(), category2.id);
                 if category2.has_children {
                     for category3 in category2.children.expect("missing category") {
-                        category_ids.insert(category3.name.clone(), category3.id.clone());
+                        category_ids.insert(category3.name.clone(), category3.id);
                         if category3.has_children {
                             for category4 in category3.children.expect("missing category") {
-                                category_ids.insert(category4.name.clone(), category4.id.clone());
+                                category_ids.insert(category4.name.clone(), category4.id);
                                 if category4.has_children {
                                     for category5 in category4.children.expect("missing category") {
-                                        category_ids
-                                            .insert(category5.name.clone(), category5.id.clone());
+                                        category_ids.insert(category5.name.clone(), category5.id);
                                     }
                                 }
                             }
@@ -419,8 +418,7 @@ async fn get_all_sku_ids(client: &Client, account_name: &str, environment: &str)
     let page = &mut 1;
 
     while *recs == 1000 {
-        *recs = get_all_sku_ids_by_page(page.clone(), &client, account_name, environment, sku_ids)
-            .await;
+        *recs = get_all_sku_ids_by_page(*page, client, account_name, environment, sku_ids).await;
         *page += 1;
     }
     let duration = start.elapsed();
@@ -442,7 +440,7 @@ pub async fn get_all_sku_ids_by_page(
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitids?page={page}&pagesize=1000"
             .replace("{accountName}", account_name)
             .replace("{environment}", environment)    
-            .to_string().replace("{page}", page.to_string().as_str());
+            .replace("{page}", page.to_string().as_str());
 
     let response = client.get(url).send().await.unwrap();
 
@@ -451,13 +449,14 @@ pub async fn get_all_sku_ids_by_page(
         StatusCode::OK => {
             let response_text = response.text().await.unwrap();
             let ids = response_text.replace("[", "").replace("]", "");
-            let iter = ids.split(",");
+            let comma: char = ',';
+            let iter = ids.split(comma);
             let mut x = 0;
             debug!("ids: {:?}", ids);
             // let mut ids_response: Vec<i32> = Vec::new();
             for v in iter {
                 sku_ids.push(v.parse::<i32>().unwrap());
-                x = x + 1;
+                x += 1;
             }
             x
         }
@@ -471,11 +470,10 @@ pub async fn get_all_sku_ids_by_page(
     }
 }
 
-fn build_get_sku_urls(sku_ids: &Vec<i32>, account_name: &str, environment: &str) -> Vec<String> {
+fn build_get_sku_urls(sku_ids: &[i32], account_name: &str, environment: &str) -> Vec<String> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1"
             .replace("{accountName}", account_name)
-            .replace("{environment}", environment)    
-            .to_string();
+            .replace("{environment}", environment);
     let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
     for sku_id in sku_ids {
         let url = url.replace("{skuId}", sku_id.to_string().as_str());
@@ -486,14 +484,14 @@ fn build_get_sku_urls(sku_ids: &Vec<i32>, account_name: &str, environment: &str)
 }
 
 async fn get_item_records(
-    sku_ids: &Vec<i32>,
+    sku_ids: &[i32],
     client: &Client,
     account_name: &str,
     environment: &str,
 ) -> HashMap<i32, SkuAndContext> {
     info!("Starting get_item_records()");
     // Build the urls
-    let urls = build_get_sku_urls(&sku_ids, account_name, environment);
+    let urls = build_get_sku_urls(sku_ids, account_name, environment);
     debug!("after call to build_get_sku_urls");
     let item_recs: Arc<Mutex<HashMap<i32, SkuAndContext>>> = Arc::new(Mutex::new(HashMap::new()));
     let bodies = stream::iter(urls)
@@ -517,7 +515,7 @@ async fn get_item_records(
                     // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
                     let sku_ctx: SkuAndContext = b;
                     let mut item_recs = item_recs.lock().unwrap();
-                    item_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
+                    item_recs.insert(sku_ctx.id, sku_ctx.clone());
                     debug!("Got: {:?}", sku_ctx)
                 }
                 Err(e) => error!("Got an error: {}", e),
@@ -554,8 +552,8 @@ pub async fn create_sku_id_lookup(
 ) -> HashMap<String, i32> {
     info!("Start creating sku_id_lookup");
     let mut sku_lookup = HashMap::new();
-    let sku_ids = get_all_sku_ids(&client, account_name, environment).await;
-    let item_records = get_item_records(&sku_ids, &client, account_name, environment).await;
+    let sku_ids = get_all_sku_ids(client, account_name, environment).await;
+    let item_records = get_item_records(&sku_ids, client, account_name, environment).await;
     for ir in item_records {
         let sku_id = ir.0;
         let sku_context = ir.1;

@@ -38,7 +38,7 @@ pub async fn gen_specification_values_file(
     );
     // Get a lookup for the cateogory name of a category by GroupIdentifier
     let category_identifier_name_lookup =
-        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
     debug!(
         "category_identifier_name_lookup: {:?}",
         category_identifier_name_lookup.len()
@@ -74,11 +74,11 @@ pub async fn gen_specification_values_file(
         // The AllowedValues fields start in the 4th postion of the file - range begins at 3 in for loop
         for number in 3..record.len() {
             let value = record.get(number).unwrap().trim();
-            if value.len() > 0 {
+            if !value.is_empty() {
                 debug!("name: [{}] value: [{}]", name, value);
                 let field_value = SpecificationValue {
                     field_value_id: None,
-                    field_id: field_id.clone(),
+                    field_id: *field_id,
                     is_active: Some(true),
                     name: value.to_string(),
                     text: None,

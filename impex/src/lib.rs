@@ -1,5 +1,4 @@
 use clap::{arg_enum, crate_version, App, Arg, SubCommand};
-use dotenv;
 use log::*;
 use reqwest::header;
 use std::error::Error;
@@ -15,6 +14,8 @@ mod inventory;
 mod prices;
 mod products;
 mod productspecassociation;
+mod similarcategories;
+mod skuean;
 mod skufiles;
 mod skus;
 mod skuspecassociation;
@@ -115,7 +116,8 @@ arg_enum! {
     #[allow(non_camel_case_types)]
     enum ProductSpecAssocActions {
         import,
-        genproductspecassocfile
+        genproductspecassocfile,
+        genproductspecassocfilerootcategory
     }
 }
 
@@ -134,6 +136,23 @@ arg_enum! {
     enum SkuFileActions {
         import,
         genskufile
+    }
+}
+
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    enum SkuEanActions {
+        import,
+        genskueanfile
+    }
+}
+
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    enum SimilarCategoryActions {
+        import
     }
 }
 
@@ -512,6 +531,68 @@ impl Command {
                 .help("Sets the rate limit value (how many calls per second) - default is 40")
                 .takes_value(true))
         )
+        .subcommand(SubCommand::with_name("skuean")
+            .about("actions on skuean into VTEX")
+            .version(crate_version!())
+            .arg(Arg::with_name("ACTION")
+                .required(true)
+                .possible_values(&SkuEanActions::variants())
+                .short("a")
+                .long("action")
+                .value_name("ACTION")
+                .help("The action to perform on the VTEX Object: ")
+                .takes_value(true))
+            .arg(Arg::with_name("FILE")
+                .required(true)
+                .short("f")
+                .long("file")
+                .value_name("FILE")
+                .help("Sets the input or output file to read or write to.")
+                .takes_value(true))
+            .arg(Arg::with_name("SKU_FILE")
+                .required(false)
+                .long("sku_file")
+                .value_name("SKU_FILE")
+                .help("Sets the Sku file")
+                .takes_value(true))
+            .arg(Arg::with_name("CONCURRENCY")
+                .short("c")
+                .long("concurrency")
+                .value_name("CONCURRENCY")
+                .help("Sets the concurrency value - default is 1")
+                .takes_value(true))
+            .arg(Arg::with_name("RATELIMIT")
+                .short("r")
+                .long("rate_limit")
+                .value_name("RATELIMIT")
+                .help("Sets the rate limit value (how many calls per second) - default is 40")
+                .takes_value(true))
+        )
+        .subcommand(SubCommand::with_name("similarcategory")
+            .about("actions on similarcategory into VTEX")
+            .version(crate_version!())
+            .arg(Arg::with_name("ACTION")
+                .required(true)
+                .possible_values(&SimilarCategoryActions::variants())
+                .short("a")
+                .long("action")
+                .value_name("ACTION")
+                .help("The action to perform on the VTEX Object: ")
+                .takes_value(true))
+            .arg(Arg::with_name("FILE")
+                .required(true)
+                .short("f")
+                .long("file")
+                .value_name("FILE")
+                .help("Sets the input or output file to read or write to.")
+                .takes_value(true))
+            .arg(Arg::with_name("CONCURRENCY")
+                .short("c")
+                .long("concurrency")
+                .value_name("CONCURRENCY")
+                .help("Sets the concurrency value - default is 1")
+                .takes_value(true))
+        )
         .subcommand(SubCommand::with_name("price")
             .about("actions on the price into VTEX")
             .version(crate_version!())
@@ -726,6 +807,28 @@ impl Command {
                 command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 1 - Recommended");
                 command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("40").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 40 - Recommended");
             }
+            ("skuean", Some(m)) => {
+                command.object = "skuean".to_string();
+                command.action = m.value_of("ACTION").unwrap().to_string();
+                command.input_file = m
+                    .value_of("FILE")
+                    .expect("-f <FILE> must be set to the input file (example: data/SkuEan.csv")
+                    .to_string();
+                debug!("input_file: {}", command.input_file);
+                command.sku_file = m.value_of("SKU_FILE").unwrap_or("").to_string();
+                command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 1 - Recommended");
+                command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("40").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 40 - Recommended");
+            }
+            ("similarcategory", Some(m)) => {
+                command.object = "similarcategory".to_string();
+                command.action = m.value_of("ACTION").unwrap().to_string();
+                command.input_file = m
+                    .value_of("FILE")
+                    .expect("-f <FILE> must be set to the input file (example: data/SkuEan.csv")
+                    .to_string();
+                debug!("input_file: {}", command.input_file);
+                command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 1 - Recommended");
+            }
             ("price", Some(m)) => {
                 command.object = "price".to_string();
                 command.action = m.value_of("ACTION").unwrap().to_string();
@@ -922,6 +1025,15 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 cmd.product_file,
             )
             .await?;
+        } else if cmd.action.eq("genproductspecassocfilerootcategory") {
+            productspecassociation::gen_product_spec_association_file_root_category(
+                cmd.input_file,
+                &client,
+                account_name,
+                environment,
+                cmd.prod_spec_assign_file,
+            )
+            .await?;
         }
     } else if cmd.object.eq("skuspecassociation") {
         // Load sku spec assignments
@@ -969,8 +1081,42 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
             )
             .await?;
         }
-    } else if cmd.object.eq("price") {
+    } else if cmd.object.eq("skuean") {
         // Load sku files
+        if cmd.action.eq("import") {
+            skuean::load_sku_eans(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.concurrency,
+                cmd.rate_limit,
+            )
+            .await?;
+        } else if cmd.action.eq("genskueanfile") {
+            skuean::gen_sku_ean_file(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.sku_file,
+            )
+            .await?;
+        }
+    } else if cmd.object.eq("similarcategory") {
+        // Load similar categories
+        if cmd.action.eq("import") {
+            similarcategories::load_similar_categories(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.concurrency,
+            )
+            .await?;
+        }
+    } else if cmd.object.eq("price") {
+        // Load price
         if cmd.action.eq("import") {
             prices::load_prices(
                 cmd.input_file.to_string(),

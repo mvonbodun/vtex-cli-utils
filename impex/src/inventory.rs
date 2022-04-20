@@ -32,7 +32,7 @@ pub async fn load_inventory(
 
     for line in rdr.deserialize() {
         let mut record: Inventory = line?;
-        let sku_id = sku_id_lookup.get(&record.ref_id).unwrap().clone();
+        let sku_id = *sku_id_lookup.get(&record.ref_id).unwrap();
         record.sku_id = Some(sku_id);
         inv_recs.push(record);
     }

@@ -46,52 +46,6 @@ pub mod model {
         pub has_children: Option<bool>,
     }
 
-    impl Category {
-        pub fn new(
-            id: Option<i32>,
-            unique_identifier: Option<String>,
-            name: String,
-            father_category_id: Option<i32>,
-            parent_unique_identifier: Option<String>,
-            title: String,
-            description: String,
-            keywords: String,
-            is_active: bool,
-            lomadee_campaign_code: Option<String>,
-            ad_words_remarketing_code: Option<String>,
-            show_in_store_front: bool,
-            show_brand_filter: bool,
-            active_store_front_link: bool,
-            global_category_id: Option<i32>,
-            stock_keeping_unit_selection_mode: String,
-            score: Option<i32>,
-            link_id: Option<String>,
-            has_children: Option<bool>,
-        ) -> Category {
-            Category {
-                id,
-                unique_identifier,
-                name,
-                father_category_id,
-                parent_unique_identifier,
-                title,
-                description,
-                keywords,
-                is_active,
-                lomadee_campaign_code,
-                ad_words_remarketing_code,
-                show_in_store_front,
-                show_brand_filter,
-                active_store_front_link,
-                global_category_id,
-                stock_keeping_unit_selection_mode,
-                score,
-                link_id,
-                has_children,
-            }
-        }
-    }
-
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
     pub struct CategoryTree {
         pub id: i32,
@@ -104,28 +58,6 @@ pub mod model {
         #[serde(rename = "MetaTagDescription")]
         pub meta_tag_description: Option<String>,
         pub children: Option<Vec<CategoryTree>>,
-    }
-
-    impl CategoryTree {
-        pub fn new(
-            id: i32,
-            name: String,
-            has_children: bool,
-            url: Option<String>,
-            title: Option<String>,
-            meta_tag_description: Option<String>,
-            children: Option<Vec<CategoryTree>>,
-        ) -> CategoryTree {
-            CategoryTree {
-                id,
-                name,
-                has_children,
-                url,
-                title,
-                meta_tag_description,
-                children,
-            }
-        }
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -150,34 +82,6 @@ pub mod model {
         pub lomadee_campaign_code: Option<String>,
         #[serde(rename = "Score")]
         pub score: Option<i32>,
-    }
-
-    impl Brand {
-        pub fn new(
-            id: Option<i32>,
-            name: String,
-            text: Option<String>,
-            keywords: Option<String>,
-            site_title: Option<String>,
-            active: bool,
-            menu_home: Option<String>,
-            ad_words_remarketing_code: Option<String>,
-            lomadee_campaign_code: Option<String>,
-            score: Option<i32>,
-        ) -> Brand {
-            Brand {
-                id,
-                name,
-                text,
-                keywords,
-                site_title,
-                active,
-                menu_home,
-                ad_words_remarketing_code,
-                lomadee_campaign_code,
-                score,
-            }
-        }
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -225,7 +129,7 @@ pub mod model {
     #[serde(rename_all = "PascalCase")]
     pub struct SpecificationList {
         pub name: String,
-        pub category_id: i32,
+        pub category_id: Option<i32>,
         pub field_id: i32,
         pub is_active: bool,
         pub is_stock_keeping_unit: bool,
@@ -351,44 +255,6 @@ pub mod model {
         pub default_value: Option<String>,
     }
 
-    impl Specification {
-        pub fn new(
-            id: Option<i32>,
-            field_type_id: i32,
-            category_id: Option<i32>,
-            field_group_id: i32,
-            name: String,
-            description: Option<String>,
-            position: Option<i32>,
-            is_filter: Option<bool>,
-            is_required: Option<bool>,
-            is_on_product_details: Option<bool>,
-            is_stock_keeping_unit: Option<bool>,
-            is_wizard: Option<bool>,
-            is_active: Option<bool>,
-            is_top_menu_link_active: Option<bool>,
-            default_value: Option<String>,
-        ) -> Specification {
-            Specification {
-                id,
-                field_type_id,
-                category_id,
-                field_group_id,
-                name,
-                description,
-                position,
-                is_filter,
-                is_required,
-                is_on_product_details,
-                is_stock_keeping_unit,
-                is_wizard,
-                is_active,
-                is_top_menu_link_active,
-                default_value,
-            }
-        }
-    }
-
     #[derive(Debug, Serialize, Deserialize)]
     #[serde(rename_all = "PascalCase")]
     pub struct SkuSpecificationValueAssignment {
@@ -411,26 +277,6 @@ pub mod model {
         pub is_active: Option<bool>,
         #[serde(rename = "Position")]
         pub position: Option<i32>,
-    }
-
-    impl SpecificationValue {
-        pub fn new(
-            field_value_id: Option<i32>,
-            field_id: i32,
-            name: String,
-            text: Option<String>,
-            is_active: Option<bool>,
-            position: Option<i32>,
-        ) -> SpecificationValue {
-            SpecificationValue {
-                field_value_id,
-                field_id,
-                name,
-                text,
-                is_active,
-                position,
-            }
-        }
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
@@ -500,6 +346,8 @@ pub mod model {
         pub modal_type: Option<String>,
         pub kit_itens_sell_apart: Option<bool>,
         pub activate_if_possible: Option<bool>,
+        #[serde(rename = "EAN")]
+        pub ean: Option<String>,
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -532,6 +380,21 @@ pub mod model {
         pub is_main: Option<bool>,
         pub label: Option<String>,
         pub url: Option<String>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct SkuEan {
+        pub sku_id: i32,
+        #[serde(rename = "EAN")]
+        pub ean: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+    #[serde(rename_all = "PascalCase")]
+    pub struct SimilarCategory {
+        pub product_id: i32,
+        pub category_id: i32,
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -713,99 +576,5 @@ pub mod model {
     #[serde(rename_all = "PascalCase")]
     pub struct AlternateIds {
         pub ref_id: String,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::model::Brand;
-    use crate::model::Category;
-
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-
-    #[test]
-    fn create_new_brand() {
-        let brand: Brand = Brand {
-            id: None,
-            name: "Nike".to_string(),
-            text: Some("Nike text".to_string()),
-            keywords: Some("Nike keywords".to_string()),
-            site_title: Some("Nike site title".to_string()),
-            active: true,
-            ad_words_remarketing_code: None,
-            lomadee_campaign_code: None,
-            menu_home: None,
-            score: None,
-        };
-
-        assert_eq!(
-            brand,
-            Brand::new(
-                None,
-                "Nike".to_string(),
-                Some("Nike text".to_string()),
-                Some("Nike keywords".to_string()),
-                Some("Nike site title".to_string()),
-                true,
-                None,
-                None,
-                None,
-                None,
-            ),
-        );
-    }
-
-    #[test]
-    fn create_new_category() {
-        let category: Category = Category {
-            id: None,
-            unique_identifier: Some("1234".to_string()),
-            name: "Mens Clothing".to_string(),
-            father_category_id: None,
-            parent_unique_identifier: None,
-            title: "Mens Clothing".to_string(),
-            description: "Mens Clothing".to_string(),
-            keywords: "Mens Clothing".to_string(),
-            is_active: true,
-            lomadee_campaign_code: None,
-            ad_words_remarketing_code: None,
-            show_in_store_front: true,
-            show_brand_filter: false,
-            active_store_front_link: false,
-            global_category_id: None,
-            stock_keeping_unit_selection_mode: "SPECIFICATION".to_string(),
-            score: None,
-            link_id: None,
-            has_children: None,
-        };
-
-        assert_eq!(
-            category,
-            Category::new(
-                None,
-                Some("1234".to_string()),
-                "Mens Clothing".to_string(),
-                None,
-                None,
-                "Mens Clothing".to_string(),
-                "Mens Clothing".to_string(),
-                "Mens Clothing".to_string(),
-                true,
-                None,
-                None,
-                true,
-                false,
-                false,
-                None,
-                "SPECIFICATION".to_string(),
-                None,
-                None,
-                None,
-            ),
-        );
     }
 }

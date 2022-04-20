@@ -44,7 +44,7 @@ vb@michaels-mbp-2 ~ % ./vtex_impex --help
 ```
 This will output the different subcommands
 ```
-VTEX Dataloader 0.1.0
+VTEX Dataloader 0.2.0
 VTEX
 Command line interface to import / export data into VTEX
 
@@ -63,13 +63,15 @@ SUBCOMMANDS:
     price                     actions on the price into VTEX
     product                   actions on the product into VTEX
     productspecassociation    actions on product specification associations into VTEX
+    similarcategory           actions on similarcategory into VTEX
     sku                       actions on the sku into VTEX
+    skuean                    actions on skuean into VTEX
     skufile                   actions on skufile (images) into VTEX
     skuspecassociation        actions on sku specification associations into VTEX
     specification             actions for operating on a specification into VTEX
     specificationgroup        actions on the specification group into VTEX
-    specificationvalue        actions on the specification value into VTEX
-```
+    specificationvalue        actions on the specification value into VTEX```
+
 Each sub command has it's own help
 ```
 vb@michaels-mbp-2 ~ % ./vtex_impex specification --help
@@ -110,6 +112,7 @@ The following CSV files are what you should create to use the **vtex_implex** ut
 - [ProductSpecificationAssignments.csv](../data/ProductSpecificationAssignments.csv)
 - [SkuSpecificationAllowedValues.csv](../data/SkuSpecificationAllowedValues.csv)
 - [SkuSpecificationValueAssignments.csv](../data/SkuSpecificationValueAssignments.csv)
+- [SimilarCategories.csv](../data/SimilarCategories.csv)
 - [Prices.csv](../data/Prices.csv)
 - [Inventory.csv](../data/Inventory.csv)
 
@@ -127,6 +130,7 @@ From the collection of files listed above, the utility will generate other files
 - [SpecificationValues.csv](../data/SpecificationValues.csv)
 - [SkuSpecificationAssociations.csv](../data/SkuSpecificationAssociations.csv)
 - [SkuFiles.csv](../data/SkuFiles.csv)
+- [SkuEan.csv](../data/SkuEan.csv)
 
 
 ## Example Loading Data
@@ -161,6 +165,8 @@ To load catalog data into VTEX, the utility supports the following steps right n
 - [Product Specification Association](#product-specification-association)
 - [SKU Specification Association](#sku-specification-association)
 - [SKU File (Images)](#sku-files)
+- [SKU EAN](#ean)
+- [Similar Categories](#similar-categories)
 - [Price](#price)
 - [Inventory](#inventory)
 
@@ -610,6 +616,76 @@ You should see output like the following:
 653.682 [INFO] - sku_id: 3369  image: Some("https://images.beallsflorida.com/i/beallsflorida/110-7171-2095-31-yyy?w=1000&h=1000&fmt=auto&qlt=default&img404=404&v=1"):  response: 200
 653.683 [INFO] - finished loading SKU Files file
 653.683 [INFO] - Finished data load
+```
+
+## EAN
+The EAN File CSV is generated from the Skus.csv file format which contains an EAN column that has the EAN for the SKU.  The EAN column is optional.
+
+### To generate the SKU EAN file
+To generate the EAN file:
+```
+RUST_LOG=info ./vtex_impex skuean -a genskueanfile -f data/SkuEan.csv --sku_file data/Skus.csv
+```
+You should see out put like the following:
+```
+0.003 [INFO] - Starting data load
+0.020 [INFO] - Starting generation of SKU EAN file
+0.020 [INFO] - Start creating sku_id_lookup
+0.020 [INFO] - Start get_all_sku_ids()
+0.708 [INFO] - Finished get_all_sku_ids: 3369 records in 687.075916ms
+0.708 [INFO] - Starting get_item_records()
+18.734 [INFO] - finished get_item_records(): item_recs.len(): 3369
+18.772 [INFO] - Finish creating sku_id_lookup length: 3369
+18.774 [INFO] - records writtern: 3
+18.774 [INFO] - Finished generating SKU EAN file
+18.774 [INFO] - Finished data load
+```
+
+### Running an EAN File import
+To run an EAN File import:
+```
+RUST_LOG=info ./vtex_impex skuean -a import -f data/SkuEan.csv
+```
+You should see output like the following:
+```
+0.003 [INFO] - Starting data load
+0.015 [INFO] - Starting load of SKU EAN file
+0.437 [INFO] - sku_id: 1  ean: "12121212":  response: 200
+0.606 [INFO] - sku_id: 3  ean: "34343434":  response: 200
+0.753 [INFO] - sku_id: 5  ean: "56565656":  response: 200
+0.754 [INFO] - finished loading SKU EAN file
+0.754 [INFO] - Finished data load
+```
+
+## Similar Categories
+The Similar Categories CSV follows the VTEX API.  There are only two columns:
+- ProductId - this is the VTEX Id of the Product
+- CategoryId - this is the VTEX id of the Category
+
+The file is in the following format:
+|ProductId|CategoryId|
+|---------|----------|
+|1        |253       |
+|1        |347       |
+|2        |102       |
+
+### Running a Similar Categories import
+The Similar Categories API does not appear to be rate limited.  You may want to experiment with the CONCURRENCY VALUE: **-c**
+
+To run a Similar Categories import (this example sets teh concurrency parameter to 12):
+```
+RUST_LOG=debug ./vtex_impex similarcategory -a import -f data/SimilarCategories.csv
+```
+You should see output like the following:
+```
+0.000 [INFO] - Starting data load
+0.013 [INFO] - Starting Similar Categories load
+0.017 [INFO] - 3 records read from input file: data/SimilarCategories.csv
+0.624 [INFO] - product: 1: category: 4: response: 200
+0.703 [INFO] - product: 1: category: 6: response: 200
+0.799 [INFO] - product: 2: category: 11: response: 200
+0.799 [INFO] - finished Similar Categories load
+0.799 [INFO] - Finished data load
 ```
 
 ## Price

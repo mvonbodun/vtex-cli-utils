@@ -35,12 +35,12 @@ pub async fn load_skus(
         if !product_lookup.contains_key(&record.product_ref_id) {
             product_id = utils::get_product_by_ref_id(
                 &record.product_ref_id,
-                &client,
+                client,
                 &account_name,
                 &environment,
             )
             .await;
-            product_lookup.insert(record.product_ref_id.clone(), product_id.clone());
+            product_lookup.insert(record.product_ref_id.clone(), product_id);
             record.product_id = Some(product_id);
         } else {
             debug!(
@@ -63,6 +63,8 @@ pub async fn load_skus(
             let lim = Arc::clone(&lim);
             async move {
                 block_on(lim.until_ready_with_jitter(Jitter::up_to(Duration::from_millis(100))));
+
+                debug!("sku record: {:?}", record);
 
                 let response = client.post(url).json(&record).send().await?;
 

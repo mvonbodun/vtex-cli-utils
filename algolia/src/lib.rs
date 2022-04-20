@@ -1,5 +1,4 @@
 use algoliarecords::{HierarchicalCategories, Price, Review, Variant};
-use dotenv;
 use futures::{join, stream, StreamExt};
 use log::*;
 use rand::Rng;
@@ -48,13 +47,13 @@ pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut V
         StatusCode::OK => {
             let response_text = response.text().await.unwrap();
             let ids = response_text.replace("[", "").replace("]", "");
-            let iter = ids.split(",");
+            let iter = ids.split(',');
             let mut x = 0;
             // println!("ids: {:?}", ids);
             // let mut ids_response: Vec<i32> = Vec::new();
             for v in iter {
                 sku_ids.push(v.parse::<i32>().unwrap());
-                x = x + 1;
+                x += 1;
             }
             x
         }
@@ -68,7 +67,7 @@ pub async fn get_all_sku_ids_by_page(page: i32, client: &Client, sku_ids: &mut V
     }
 }
 
-fn build_get_sku_urls(sku_ids: &Vec<i32>) -> Vec<String> {
+fn build_get_sku_urls(sku_ids: &[i32]) -> Vec<String> {
     let url = "https://michaelvb.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?sc=1".to_string();
     let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
     for sku_id in sku_ids {
@@ -93,7 +92,7 @@ pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext
             match result {
                 Ok(sku_and_context) => {
                     // println!("sku_and_context: {:?}", sku_and_context);
-                    return sku_and_context;
+                    sku_and_context
                 }
                 Err(e) => {
                     // println!("deserialize product error: {:?}", e);
@@ -111,7 +110,7 @@ pub async fn get_sku_and_context(sku_id: &i32, client: &Client) -> SkuAndContext
     }
 }
 
-fn build_get_price_urls(sku_ids: &Vec<i32>) -> Vec<String> {
+fn build_get_price_urls(sku_ids: &[i32]) -> Vec<String> {
     let url = "https://api.vtex.com/michaelvb/pricing/prices/{skuId}".to_string();
     let mut urls: Vec<String> = Vec::with_capacity(sku_ids.len());
     for sku_id in sku_ids {
@@ -123,14 +122,13 @@ fn build_get_price_urls(sku_ids: &Vec<i32>) -> Vec<String> {
 }
 
 fn build_price_for_algolia(vtex_price: &PriceGet) -> Price {
-    let price = Price {
-        value: vtex_price.base_price.unwrap().clone(),
+    Price {
+        value: vtex_price.base_price.unwrap(),
         currency: "USD".to_string(),
         on_sales: false,
         discount_level: -100.00,
         discounted_value: 0.00,
-    };
-    price
+    }
 }
 
 pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
@@ -149,14 +147,13 @@ pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
             match result {
                 Ok(vtex_price) => {
                     // println!("vtex_price: {:?}", vtex_price);
-                    let price = Price {
-                        value: vtex_price.base_price.unwrap().clone(),
+                    Price {
+                        value: vtex_price.base_price.unwrap(),
                         currency: "USD".to_string(),
                         on_sales: false,
                         discount_level: -100.00,
                         discounted_value: 0.00,
-                    };
-                    return price;
+                    }
                 }
                 Err(e) => {
                     // println!("deserialize product error: {:?}", e);
@@ -174,7 +171,7 @@ pub async fn get_price(sku_id: &i32, client: &Client) -> Price {
     }
 }
 
-fn build_get_inventory_urls(sku_ids: &Vec<i32>) -> Vec<String> {
+fn build_get_inventory_urls(sku_ids: &[i32]) -> Vec<String> {
     let url =
         "https://michaelvb.vtexcommercestable.com.br/api/logistics/pvt/inventory/skus/{skuId}"
             .to_string();
@@ -220,7 +217,7 @@ pub async fn get_inventory(sku_id: &i32, client: &Client) -> i32 {
                             quantity = balance.total_quantity;
                         }
                     }
-                    return quantity;
+                    quantity
                 }
                 Err(e) => {
                     // println!("deserialize product error: {:?}", e);
@@ -240,10 +237,10 @@ pub async fn get_inventory(sku_id: &i32, client: &Client) -> i32 {
 
 fn get_hierarchical_categories(
     categories: &serde_json::Value,
-    product_category_ids: &String,
+    product_category_ids: &str,
 ) -> HierarchicalCategories {
     let cats = categories.as_object().unwrap();
-    let lvl_keys: Vec<&str> = product_category_ids.split("/").collect();
+    let lvl_keys: Vec<&str> = product_category_ids.split('/').collect();
     debug!("lvl_keys: {:?}", lvl_keys);
     // let mut cat_names: Vec<String> = Vec::new();
     // use a LinkedHashSet to preserve order
@@ -257,20 +254,13 @@ fn get_hierarchical_categories(
     // VTEX provides the categories - lvl2, lvl1, lvl0
     let lvl0 = cat_names.get(lvl_keys[1]).unwrap().to_string();
     let lvl1 = lvl0.clone() + " > " + cat_names.get(lvl_keys[2]).unwrap().as_str();
-    let lvl2 = lvl1.clone().to_owned() + " > " + cat_names.get(lvl_keys[3]).unwrap().as_str();
-    HierarchicalCategories {
-        lvl0: lvl0,
-        lvl1: lvl1,
-        lvl2: lvl2,
-    }
+    let lvl2 = lvl1.to_owned() + " > " + cat_names.get(lvl_keys[3]).unwrap().as_str();
+    HierarchicalCategories { lvl0, lvl1, lvl2 }
 }
 
-fn get_list_categories(
-    categories: &serde_json::Value,
-    product_category_ids: &String,
-) -> Vec<String> {
+fn get_list_categories(categories: &serde_json::Value, product_category_ids: &str) -> Vec<String> {
     let cats = categories.as_object().unwrap();
-    let lvl_keys: Vec<&str> = product_category_ids.split("/").collect();
+    let lvl_keys: Vec<&str> = product_category_ids.split('/').collect();
     debug!("lvl_keys: {:?}", lvl_keys);
     // let mut cat_names: Vec<String> = Vec::new();
     // use a LinkedHashSet to preserve order
@@ -291,10 +281,10 @@ fn get_list_categories(
 
 fn get_category_page_ids(
     categories: &serde_json::Value,
-    product_category_ids: &String,
+    product_category_ids: &str,
 ) -> Vec<String> {
     let cats = categories.as_object().unwrap();
-    let lvl_keys: Vec<&str> = product_category_ids.split("/").collect();
+    let lvl_keys: Vec<&str> = product_category_ids.split('/').collect();
     debug!("lvl_keys: {:?}", lvl_keys);
     // let mut cat_names: Vec<String> = Vec::new();
     // use a LinkedHashSet to preserve order
@@ -308,7 +298,7 @@ fn get_category_page_ids(
     // VTEX provides the categories - lvl2, lvl1, lvl0
     let lvl0 = cat_names.get(lvl_keys[1]).unwrap().to_string();
     let lvl1 = lvl0 + " > " + cat_names.get(lvl_keys[2]).unwrap().as_str();
-    let lvl2 = lvl1.clone().to_owned() + " > " + cat_names.get(lvl_keys[3]).unwrap().as_str();
+    let lvl2 = lvl1.to_owned() + " > " + cat_names.get(lvl_keys[3]).unwrap().as_str();
 
     vec![lvl1, lvl2]
 }
@@ -368,7 +358,7 @@ async fn get_all_sku_ids(client: &Client) -> Vec<i32> {
     let page = &mut 1;
 
     while *recs == 1000 {
-        *recs = get_all_sku_ids_by_page(page.clone(), &client, sku_ids).await;
+        *recs = get_all_sku_ids_by_page(*page, client, sku_ids).await;
         *page += 1;
     }
     let duration = start.elapsed();
@@ -380,10 +370,10 @@ async fn get_all_sku_ids(client: &Client) -> Vec<i32> {
     sku_ids.to_vec()
 }
 
-async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, SkuAndContext> {
+async fn get_item_records(sku_ids: &[i32], client: &Client) -> HashMap<i32, SkuAndContext> {
     info!("Starting get_item_records()");
     // Build the urls
-    let urls = build_get_sku_urls(&sku_ids);
+    let urls = build_get_sku_urls(sku_ids);
     debug!("after call to build_get_sku_urls");
     let item_recs: Arc<Mutex<HashMap<i32, SkuAndContext>>> = Arc::new(Mutex::new(HashMap::new()));
     let bodies = stream::iter(urls)
@@ -407,7 +397,7 @@ async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, S
                     // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
                     let sku_ctx: SkuAndContext = b;
                     let mut item_recs = item_recs.lock().unwrap();
-                    item_recs.insert(sku_ctx.id.clone(), sku_ctx.clone());
+                    item_recs.insert(sku_ctx.id, sku_ctx.clone());
                     debug!("Got: {:?}", sku_ctx)
                 }
                 Err(e) => error!("Got an error: {}", e),
@@ -423,10 +413,10 @@ async fn get_item_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, S
     ir
 }
 
-async fn get_price_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, PriceGet> {
+async fn get_price_records(sku_ids: &[i32], client: &Client) -> HashMap<i32, PriceGet> {
     info!("Starting get_price_records()");
     // build the urls
-    let urls = build_get_price_urls(&sku_ids);
+    let urls = build_get_price_urls(sku_ids);
     let price_recs: Arc<Mutex<HashMap<i32, PriceGet>>> = Arc::new(Mutex::new(HashMap::new()));
     let bodies = stream::iter(urls)
         .map(|url| {
@@ -463,10 +453,10 @@ async fn get_price_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, 
     pr
 }
 
-async fn get_inventory_records(sku_ids: &Vec<i32>, client: &Client) -> HashMap<i32, InventoryList> {
+async fn get_inventory_records(sku_ids: &[i32], client: &Client) -> HashMap<i32, InventoryList> {
     info!("Starting get_inventory_records()");
     // build the urls
-    let urls = build_get_inventory_urls(&sku_ids);
+    let urls = build_get_inventory_urls(sku_ids);
     let inventory_recs: Arc<Mutex<HashMap<i32, InventoryList>>> =
         Arc::new(Mutex::new(HashMap::new()));
     let bodies = stream::iter(urls)
@@ -514,7 +504,7 @@ struct ProductVariant {
 }
 
 fn build_product_variant_map(
-    sku_ids: &Vec<i32>,
+    sku_ids: &[i32],
     item_records: &HashMap<i32, SkuAndContext>,
     inventory_records: &HashMap<i32, InventoryList>,
 ) -> HashMap<String, ProductVariant> {
@@ -539,29 +529,35 @@ fn build_product_variant_map(
             sku_ref: item_record.alternate_ids.ref_id.clone(),
             abbreviated_color: color.clone(),
             abbreviated_size: size.clone(),
-            in_stock: in_stock,
+            in_stock,
         };
         // First Product Variant or not
         if !product_variants.contains_key(&item_record.product_ref_id) {
             let mut available_colors = Vec::new();
             let mut available_sizes = Vec::new();
             let mut variants = Vec::new();
-            if color.is_some() {
-                available_colors.push(color.unwrap().clone())
-            };
+            if let Some(color) = color {
+                available_colors.push(color);
+            }
+            // if color.is_some() {
+            //     available_colors.push(color.unwrap().clone())
+            // };
             // available_colors.push(color.clone());
             // let option_avail_colors: Option<Vec<String>> =
             //     available_colors.m
-            if size.is_some() {
-                available_sizes.push(size.unwrap().clone())
-            };
+            if let Some(size) = size {
+                available_sizes.push(size);
+            }
+            // if size.is_some() {
+            //     available_sizes.push(size.unwrap().clone())
+            // };
             // available_sizes.push(size.clone());
             variants.push(variant);
             let prod_variant: ProductVariant = ProductVariant {
                 product_ref_id: item_record.product_ref_id.clone(),
                 available_colors: Some(available_colors),
                 available_sizes: Some(available_sizes),
-                variants: variants,
+                variants,
             };
             product_variants.insert(item_record.product_ref_id.clone(), prod_variant);
             debug!(
@@ -573,36 +569,32 @@ fn build_product_variant_map(
                 .get_mut(&item_record.product_ref_id)
                 .unwrap();
             if product_variant.available_colors.is_some() {
-                if color.is_some() {
+                if let Some(color) = color {
                     //product_variant.available_colors.as_ref().unwrap().push(color.unwrap());
                     if !product_variant
                         .available_colors
                         .as_ref()
                         .unwrap()
-                        .contains(color.as_ref().unwrap())
+                        .contains(&color)
                     {
                         product_variant
                             .available_colors
                             .as_mut()
                             .unwrap()
-                            .push(color.unwrap().clone());
+                            .push(color);
                     }
                 }
             }
             if product_variant.available_sizes.is_some() {
-                if size.is_some() {
+                if let Some(size) = size {
                     // product_variant.available_sizes.unwrap().push(size.unwrap());
                     if !product_variant
                         .available_sizes
                         .as_ref()
                         .unwrap()
-                        .contains(size.as_ref().unwrap())
+                        .contains(&size)
                     {
-                        product_variant
-                            .available_sizes
-                            .as_mut()
-                            .unwrap()
-                            .push(size.unwrap());
+                        product_variant.available_sizes.as_mut().unwrap().push(size);
                     }
                 }
             }
@@ -725,9 +717,9 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
 
         // Build the Algolia Record
         let algolia_record = ItemRecord {
-            sku_id: sku_ctx.id.clone(),
+            sku_id: sku_ctx.id,
             sku_ref: sku_ctx.alternate_ids.ref_id.clone(),
-            product_id: sku_ctx.product_id.clone(),
+            product_id: sku_ctx.product_id,
             parent_ref: sku_ctx.product_ref_id.clone(),
             name: sku_ctx.product_name.clone(),
             description: sku_ctx.product_description.clone(),

@@ -105,12 +105,12 @@ pub async fn gen_sku_spec_association_file(
         let sku_spec_assign = SkuSpecificationAssociation {
             id: Some(0), // Hardcode to 0, API does not work with None (null)
             sku_id: *sku_id_lookup.get(&record.sku_ref_id).unwrap(),
-            field_id: field_id.clone(),
-            field_value_id: Some(field_value_id.clone()),
+            field_id: *field_id,
+            field_value_id: Some(*field_value_id),
             text: None,
         };
         writer.serialize(sku_spec_assign)?;
-        x = x + 1;
+        x += 1;
         // }
     }
     // Flush the records

@@ -38,7 +38,7 @@ pub async fn gen_product_specifications_file(
     );
     // Get a lookup for the cateogory name of a category by GroupIdentifier
     let category_identifier_name_lookup =
-        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
     debug!(
         "category_identifier_name_lookup: {:?}",
         category_identifier_name_lookup.len()
@@ -79,8 +79,8 @@ pub async fn gen_product_specifications_file(
                 let spec = Specification {
                     id: None,
                     field_type_id: 1, // 1 = Text
-                    category_id: Some(vtex_cat_id.clone()),
-                    field_group_id: prod_spec_id.clone(),
+                    category_id: Some(*vtex_cat_id),
+                    field_group_id: *prod_spec_id,
                     name: record.name.clone(),
                     description: Some(record.name.clone()),
                     position: Some(record.position),
@@ -138,7 +138,7 @@ pub async fn gen_sku_specifications_file(
     );
     // Get a lookup for the cateogory name of a category by GroupIdentifier
     let category_identifier_name_lookup =
-        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
     debug!(
         "category_identifier_name_lookup: {:?}",
         category_identifier_name_lookup.len()
@@ -182,8 +182,8 @@ pub async fn gen_sku_specifications_file(
             let spec = Specification {
                 id: None,
                 field_type_id: 6, // 6 = Radio
-                category_id: Some(vtex_cat_id.clone()),
-                field_group_id: prod_spec_id.clone(),
+                category_id: Some(*vtex_cat_id),
+                field_group_id: *prod_spec_id,
                 name: record.name.clone(),
                 description: Some(record.name.clone()),
                 position: Some(record.position),

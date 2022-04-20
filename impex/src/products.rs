@@ -25,7 +25,7 @@ pub async fn load_products(
 
     // Get a lookup for the cateogory name of a category by GroupIdentifier
     let category_identifier_name_lookup =
-        utils::create_category_name_lookup(&client, &account_name, &environment).await;
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
     debug!(
         "category_identifier_name_lookup: {:?}",
         category_identifier_name_lookup.len()
@@ -59,8 +59,11 @@ pub async fn load_products(
         let vtex_cat_id = category_lookup.get(&parent_cat_name.clone()).unwrap();
         record.category_id = Some(*vtex_cat_id);
         // Look up the brand_id
-        let brand_name = record.brand_name.as_ref().unwrap();
-        let brand_id = brand_id_lookup.get(brand_name).unwrap();
+        let brand_name = record
+            .brand_name
+            .as_ref()
+            .unwrap_or_else(|| panic!("BrandName missing in CSV for SKU Ref: {:?}", record.ref_id));
+        let brand_id = brand_id_lookup.get(brand_name).unwrap_or_else(|| panic!("Brand Name: {:?} not found in lookup table.  Make sure Brand Name in the BrandName column in Products.csv matches Brand Name in the Name column of the Brands.csv file.  The values are case sensitive.", record.brand_name));
         record.brand_id = Some(*brand_id);
 
         product_recs.push(record);

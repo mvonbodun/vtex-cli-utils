@@ -30,7 +30,7 @@ pub async fn load_prices(
 
     for line in rdr.deserialize() {
         let mut record: Price = line?;
-        let sku_id = sku_id_lookup.get(&record.ref_id).unwrap().clone();
+        let sku_id = *sku_id_lookup.get(&record.ref_id).unwrap();
         record.sku_id = Some(sku_id);
         price_recs.push(record);
     }

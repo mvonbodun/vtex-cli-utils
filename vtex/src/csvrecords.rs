@@ -173,3 +173,22 @@ pub struct InventoryRecord {
 pub struct SkusInactive {
     pub sku_id: i32,
 }
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "PascalCase")]
+pub struct ProductSpecificationAssignmentAlternate {
+    pub product_ref_id: i32,
+    pub short_desc: Option<String>,
+    #[serde(rename = "ship_message")]
+    pub ship_message: Option<String>,
+    #[serde(rename = "Availability Remarks")]
+    pub availability_remarks: Option<String>,
+    pub weight: Option<String>,
+    #[serde(rename = "Package Dimensions")]
+    pub package_dimensions: Option<String>,
+    #[serde(rename = "Shipping Remarks")]
+    pub shipping_remarks: Option<String>,
+    #[serde(rename = "Prop65")]
+    pub prop_65: Option<String>,
+    pub attachment: Option<String>,
+}

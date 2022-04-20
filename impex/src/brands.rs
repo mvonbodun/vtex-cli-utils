@@ -42,7 +42,7 @@ pub fn gen_brand_file(file_path: String, product_file: String) -> Result<(), Box
         };
         // Write the record
         writer.serialize(b)?;
-        x = x + 1;
+        x += 1;
     }
     // Flush the records
     writer.flush()?;
