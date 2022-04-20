@@ -72,6 +72,7 @@ SUBCOMMANDS:
     specificationgroup        actions on the specification group into VTEX
     specificationvalue        actions on the specification value into VTEX```
 
+```
 Each sub command has it's own help
 ```
 vb@michaels-mbp-2 ~ % ./vtex_impex specification --help
