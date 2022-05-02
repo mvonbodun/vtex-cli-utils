@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use log::*;
 use std::collections::HashMap;
 use std::error::Error;
@@ -11,13 +12,14 @@ pub async fn load_categories(
     client: &Client,
     account_name: String,
     environment: String,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     info!("Begin loading categories");
     let url = "https://{accountName}.{environment}.com.br/api/catalog/pvt/category"
         .replace("{accountName}", &account_name)
         .replace("{environment}", &environment);
 
-    let input = File::open(file_path)?;
+    let input =
+        File::open(&file_path).with_context(|| format!("could not read file `{}`", &file_path))?;
     let mut rdr = csv::Reader::from_reader(input);
     let mut category_ids: HashMap<String, i32> = HashMap::new();
 
@@ -69,7 +71,6 @@ pub async fn load_categories(
 
         match response.status() {
             StatusCode::OK => {
-                // println!("response.text() {:#?}", response.text().await?);
                 let result = response.json::<Category>().await;
                 match result {
                     Ok(category) => {
@@ -87,7 +88,7 @@ pub async fn load_categories(
                 }
             }
             _ => {
-                println!(
+                info!(
                     "Status Code: [{:?}] Error: [{:#?}] \n record: {:?}",
                     response.status(),
                     response.text().await?,
@@ -96,11 +97,7 @@ pub async fn load_categories(
             }
         }
 
-        // let new_post: Category = response.json().await?;
-
-        // info!("category: {:?}: response: {:?}", new_post.id, response.status());
         debug!("{:#?}", new_post);
-        // println!("after print new_post");
     }
     debug!("HashMap size: {}", category_ids.len());
     info!("Finished loading categories");

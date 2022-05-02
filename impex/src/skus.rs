@@ -31,23 +31,25 @@ pub async fn load_skus(
     for line in rdr.deserialize() {
         let mut record: Sku = line?;
         debug!("sku_record: {:?}", record);
-        let product_id: i32;
-        if !product_lookup.contains_key(&record.product_ref_id) {
-            product_id = utils::get_product_by_ref_id(
-                &record.product_ref_id,
-                client,
-                &account_name,
-                &environment,
-            )
-            .await;
-            product_lookup.insert(record.product_ref_id.clone(), product_id);
-            record.product_id = Some(product_id);
-        } else {
-            debug!(
-                "product_lookup hit. product_ref_id: {} found.",
-                record.product_ref_id
-            );
-            record.product_id = Some(*product_lookup.get(&record.product_ref_id).unwrap());
+        if record.id.is_none() {
+            let product_id: i32;
+            if !product_lookup.contains_key(&record.product_ref_id) {
+                product_id = utils::get_product_by_ref_id(
+                    &record.product_ref_id,
+                    client,
+                    &account_name,
+                    &environment,
+                )
+                .await;
+                product_lookup.insert(record.product_ref_id.clone(), product_id);
+                record.product_id = Some(product_id);
+            } else {
+                debug!(
+                    "product_lookup hit. product_ref_id: {} found.",
+                    record.product_ref_id
+                );
+                record.product_id = Some(*product_lookup.get(&record.product_ref_id).unwrap());
+            }
         }
         sku_recs.push(record);
     }
