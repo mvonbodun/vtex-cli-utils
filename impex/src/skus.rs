@@ -31,7 +31,8 @@ pub async fn load_skus(
     for line in rdr.deserialize() {
         let mut record: Sku = line?;
         debug!("sku_record: {:?}", record);
-        if record.id.is_none() {
+        if record.product_id.is_none() {
+            debug!("record.product_id was none");
             let product_id: i32;
             if !product_lookup.contains_key(&record.product_ref_id) {
                 product_id = utils::get_product_by_ref_id(
@@ -85,7 +86,7 @@ pub async fn load_skus(
     bodies
         .for_each(|b| async {
             match b {
-                Ok(_b) => (),
+                Ok(b) => info!("output: {:?}", b),
                 Err(e) => error!("error: {:?}", e),
             }
         })

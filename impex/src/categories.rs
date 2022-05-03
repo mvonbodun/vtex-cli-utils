@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use log::*;
 use std::collections::HashMap;
-use std::error::Error;
 use std::fs::File;
 
 use reqwest::{Client, StatusCode};

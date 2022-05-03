@@ -64,7 +64,7 @@ pub async fn load_prices(
     bodies
         .for_each(|b| async {
             match b {
-                Ok(_b) => (),
+                Ok(b) => info!("output: {:?}", b),
                 Err(e) => error!("error: {:?}", e),
             }
         })
