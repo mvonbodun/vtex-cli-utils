@@ -55,7 +55,7 @@ pub async fn load_products(
 
     for line in rdr.deserialize() {
         let mut record: Product = line?;
-
+        debug!("product_record: {:?}", record);
         if skip_cat_lookup == 0 {
             // look up the category name
             let cat_unique_identifier = record.category_unique_identifier.as_ref().unwrap();
@@ -71,10 +71,12 @@ pub async fn load_products(
             record.category_id = Some(*vtex_cat_id);
         }
         // Look up the brand_id
-        let brand_name = record
-            .brand_name
-            .as_ref()
-            .unwrap_or_else(|| panic!("BrandName missing in CSV for SKU Ref: {:?}", record.ref_id));
+        let brand_name = record.brand_name.as_ref().unwrap_or_else(|| {
+            panic!(
+                "BrandName missing in CSV for Product Ref: {:?}",
+                record.ref_id
+            )
+        });
         let brand_id = brand_id_lookup.get(brand_name).unwrap_or_else(|| panic!("Brand Name: {:?} not found in lookup table.  Make sure Brand Name in the BrandName column in Products.csv matches Brand Name in the Name column of the Brands.csv file.  The values are case sensitive.", record.brand_name));
         record.brand_id = Some(*brand_id);
 

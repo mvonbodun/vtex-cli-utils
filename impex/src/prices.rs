@@ -24,20 +24,28 @@ pub async fn load_prices(
     let mut rdr = csv::Reader::from_reader(input);
 
     let mut price_recs: Vec<Price> = Vec::new();
+    for line in rdr.deserialize() {
+        let record: Price = line?;
+        price_recs.push(record);
+    }
+    debug!("price_recs length: {}", price_recs.len());
 
     // Build a sku_id lookup
     let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
-
-    for line in rdr.deserialize() {
-        let mut record: Price = line?;
-        let sku_id = *sku_id_lookup.get(&record.ref_id).unwrap();
-        record.sku_id = Some(sku_id);
-        price_recs.push(record);
+    let mut price_recs_with_skuid: Vec<Price> = Vec::new();
+    for mut line in price_recs {
+        let sku_id = *sku_id_lookup.get(&line.ref_id).unwrap();
+        line.sku_id = Some(sku_id);
+        price_recs_with_skuid.push(line);
     }
+    debug!(
+        "price_recs_with_skuid length: {}",
+        price_recs_with_skuid.len()
+    );
 
     let lim = Arc::new(RateLimiter::direct(Quota::per_second(rate_limit)));
     // let mut bodies = stream::iter(price_recs).ratelimit_stream(&lim);
-    let bodies = stream::iter(price_recs)
+    let bodies = stream::iter(price_recs_with_skuid)
         .map(|record| {
             let client = &client;
             let url = &url;
