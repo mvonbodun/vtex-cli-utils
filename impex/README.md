@@ -441,6 +441,8 @@ The CSV file used to load products follows the VTEX API but has two additional f
 - CategoryUniqueIdentifier - the link to the category the product belongs to
 - BrandName - the name of the brand (used to generate the Brand File)
 
+Note: If you have an integer based CategoryId and are using that instead of the CategoryUniqueIdentifier, you can populate the CategoryId column in the Product.csv file and then use the "-s" parameter for "skip_cat_lookup" and set it to "1".  This will prevent the program from creating the CategoryId lookup table at the start of the load and can save a great deal of time if you have a large category tree.
+
 The format of the file looks like the following:
 |Id |Name                                     |DepartmentId|CategoryId|CategoryUniqueIdentifier|BrandId|BrandName          |LinkId                                              |RefId     |IsVisible|Description                                                                                                    |DescriptionShort|ReleaseDate        |KeyWords                                      |Title                                    |IsActive|TaxCode|MetaTagDescription                       |SupplierId|ShowWithoutStock|AdWordsRemarketingCode|LomadeeCampaignCode|Score|
 |---|-----------------------------------------|------------|----------|------------------------|-------|-------------------|----------------------------------------------------|----------|---------|---------------------------------------------------------------------------------------------------------------|----------------|-------------------|----------------------------------------------|-----------------------------------------|--------|-------|-----------------------------------------|----------|----------------|----------------------|-------------------|-----|
@@ -464,6 +466,12 @@ You should see output like the following:
 34.546 [INFO] - finished loading products
 34.546 [INFO] - Finished data load
 ```
+
+To run a product import and skip the CategoryId lookup (because you already populated the CategoryId column):
+```
+RUST_LOG=info ./vtex_impex product -a import -f data/Products.csv -s 1
+```
+Note: -s parameter defaults to 0 which builds the CategoryId lookup.
 
 ## SKU
 The CSV file to load SKUs follows the VTEX API but has two additonal columns:

@@ -49,6 +49,7 @@ struct Command {
     sku_file: String,
     concurrency: usize,
     rate_limit: NonZeroU32,
+    skip_cat_lookup: usize
 }
 
 arg_enum! {
@@ -99,7 +100,8 @@ arg_enum! {
     #[derive(Debug)]
     #[allow(non_camel_case_types)]
     enum ProductActions {
-        import
+        import,
+        update
     }
 }
 
@@ -369,6 +371,12 @@ impl Command {
                 .long("rate_limit")
                 .value_name("RATELIMIT")
                 .help("Sets the rate limit value (how many calls per second) - default is 40")
+                .takes_value(true))
+            .arg(Arg::with_name("SKIPCATLOOKUP")
+                .short("s")
+                .long("skip_cat_lookup")
+                .value_name("SKIPCATLOOKUP")
+                .help("If you pass in the category_id it will skip building the category id lookups")
                 .takes_value(true))
         )
         .subcommand(SubCommand::with_name("sku")
@@ -668,6 +676,7 @@ impl Command {
             sku_file: "".to_string(),
             concurrency: 1,
             rate_limit: NonZeroU32::new(1).unwrap(),
+            skip_cat_lookup: 0
         };
 
         match matches.subcommand() {
@@ -756,6 +765,7 @@ impl Command {
                 debug!("input_file: {}", command.input_file);
                 command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 1 - Recommended");
                 command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("40").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 40 - Recommended");
+                command.skip_cat_lookup = m.value_of("SKIPCATLOOKUP").unwrap_or("0").parse::<usize>().expect("SKIPCATLOOKUP must be a 0 or 1. Default is 0 - perform category lookup, 1 will skip the category lookup");
             }
             ("sku", Some(m)) => {
                 command.object = "sku".to_string();
@@ -987,6 +997,18 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 environment,
                 cmd.concurrency,
                 cmd.rate_limit,
+                cmd.skip_cat_lookup
+            )
+            .await?;
+        } else if cmd.action.eq("update") {
+            products::update_products(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.concurrency,
+                cmd.rate_limit,
+                cmd.skip_cat_lookup
             )
             .await?;
         }
