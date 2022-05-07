@@ -19,19 +19,19 @@ pub async fn load_products(
     environment: String,
     concurrent_requests: usize,
     rate_limit: NonZeroU32,
-    skip_cat_lookup: usize
+    skip_cat_lookup: usize,
 ) -> Result<(), Box<dyn Error>> {
     info!("Starting load of products");
     // Read in the category tree and store in a HashMap for lookup
     let mut categories = Vec::new();
     let mut category_lookup: HashMap<String, i32> = HashMap::new();
     let mut category_identifier_name_lookup: HashMap<String, String> = HashMap::new();
-    
+
     if skip_cat_lookup == 0 {
         categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
         category_lookup = utils::parse_category_tree(categories);
         debug!("category_lookup: {:?}", category_lookup.len());
-    
+
         // Get a lookup for the cateogory name of a category by GroupIdentifier
         category_identifier_name_lookup =
             utils::create_category_name_lookup(client, &account_name, &environment).await;
@@ -126,20 +126,20 @@ pub async fn update_products(
     environment: String,
     concurrent_requests: usize,
     rate_limit: NonZeroU32,
-    skip_cat_lookup: usize
+    skip_cat_lookup: usize,
 ) -> Result<(), Box<dyn Error>> {
     info!("Starting load of products");
     // Read in the category tree and store in a HashMap for lookup
     let mut categories = Vec::new();
     let mut category_lookup: HashMap<String, i32> = HashMap::new();
     let mut category_identifier_name_lookup: HashMap<String, String> = HashMap::new();
-    
+
     debug!("skip_cat_lookup={}", skip_cat_lookup);
     if skip_cat_lookup == 0 {
         categories = utils::get_vtex_category_tree(client, &account_name, &environment).await;
         category_lookup = utils::parse_category_tree(categories);
         debug!("category_lookup: {:?}", category_lookup.len());
-    
+
         // Get a lookup for the cateogory name of a category by GroupIdentifier
         category_identifier_name_lookup =
             utils::create_category_name_lookup(client, &account_name, &environment).await;

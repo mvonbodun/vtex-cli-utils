@@ -49,7 +49,7 @@ struct Command {
     sku_file: String,
     concurrency: usize,
     rate_limit: NonZeroU32,
-    skip_cat_lookup: usize
+    skip_cat_lookup: usize,
 }
 
 arg_enum! {
@@ -676,7 +676,7 @@ impl Command {
             sku_file: "".to_string(),
             concurrency: 1,
             rate_limit: NonZeroU32::new(1).unwrap(),
-            skip_cat_lookup: 0
+            skip_cat_lookup: 0,
         };
 
         match matches.subcommand() {
@@ -997,7 +997,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 environment,
                 cmd.concurrency,
                 cmd.rate_limit,
-                cmd.skip_cat_lookup
+                cmd.skip_cat_lookup,
             )
             .await?;
         } else if cmd.action.eq("update") {
@@ -1008,7 +1008,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 environment,
                 cmd.concurrency,
                 cmd.rate_limit,
-                cmd.skip_cat_lookup
+                cmd.skip_cat_lookup,
             )
             .await?;
         }
