@@ -219,6 +219,15 @@ The output should look similar to the following:
 ```
 *Note*:  If you run the same file again, you will create duplicate categories.  Delete the categories using: [https://{accountName}.myvtex.com/admin/Site/FullCleanUp.aspx](https://{accountName}.myvtex.com/admin/Site/FullCleanUp.aspx)
 
+### Running a category update
+The utility supports updating categories.  It uses the same CSV format used import categories.  Make sure the **Id** column is populated with the category id from VTEX - it is visible in the Category tree in the VTEX Admin.  Make sure **FatherCategoryId** is also populated with the parent VTEX category id.
+
+To run a category update using the sample data supplied (Note: the terminal command prompt is not shown):
+```
+RUST_LOG=info ./vtex_impex category -a update -f data/Categories.csv
+```
+
+
 ## Brand
 Brand uses a CSV layout very similar to the VTEX API for Category with a couple of new columns added:
 - CategoryUniqueIdentifier - a unique identifier for the Category
