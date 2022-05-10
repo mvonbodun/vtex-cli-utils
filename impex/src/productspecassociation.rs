@@ -239,16 +239,24 @@ pub async fn gen_product_spec_association_file(
             .get(&key)
             .expect("failed to find field_id for category in field_id_lookup");
 
-        let product_id: i32;
+        let mut product_id: i32 = 0;
         if !product_lookup.contains_key(&record.product_ref_id) {
-            product_id = utils::get_product_by_ref_id(
+            let get_product_id = utils::get_product_by_ref_id(
                 &record.product_ref_id,
                 client,
                 &account_name,
                 &environment,
             )
             .await;
-            product_lookup.insert(record.product_ref_id.clone(), product_id);
+            match get_product_id {
+                Ok(product_id_ok) => {
+                    product_lookup.insert(record.product_ref_id.clone(), product_id_ok);
+                    product_id = product_id_ok;
+                }
+                Err(err) => {
+                    error!("Error: Product record will be skipped: {}", err);
+                }
+            }
         } else {
             debug!(
                 "product_lookup hit. product_ref_id: {} found.",
@@ -257,16 +265,17 @@ pub async fn gen_product_spec_association_file(
             product_id = *product_lookup.get(&record.product_ref_id).unwrap();
         }
 
-        let prod_spec: ProductSpecificationAssocation = ProductSpecificationAssocation {
-            // Hardcode 0. If None (null), then the Post API fails with a parseInt error
-            id: Some(0),
-            product_id,
-            field_id: *field_id,
-            field_value_id: None,
-            text: Some(record.value),
-        };
-
-        writer.serialize(prod_spec)?;
+        if product_id > 0 {
+            let prod_spec: ProductSpecificationAssocation = ProductSpecificationAssocation {
+                // Hardcode 0. If None (null), then the Post API fails with a parseInt error
+                id: Some(0),
+                product_id,
+                field_id: *field_id,
+                field_value_id: None,
+                text: Some(record.value),
+            };
+            writer.serialize(prod_spec)?;
+        }
     }
     // Flush the records
     writer.flush()?;

@@ -17,29 +17,61 @@ pub async fn gen_sku_ean_file(
     sku_file: String,
 ) -> Result<(), Box<dyn Error>> {
     info!("Starting generation of SKU EAN file");
-    // Build a Sku_id lookup fn
-    let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
 
+    // Parse the skufile and verify it deserializes the records
+    info!("Start: Reading input file to ensure values can be parsed");
     // Setup the input and output files
     let in_file = File::open(sku_file).unwrap();
     let mut reader = csv::Reader::from_reader(in_file);
     let out_path = file_path;
     let mut writer = csv::Writer::from_path(out_path)?;
+    let mut sku_recs: Vec<Sku> = Vec::new();
+    let mut e = 0;
+    for line in reader.deserialize() {
+        match line {
+            Ok(record) => {
+                // Only add records that have an EAN
+                let sku_rec: Sku = record;
+                if sku_rec.ean.is_some() {
+                    sku_recs.push(sku_rec);
+                }
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
+    }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        sku_recs.len(),
+        e
+    );
+    // Build a Sku_id lookup fn
+    //let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
 
     debug!("Begin reading Sku input file");
     let mut x = 0;
-    for line in reader.deserialize() {
-        let record: Sku = line?;
+    for line in sku_recs {
+        let record: Sku = line;
         debug!("sku record: {:?}", record);
-
-        // Only create a record if the EAN is populated
-        if record.ean.is_some() {
-            let sku_ean = SkuEan {
-                sku_id: *sku_id_lookup.get(&record.ref_id).unwrap(),
-                ean: record.ean.unwrap().clone(),
-            };
-            writer.serialize(sku_ean)?;
-            x += 1;
+        // get the sku_id
+        let get_sku_id =
+            utils::get_sku_id_by_ref_id(&record.ref_id, client, &account_name, &environment).await;
+        match get_sku_id {
+            Ok(sku_id) => {
+                let sku_ean = SkuEan {
+                    sku_id,
+                    ean: record.ean.unwrap().clone(),
+                };
+                writer.serialize(sku_ean)?;
+                x += 1;
+            }
+            Err(err) => {
+                error!("error occured getting sku_id: {:?}", err);
+                ()
+            }
         }
     }
     // Flush the records

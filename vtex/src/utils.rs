@@ -2,6 +2,7 @@ use crate::model::{
     BrandList, Category, CategoryTree, FieldValueList, Product, Sku, SkuAndContext,
     SpecificationGroup, SpecificationList,
 };
+// use futures::task::Spawn;
 use futures::{stream, StreamExt};
 use log::*;
 use reqwest::{Client, StatusCode};
@@ -353,19 +354,40 @@ pub async fn get_product_by_ref_id(
     client: &Client,
     account_name: &str,
     environment: &str,
-) -> i32 {
+) -> Result<i32, String> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/products/productgetbyrefid/"
             .replace("{accountName}", account_name)
             .replace("{environment}", environment)
             + ref_id;
 
-    let product: Product = client.get(url).send().await.unwrap().json().await.unwrap();
-    debug!(
-        "product id: {} for product ref_id: {}",
-        product.id.unwrap(),
-        product.ref_id.unwrap()
-    );
-    product.id.unwrap()
+    let product_id_result = client.get(url).send().await;
+    let response = match product_id_result {
+        Ok(result) => {
+            if result.status() == StatusCode::OK {
+                let product: Product = result.json().await.unwrap();
+                Ok(product.id.unwrap())
+            } else if result.status() == StatusCode::NOT_FOUND {
+                let error = format!(
+                    "response: {} product with ref_id: {} not found",
+                    result.status(),
+                    ref_id
+                );
+                Err(error)
+            } else {
+                let status = result.status().clone();
+                let other_errors = result.text().await;
+                match other_errors {
+                    Ok(s) => {
+                        let error = format!("response: {}  message: {}", status, s);
+                        Err(error)
+                    }
+                    Err(e) => Err(e.to_string()),
+                }
+            }
+        }
+        Err(err) => Err(err.to_string()),
+    };
+    response
 }
 
 // Get Sku by RefId
@@ -374,15 +396,41 @@ pub async fn get_sku_id_by_ref_id(
     client: &Client,
     account_name: &str,
     environment: &str,
-) -> i32 {
+) -> Result<i32, String> {
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/"
             .replace("{accountName}", account_name)
             .replace("{environment}", environment)
             + ref_id;
 
-    let sku_id: String = client.get(url).send().await.unwrap().json().await.unwrap();
-    debug!("sku id: {} for sku ref_id: {}", sku_id, ref_id);
-    sku_id.parse::<i32>().unwrap()
+    // let sku_id_result = client.get(url).send().await.unwrap().json().await.unwrap();
+    let sku_id_result = client.get(url).send().await;
+    let response = match sku_id_result {
+        Ok(result) => {
+            if result.status() == StatusCode::OK {
+                let sku_id: String = result.json().await.unwrap();
+                Ok(sku_id.parse::<i32>().unwrap())
+            } else if result.status() == StatusCode::NOT_FOUND {
+                let error = format!(
+                    "response: {} sku with ref_id: {} not found",
+                    result.status(),
+                    ref_id
+                );
+                Err(error)
+            } else {
+                let status = result.status().clone();
+                let other_errors = result.text().await;
+                match other_errors {
+                    Ok(s) => {
+                        let error = format!("response: {}  message: {}", status, s);
+                        Err(error)
+                    }
+                    Err(e) => Err(e.to_string()),
+                }
+            }
+        }
+        Err(err) => Err(err.to_string()),
+    };
+    response
 }
 
 // Create field value id lookup. key = field_id + "|" + value, returns field_value_id

@@ -56,7 +56,8 @@ arg_enum! {
     #[derive(Debug)]
     #[allow(non_camel_case_types)]
     enum CategoryActions {
-        import
+        import,
+        update
     }
 }
 
@@ -190,7 +191,7 @@ impl Command {
                 .short("a")
                 .long("action")
                 .value_name("ACTION")
-                .help("The action to perform on the VTEX Object - import, export")
+                .help("The action to perform on the VTEX Object - import, update")
                 .takes_value(true))
             .arg(Arg::with_name("FILE")
                 .required(true)
@@ -629,7 +630,7 @@ impl Command {
                 .short("r")
                 .long("rate_limit")
                 .value_name("RATELIMIT")
-                .help("Sets the rate limit value (how many calls per second) - default is 40")
+                .help("Sets the rate limit value (how many calls per second) - default is 30")
                 .takes_value(true))
         )
         .subcommand(SubCommand::with_name("inventory")
@@ -682,6 +683,7 @@ impl Command {
         match matches.subcommand() {
             ("category", Some(m)) => {
                 command.object = "category".to_string();
+                command.action = m.value_of("ACTION").unwrap().to_string();
                 command.input_file = m
                     .value_of("FILE")
                     .expect("-f <FILE> must be set to the input file (example: data/categories.csv")
@@ -847,8 +849,8 @@ impl Command {
                     .expect("-f <FILE> must be set to the input file (example: data/SkuFile.csv")
                     .to_string();
                 debug!("input_file: {}", command.input_file);
-                command.concurrency = m.value_of("CONCURRENCY").unwrap_or("4").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 4 - Recommended");
-                command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("36").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 36 - Recommended");
+                command.concurrency = m.value_of("CONCURRENCY").unwrap_or("2").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 2 - Recommended");
+                command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("30").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 30 - Recommended");
             }
             ("inventory", Some(m)) => {
                 command.object = "inventory".to_string();
@@ -895,18 +897,32 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         .build()?;
 
     if cmd.object.eq("category") {
-        // Load Categories
-        debug!(
-            "before call to load_categories(): {:?}",
-            env::current_dir()?
-        );
-        categories::load_categories(
-            cmd.input_file.to_string(),
-            &client,
-            account_name,
-            environment,
-        )
-        .await?;
+        if cmd.action.eq("import") {
+            // Load Categories
+            debug!(
+                "before call to load_categories(): {:?}",
+                env::current_dir()?
+            );
+            categories::load_categories(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+            )
+            .await?;
+        } else if cmd.action.eq("update") {
+            debug!(
+                "before call to update_categories(): {:?}",
+                env::current_dir()?
+            );
+            categories::update_categories(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+            )
+            .await?;
+        }
     } else if cmd.object.eq("brand") {
         if cmd.action.eq("import") {
             // Load Brands

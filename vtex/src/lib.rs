@@ -406,6 +406,7 @@ pub mod model {
         pub list_price: Option<f32>,
         pub base_price: Option<f32>,
         pub cost_price: Option<f32>,
+        pub error: Option<String>,
     }
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]

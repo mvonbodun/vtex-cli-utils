@@ -18,14 +18,36 @@ pub async fn gen_sku_file(
     sku_file: String,
 ) -> Result<(), Box<dyn Error>> {
     info!("Starting generation of SKU Files file");
-    // Build a Sku_id lookup fn
-    let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
 
+    // Parse the skufile and verify it deserializes the records
+    info!("Start: Reading input file to ensure values can be parsed");
     // Setup the input and output files
     let in_file = File::open(sku_file).unwrap();
     let mut reader = csv::Reader::from_reader(in_file);
     let out_path = file_path;
     let mut writer = csv::Writer::from_path(out_path)?;
+    let mut sku_recs: Vec<Sku> = Vec::new();
+    let mut e = 0;
+    for line in reader.deserialize() {
+        match line {
+            Ok(record) => {
+                let sku_rec: Sku = record;
+                sku_recs.push(sku_rec);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
+    }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        sku_recs.len(),
+        e
+    );
+    // Build a Sku_id lookup fn
+    // let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
 
     // Create HashSet to track if this is the first time the part_number appears
     let mut part_number_set: HashSet<String> = HashSet::new();
@@ -33,44 +55,52 @@ pub async fn gen_sku_file(
     let re = Regex::new(r"([^\w\s-])").unwrap();
     debug!("Begin reading Sku input file");
     let mut x = 0;
-    for line in reader.deserialize() {
-        let record: Sku = line?;
+    for line in sku_recs {
+        let record: Sku = line;
         debug!("sku record: {:?}", record);
-
-        let is_main: bool;
-        if part_number_set.contains(&record.product_ref_id) {
-            is_main = false;
-        } else {
-            is_main = true;
-        }
-        // Remove special characters from the name
-        let name = record.name.replace(" ", "-");
-        debug!("name: {}", name);
-        let name = re.replace_all(&name, "");
-        debug!("after regex pattern replacement: {}", name);
-        // Determine if there is more than one image for the SKU
-        let img_url = record.image_url.expect("missing Image Url for SKU");
-        let semicolon: char = ';';
-        let iter = img_url.split(semicolon);
-        let mut y = 0;
-        for i in iter {
-            y += 1;
-            if sku_id_lookup.contains_key(&record.ref_id) {
-                let mut name_with_number = name.to_string();
-                name_with_number.push('_');
-                name_with_number.push_str(&y.to_string());
-                let sku_file = SkuFile {
-                    id: None,
-                    sku_id: *sku_id_lookup.get(&record.ref_id).unwrap(),
-                    is_main: Some(is_main),
-                    archive_id: None,
-                    name: Some(name_with_number.to_string()),
-                    label: Some(name_with_number.to_string()),
-                    url: Some(i.to_string()),
-                };
-                writer.serialize(sku_file)?;
-                part_number_set.insert(record.product_ref_id.clone());
-                x += 1;
+        // get the sku_id
+        let get_sku_id =
+            utils::get_sku_id_by_ref_id(&record.ref_id, client, &account_name, &environment).await;
+        match get_sku_id {
+            Ok(sku_id) => {
+                let is_main: bool;
+                if part_number_set.contains(&record.product_ref_id) {
+                    is_main = false;
+                } else {
+                    is_main = true;
+                }
+                // Remove special characters from the name
+                let name = record.name.replace(" ", "-");
+                debug!("name: {}", name);
+                let name = re.replace_all(&name, "");
+                debug!("after regex pattern replacement: {}", name);
+                // Determine if there is more than one image for the SKU
+                let img_url = record.image_url.expect("missing Image Url for SKU");
+                let semicolon: char = ';';
+                let iter = img_url.split(semicolon);
+                let mut y = 0;
+                for i in iter {
+                    y += 1;
+                    let mut name_with_number = name.to_string();
+                    name_with_number.push('_');
+                    name_with_number.push_str(&y.to_string());
+                    let sku_file = SkuFile {
+                        id: None,
+                        sku_id,
+                        is_main: Some(is_main),
+                        archive_id: None,
+                        name: Some(name_with_number.to_string()),
+                        label: Some(name_with_number.to_string()),
+                        url: Some(i.to_string()),
+                    };
+                    writer.serialize(sku_file)?;
+                    part_number_set.insert(record.product_ref_id.clone());
+                    x += 1;
+                }
+            }
+            Err(err) => {
+                error!("error occured getting sku_id: {:?}", err);
+                ()
             }
         }
     }

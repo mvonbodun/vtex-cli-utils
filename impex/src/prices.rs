@@ -24,19 +24,42 @@ pub async fn load_prices(
     let mut rdr = csv::Reader::from_reader(input);
 
     let mut price_recs: Vec<Price> = Vec::new();
+    info!("Start: Reading input file to ensure values can be parsed");
+    let mut e = 0;
     for line in rdr.deserialize() {
-        let record: Price = line?;
-        price_recs.push(record);
+        match line {
+            Ok(record) => {
+                let price_rec: Price = record;
+                price_recs.push(price_rec);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
     }
-    debug!("price_recs length: {}", price_recs.len());
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        price_recs.len(),
+        e
+    );
 
-    // Build a sku_id lookup
-    let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
+    // After full file read and removing non-deserialized records
     let mut price_recs_with_skuid: Vec<Price> = Vec::new();
     for mut line in price_recs {
-        let sku_id = *sku_id_lookup.get(&line.ref_id).unwrap();
-        line.sku_id = Some(sku_id);
-        price_recs_with_skuid.push(line);
+        debug!("line in price_recs: {:?}", line);
+        let get_sku_id =
+            utils::get_sku_id_by_ref_id(&line.ref_id, client, &account_name, &environment).await;
+        match get_sku_id {
+            Ok(sku_id) => {
+                line.sku_id = Some(sku_id);
+                price_recs_with_skuid.push(line);
+            }
+            Err(err) => {
+                error!("Error: price record will be skipped: {}", err);
+            }
+        }
     }
     debug!(
         "price_recs_with_skuid length: {}",
@@ -58,8 +81,9 @@ pub async fn load_prices(
                 let response = client.put(&url_with_sku_id).json(&record).send().await?;
 
                 info!(
-                    "sku: {:?}: response: {:?}",
+                    "sku: {:?} ref_id: {:?} response: {:?}",
                     record.sku_id,
+                    record.ref_id,
                     response.status()
                 );
                 if response.status() == StatusCode::TOO_MANY_REQUESTS {
@@ -72,7 +96,7 @@ pub async fn load_prices(
     bodies
         .for_each(|b| async {
             match b {
-                Ok(b) => info!("output: {:?}", b),
+                Ok(b) => debug!("output: {:?}", b),
                 Err(e) => error!("error: {:?}", e),
             }
         })

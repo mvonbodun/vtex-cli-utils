@@ -25,41 +25,69 @@ pub async fn load_skus(
     let mut rdr = csv::Reader::from_reader(input);
 
     let mut sku_recs: Vec<Sku> = Vec::new();
-    let mut product_lookup: HashMap<String, i32> = HashMap::new();
 
-    info!("Starting Product Id lookup");
+    info!("Start: Reading input file to ensure values can be parsed");
+    let mut e = 0;
     for line in rdr.deserialize() {
-        let mut record: Sku = line?;
-        debug!("sku_record: {:?}", record);
-        if record.product_id.is_none() {
-            debug!("record.product_id was none");
-            let product_id: i32;
-            if !product_lookup.contains_key(&record.product_ref_id) {
-                product_id = utils::get_product_by_ref_id(
-                    &record.product_ref_id,
+        match line {
+            Ok(record) => {
+                let sku_rec: Sku = record;
+                sku_recs.push(sku_rec);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
+    }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        sku_recs.len(),
+        e
+    );
+
+    // After full file read and removing non-deserialized records
+    info!("Start: Looking up ProductId if not passed in the file");
+    let mut product_lookup: HashMap<String, i32> = HashMap::new();
+    let mut sku_recs_with_product_id: Vec<Sku> = Vec::new();
+    for mut line in sku_recs {
+        debug!("sku_record: {:?}", line);
+        if line.product_id.is_none() {
+            debug!("line.product_id was none");
+            if !product_lookup.contains_key(&line.product_ref_id) {
+                let get_product_id = utils::get_product_by_ref_id(
+                    &line.product_ref_id,
                     client,
                     &account_name,
                     &environment,
                 )
                 .await;
-                product_lookup.insert(record.product_ref_id.clone(), product_id);
-                record.product_id = Some(product_id);
+                match get_product_id {
+                    Ok(product_id) => {
+                        product_lookup.insert(line.product_ref_id.clone(), product_id);
+                        line.product_id = Some(product_id);
+                    }
+                    Err(err) => {
+                        error!("Error: SKU record will be skipped: {}", err);
+                    }
+                }
             } else {
                 debug!(
                     "product_lookup hit. product_ref_id: {} found.",
-                    record.product_ref_id
+                    line.product_ref_id
                 );
-                record.product_id = Some(*product_lookup.get(&record.product_ref_id).unwrap());
+                line.product_id = Some(*product_lookup.get(&line.product_ref_id).unwrap());
             }
         }
-        sku_recs.push(record);
+        sku_recs_with_product_id.push(line);
     }
-    info!("Finished Product Id lookup");
-    debug!("sku_recs length: {}", sku_recs.len());
+    info!("Finished: Looking up ProductId if not passed in the file");
+    debug!("sku_recs length: {}", sku_recs_with_product_id.len());
 
     let lim = Arc::new(RateLimiter::direct(Quota::per_second(rate_limit)));
 
-    let bodies = stream::iter(sku_recs)
+    let bodies = stream::iter(sku_recs_with_product_id)
         .map(|record| {
             let client = &client;
             let url = &url;
