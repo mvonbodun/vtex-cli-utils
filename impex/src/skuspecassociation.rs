@@ -1,14 +1,226 @@
+use core::num;
 use futures::{executor::block_on, stream, StreamExt};
 use governor::{Jitter, Quota, RateLimiter};
 use log::*;
 use reqwest::{Client, StatusCode};
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
-use vtex::model::{SkuSpecificationAssociation, SkuSpecificationValueAssignment};
+use vtex::csvrecords::SkuSpecificationAssignmentAlternate;
+use vtex::model::{
+    SkuSpecAllowedValues, SkuSpecificationAssociation, SkuSpecificationValueAssignment,
+};
 use vtex::utils;
+
+pub async fn gen_sku_spec_assign_file_alternate(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    sku_spec_assignment_file: String,
+    product_file: String,
+    sku_file: String,
+) -> Result<(), Box<dyn Error>> {
+    info!("Staring generation of SKU Spec Association file");
+
+    // Setup the input and output files
+    let in_file = File::open(sku_spec_assignment_file).unwrap();
+    let mut reader = csv::Reader::from_reader(in_file);
+    let out_path = file_path;
+    let mut writer = csv::Writer::from_path(out_path)?;
+
+    let mut sku_specs: Vec<SkuSpecificationAssignmentAlternate> = Vec::new();
+    let mut e = 0;
+    for line in reader.deserialize() {
+        match line {
+            Ok(record) => {
+                let sku_spec: SkuSpecificationAssignmentAlternate = record;
+                sku_specs.push(sku_spec);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
+    }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        sku_specs.len(),
+        e
+    );
+
+    // Get a lookup HashMap for the product_ref_id for a sku_ref_id
+    let product_ref_id_by_sku_ref_id_lookup = utils::create_sku_product_ref_id_lookup(sku_file);
+    debug!(
+        "product_ref_id_by_sku_ref_id_lookup: {:?}",
+        product_ref_id_by_sku_ref_id_lookup.len()
+    );
+    // Get a lookup HashMap for the parent category of a product
+    let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
+    debug!(
+        "product_parent_category_lookkup: {:?}",
+        product_parent_category_lookup.len()
+    );
+    info!("Staring generation of SKU Spec Association file");
+    // Build a Sku_id lookup fn
+    let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
+    debug!("sku_id_lookup: {}", sku_id_lookup.len());
+
+    // Build a category name lookup
+    let category_name_lookup =
+        utils::create_category_name_lookup(client, &account_name, &environment).await;
+    debug!("category_name_lookup: {}", category_name_lookup.len());
+    // Build category id lookup
+    let category_id_lookup =
+        utils::create_category_id_lookup(client, &account_name, &environment).await;
+    debug!("category_id_lookup: {}", category_id_lookup.len());
+    // Build a field id lookup fn get the fields for a category
+    let field_id_lookup =
+        utils::create_field_id_lookup(&category_id_lookup, client, &account_name, &environment)
+            .await;
+    debug!("field_id_lookup: {:?}", field_id_lookup.len());
+    // Build a field value id lookup table
+    let field_value_id_lookup =
+        utils::create_field_value_id_lookup(&field_id_lookup, client, &account_name, &environment)
+            .await;
+    debug!("field_value_id_lookup: {:?}", field_value_id_lookup.len());
+
+    let mut x = 0;
+
+    let mut product_allowed_values_map_color: HashMap<i32, Vec<String>> = HashMap::new();
+    let mut product_allowed_values_map_size: HashMap<i32, Vec<String>> = HashMap::new();
+    for line in sku_specs {
+        // get the product_id for the sku_ref_id
+        let get_product_id = product_ref_id_by_sku_ref_id_lookup.get(&line.sku_ref_id);
+        if get_product_id.is_some() {
+            let product_id = get_product_id.unwrap().parse::<i32>().unwrap();
+            // Test to see if the record exists
+            if product_allowed_values_map_color.contains_key(&product_id) {
+                if line.color.is_some() {
+                    let allowed_values_map = product_allowed_values_map_color
+                        .get_mut(&product_id)
+                        .unwrap();
+                    allowed_values_map.push(line.color.unwrap());
+                }
+            } else {
+                if line.color.is_some() {
+                    let mut color: Vec<String> = Vec::new();
+                    color.push(line.color.unwrap());
+                    product_allowed_values_map_color.insert(product_id, color);
+                }
+            }
+        }
+        if get_product_id.is_some() {
+            let product_id = get_product_id.unwrap().parse::<i32>().unwrap();
+            // Test to see if the record exists
+            if product_allowed_values_map_size.contains_key(&product_id) {
+                if line.size.is_some() {
+                    let allowed_values_map = product_allowed_values_map_size
+                        .get_mut(&product_id)
+                        .unwrap();
+                    allowed_values_map.push(line.size.unwrap());
+                }
+            } else {
+                if line.size.is_some() {
+                    let mut size: Vec<String> = Vec::new();
+                    size.push(line.size.unwrap());
+                    product_allowed_values_map_size.insert(product_id, size);
+                }
+            }
+        }
+    }
+    // Build the Color record to write
+    for (k, v) in product_allowed_values_map_color {
+        let num_colors = v.len();
+        let mut record = String::new();
+        record.push_str(&k.to_string());
+        record.push_str(",");
+        record.push_str("Color");
+        record.push_str(",");
+        record.push_str(",");
+        for s in v {
+            record.push_str(s.as_str());
+            record.push_str(",");
+        }
+        let mut i = 0;
+        while i < (60 - num_colors) {
+            record.push_str(",");
+            i += 1;
+        }
+        writer.serialize(record)?;
+    }
+    // Build the Size record to write
+    for (k, v) in product_allowed_values_map_size {
+        let num_sizes = v.len();
+        let mut record = String::new();
+        record.push_str(&k.to_string());
+        record.push_str(",");
+        record.push_str("Size");
+        record.push_str(",");
+        record.push_str(",");
+        for s in v {
+            record.push_str(s.as_str());
+            record.push_str(",");
+        }
+        let mut i = 0;
+        while i < (60 - num_sizes) {
+            record.push_str(",");
+            i += 1;
+        }
+        writer.serialize(record)?;
+    }
+    // Flush the records
+    writer.flush()?;
+    info!("Finished generating SKU Spec Assigns file");
+
+    Ok(())
+}
+
+// pub async fn gen_sku_spec_association_file_alternate(
+//     file_path: String,
+//     client: &Client,
+//     account_name: String,
+//     environment: String,
+//     sku_spec_assignment_file: String,
+//     product_file: String,
+//     sku_file: String,
+// ) -> Result<(), Box<dyn Error>> {
+//     info!("Staring generation of SKU Spec Association file");
+
+//     // Setup the input and output files
+//     let in_file = File::open(sku_spec_assignment_file).unwrap();
+//     let mut reader = csv::Reader::from_reader(in_file);
+//     let out_path = file_path;
+//     let mut writer = csv::Writer::from_path(out_path)?;
+
+//     let mut sku_specs: Vec<SkuSpecificationAssignmentAlternate> = Vec::new();
+//     let mut e = 0;
+//     for line in reader.deserialize() {
+//         match line {
+//             Ok(record) => {
+//                 let sku_spec: SkuSpecificationAssignmentAlternate = record;
+//                 sku_specs.push(sku_spec);
+//             }
+//             Err(err) => {
+//                 error!("Error parsing row: {:?}", err);
+//                 e += 1;
+//             }
+//         }
+//     }
+//     info!("Finished: Reading input file");
+//     info!(
+//         "Records successfully read: {}. Records not read (errors): {}",
+//         sku_specs.len(),
+//         e
+//     );
+
+//     Ok(())
+
+// }
 
 pub async fn gen_sku_spec_association_file(
     file_path: String,

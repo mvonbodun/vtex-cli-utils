@@ -433,6 +433,97 @@ pub async fn get_sku_id_by_ref_id(
     response
 }
 
+// Get Sku Ids by RefIds
+// pub async fn get_sku_ids_by_ref_ids(
+//     ref_ids: Vec<String>,
+//     client: &Client,
+//     account_name: &str,
+//     environment: &str,
+// ) -> Result<HashMap<String, i32>, String> {
+
+//     // Build up the URL's passed in
+//     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/{refId}"
+//             .replace("{accountName}", account_name)
+//             .replace("{environment}", environment);
+//     let mut urls: Vec<String> = Vec::with_capacity(ref_ids.len());
+//     for ref_id in ref_ids {
+//         let url = url.replace("{refId}", ref_id.to_string().as_str());
+//         urls.push(url);
+//     }
+//     debug!("sku urls.len(): {}", urls.len());
+
+//     let item_lookup: Arc<Mutex<HashMap<String, i32>>> = Arc::new(Mutex::new(HashMap::new()));
+//     let bodies = stream::iter(urls)
+//         .map(|url| {
+//             let client = &client;
+//             async move {
+//                 let resp = client.get(url.clone()).send().await?;
+
+//                 // let sctx: SkuAndContext = resp.json().await?;
+//                 debug!("end of async move - url: {}", url);
+//                 // resp.text().await
+//                 let r = resp.json::<String>().await
+//             }
+//         })
+//         .buffer_unordered(CONCURRENT_REQUESTS);
+//     bodies
+//         .for_each(|b| async {
+//             let item_lookup = item_lookup.clone();
+//             match b {
+//                 Ok(b) => {
+//                     // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
+//                     let sku_id: String = b;
+//                     let mut item_lookup = item_lookup.lock().unwrap();
+//                     item_lookup.insert(sku_ctx.id, sku_ctx.clone());
+//                     debug!("Got: {:?}", sku_ctx)
+//                 }
+//                 Err(e) => error!("Got an error: {}", e),
+//             }
+//         })
+//         .await;
+
+//     let ir = item_lookup.lock().unwrap().clone();
+//     info!(
+//         "finished get_item_records(): item_recs.len(): {:?}",
+//         ir.len()
+//     );
+
+//     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/"
+//             .replace("{accountName}", account_name)
+//             .replace("{environment}", environment)
+//             + ref_id;
+
+//     // let sku_id_result = client.get(url).send().await.unwrap().json().await.unwrap();
+//     let sku_id_result = client.get(url).send().await;
+//     let response = match sku_id_result {
+//         Ok(result) => {
+//             if result.status() == StatusCode::OK {
+//                 let sku_id: String = result.json().await.unwrap();
+//                 Ok(sku_id.parse::<i32>().unwrap())
+//             } else if result.status() == StatusCode::NOT_FOUND {
+//                 let error = format!(
+//                     "response: {} sku with ref_id: {} not found",
+//                     result.status(),
+//                     ref_id
+//                 );
+//                 Err(error)
+//             } else {
+//                 let status = result.status().clone();
+//                 let other_errors = result.text().await;
+//                 match other_errors {
+//                     Ok(s) => {
+//                         let error = format!("response: {}  message: {}", status, s);
+//                         Err(error)
+//                     }
+//                     Err(e) => Err(e.to_string()),
+//                 }
+//             }
+//         }
+//         Err(err) => Err(err.to_string()),
+//     };
+//     response
+// }
+
 // Create field value id lookup. key = field_id + "|" + value, returns field_value_id
 pub async fn create_field_value_id_lookup(
     field_id_lookup: &HashMap<String, i32>,

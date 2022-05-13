@@ -48,7 +48,7 @@ pub async fn gen_product_spec_association_file_root_category(
                 // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                 id: Some(0),
                 product_id: record.product_ref_id,
-                field_id: *field_id_lookup.get("0|ShortDesc").unwrap(),
+                field_id: *field_id_lookup.get("0|ShortDesc:").unwrap(),
                 field_value_id: None,
                 text: Some(record.short_desc.unwrap()),
             };
@@ -63,7 +63,7 @@ pub async fn gen_product_spec_association_file_root_category(
                 // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                 id: Some(0),
                 product_id: record.product_ref_id,
-                field_id: *field_id_lookup.get("0|ship_message").unwrap(),
+                field_id: *field_id_lookup.get("0|ship_message:").unwrap(),
                 field_value_id: None,
                 text: Some(record.ship_message.unwrap()),
             };
@@ -79,7 +79,7 @@ pub async fn gen_product_spec_association_file_root_category(
                     // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                     id: Some(0),
                     product_id: record.product_ref_id,
-                    field_id: *field_id_lookup.get("0|Availability Remarks").unwrap(),
+                    field_id: *field_id_lookup.get("0|Availability Remarks:").unwrap(),
                     field_value_id: None,
                     text: Some(record.availability_remarks.unwrap()),
                 };
@@ -94,7 +94,7 @@ pub async fn gen_product_spec_association_file_root_category(
                 // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                 id: Some(0),
                 product_id: record.product_ref_id,
-                field_id: *field_id_lookup.get("0|Weight").unwrap(),
+                field_id: *field_id_lookup.get("0|Weight:").unwrap(),
                 field_value_id: None,
                 text: Some(record.weight.unwrap()),
             };
@@ -110,7 +110,7 @@ pub async fn gen_product_spec_association_file_root_category(
                     // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                     id: Some(0),
                     product_id: record.product_ref_id,
-                    field_id: *field_id_lookup.get("0|Package Dimensions").unwrap(),
+                    field_id: *field_id_lookup.get("0|Package Dimensions:").unwrap(),
                     field_value_id: None,
                     text: Some(record.package_dimensions.unwrap()),
                 };
@@ -125,7 +125,7 @@ pub async fn gen_product_spec_association_file_root_category(
                 // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                 id: Some(0),
                 product_id: record.product_ref_id,
-                field_id: *field_id_lookup.get("0|Shipping Remarks").unwrap(),
+                field_id: *field_id_lookup.get("0|Shipping Remarks:").unwrap(),
                 field_value_id: None,
                 text: Some(record.shipping_remarks.unwrap()),
             };
@@ -137,7 +137,7 @@ pub async fn gen_product_spec_association_file_root_category(
                 // Hardcode 0. If None (null), then the Post API fails with a parseInt error
                 id: Some(0),
                 product_id: record.product_ref_id,
-                field_id: *field_id_lookup.get("0|Prop65").unwrap(),
+                field_id: *field_id_lookup.get("0|Prop65:").unwrap(),
                 field_value_id: None,
                 text: Some(record.prop_65.unwrap()),
             };

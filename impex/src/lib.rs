@@ -93,7 +93,8 @@ arg_enum! {
     #[allow(non_camel_case_types)]
     enum SpecificationValueActions {
         import,
-        genspecvaluesfile
+        genspecvaluesfile,
+        genspecvaluesfilealternate
     }
 }
 
@@ -129,7 +130,8 @@ arg_enum! {
     #[allow(non_camel_case_types)]
     enum SkuSpecAssocActions {
         import,
-        genskuspecassocfile
+        genskuspecassocfile,
+        genskuspecassocfilealternate
     }
 }
 
@@ -1002,6 +1004,15 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 cmd.product_file,
             )
             .await?;
+        } else if cmd.action.eq("genspecvaluesfilealternate") {
+            specificationvalues::gen_specification_values_file_alternate(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.sku_spec_allowed_values_file,
+            )
+            .await?
         }
     } else if cmd.object.eq("product") {
         // Load products
@@ -1096,6 +1107,17 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 cmd.sku_file,
             )
             .await?;
+        } else if cmd.action.eq("genskuspecassocfilealternate") {
+            skuspecassociation::gen_sku_spec_assign_file_alternate(
+                cmd.input_file,
+                &client,
+                account_name,
+                environment,
+                cmd.sku_spec_assign_file,
+                cmd.product_file,
+                cmd.sku_file,
+            )
+            .await?
         }
     } else if cmd.object.eq("skufile") {
         // Load sku files

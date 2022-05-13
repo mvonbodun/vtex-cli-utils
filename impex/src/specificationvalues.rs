@@ -3,14 +3,191 @@ use futures::{executor::block_on, stream, StreamExt};
 use governor::{Jitter, Quota, RateLimiter};
 use log::*;
 use reqwest::{Client, StatusCode};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs::File;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::time::Duration;
+use vtex::csvrecords::SkuSpecificationAssignmentAlternate;
 use vtex::model::SpecificationValue;
 use vtex::utils;
+
+pub async fn gen_specification_values_file_alternate(
+    file_path: String,
+    client: &Client,
+    account_name: String,
+    environment: String,
+    sku_spec_allowed_values_file: String,
+) -> Result<(), Box<dyn Error>> {
+    info!("Start: generation of specification values file");
+
+    // Set up input and output files
+    let in_file = File::open(&sku_spec_allowed_values_file).unwrap();
+    let mut reader = csv::Reader::from_reader(in_file);
+    let out_path = file_path;
+    let mut writer = csv::Writer::from_path(out_path)?;
+
+    let mut sku_specs: Vec<SkuSpecificationAssignmentAlternate> = Vec::new();
+    let mut e = 0;
+    for line in reader.deserialize() {
+        match line {
+            Ok(record) => {
+                let sku_spec: SkuSpecificationAssignmentAlternate = record;
+                sku_specs.push(sku_spec);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
+    }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        sku_specs.len(),
+        e
+    );
+
+    let mut category_lookup: HashMap<String, i32> = HashMap::new();
+    category_lookup.insert("Root Category".to_string(), 0);
+    debug!("category_lookup: {:?}", category_lookup.len());
+
+    // Need HashMap to get Field Id
+    let field_id_lookup =
+        utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
+    debug!("field_id_lookup: {:?}", field_id_lookup);
+
+    // Create set to store values - you can't have duplicates of Size or Color
+    let mut specvalue_set: HashSet<SpecificationValue> = HashSet::new();
+
+    for line in sku_specs {
+        if line.color.is_some() {
+            debug!("Found Color for sku_ref_id: {}", line.sku_ref_id);
+            let color: SpecificationValue = SpecificationValue {
+                field_value_id: None,
+                field_id: *field_id_lookup.get("0|Color").unwrap(),
+                name: line.color.unwrap(),
+                is_active: Some(true),
+                text: None,
+                position: None,
+            };
+            if !specvalue_set.contains(&color) {
+                writer.serialize(color.clone())?;
+                specvalue_set.insert(color);
+            }
+        }
+        if line.size.is_some() {
+            debug!("Found Size for sku_ref_id: {}", line.sku_ref_id);
+            let size: SpecificationValue = SpecificationValue {
+                field_value_id: None,
+                field_id: *field_id_lookup.get("0|Size").unwrap(),
+                name: line.size.unwrap(),
+                is_active: Some(true),
+                text: None,
+                position: None,
+            };
+            if !specvalue_set.contains(&size) {
+                writer.serialize(size.clone())?;
+                specvalue_set.insert(size);
+            }
+        }
+    }
+
+    // Flush the records
+    writer.flush()?;
+    info!("Finish: generation of specification values file");
+
+    Ok(())
+}
+
+// // pub async fn gen_specification_values_file_alternate(
+// //     file_path: String,
+// //     client: &Client,
+// //     account_name: String,
+// //     environment: String,
+// //     sku_spec_allowed_values_file: String,
+// // ) -> Result<(), Box<dyn Error>> {
+// //     info!("Start: generation of specification values file");
+
+// //     // Set up input and output files
+// //     let in_file = File::open(&sku_spec_allowed_values_file).unwrap();
+// //     let mut reader = csv::Reader::from_reader(in_file);
+// //     let out_path = file_path;
+// //     let mut writer = csv::Writer::from_path(out_path)?;
+
+// //     let mut sku_specs: Vec<SkuSpecificationAssignmentAlternate> = Vec::new();
+// //     let mut e = 0;
+// //     for line in reader.deserialize() {
+// //         match line {
+// //             Ok(record) => {
+// //                 let sku_spec: SkuSpecificationAssignmentAlternate = record;
+// //                 sku_specs.push(sku_spec);
+// //             }
+// //             Err(err) => {
+// //                 error!("Error parsing row: {:?}", err);
+// //                 e += 1;
+// //             }
+// //         }
+// //     }
+// //     info!("Finished: Reading input file");
+// //     info!(
+// //         "Records successfully read: {}. Records not read (errors): {}",
+// //         sku_specs.len(),
+// //         e
+// //     );
+
+// //     let mut category_lookup: HashMap<String, i32> = HashMap::new();
+// //     category_lookup.insert("Root Category".to_string(), 0);
+// //     debug!("category_lookup: {:?}", category_lookup.len());
+
+// //     // Need HashMap to get Field Id
+// //     let field_id_lookup =
+// //         utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
+// //     debug!("field_id_lookup: {:?}", field_id_lookup);
+
+// //     // Create set to store values - you can't have duplicates of Size or Color
+// //     let mut specvalue_set: HashSet<SpecificationValue> = HashSet::new();
+
+// //     for line in sku_specs {
+// //         if line.color.is_some() {
+// //             debug!("Found Color for sku_ref_id: {}", line.sku_ref_id);
+// //             let color: SpecificationValue = SpecificationValue {
+// //                 field_value_id: None,
+// //                 field_id: *field_id_lookup.get("0|Color").unwrap(),
+// //                 name: line.color.unwrap(),
+// //                 is_active: Some(true),
+// //                 text: None,
+// //                 position: None,
+// //             };
+// //             if !specvalue_set.contains(&color) {
+// //                 writer.serialize(color.clone())?;
+// //                 specvalue_set.insert(color);
+// //             }
+// //         }
+// //         if line.size.is_some() {
+// //             debug!("Found Size for sku_ref_id: {}", line.sku_ref_id);
+// //             let size: SpecificationValue = SpecificationValue {
+// //                 field_value_id: None,
+// //                 field_id: *field_id_lookup.get("0|Size").unwrap(),
+// //                 name: line.size.unwrap(),
+// //                 is_active: Some(true),
+// //                 text: None,
+// //                 position: None,
+// //             };
+// //             if !specvalue_set.contains(&size) {
+// //                 writer.serialize(size.clone())?;
+// //                 specvalue_set.insert(size);
+// //             }
+// //         }
+// //     }
+
+//     // Flush the records
+//     writer.flush()?;
+//     info!("Finish: generation of specification values file");
+
+//     Ok(())
+// }
 
 pub async fn gen_specification_values_file(
     file_path: String,

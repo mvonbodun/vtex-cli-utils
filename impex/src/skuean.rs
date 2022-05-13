@@ -129,7 +129,7 @@ pub async fn load_sku_eans(
                 );
                 let text = response.text().await;
                 if status != StatusCode::OK {
-                    info!("text: {:?}", text);
+                    error!("text: {:?}", text);
                 }
                 text
             }

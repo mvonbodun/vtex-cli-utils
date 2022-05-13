@@ -192,3 +192,11 @@ pub struct ProductSpecificationAssignmentAlternate {
     pub prop_65: Option<String>,
     pub attachment: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(rename_all = "PascalCase")]
+pub struct SkuSpecificationAssignmentAlternate {
+    pub sku_ref_id: String,
+    pub color: Option<String>,
+    pub size: Option<String>,
+}
