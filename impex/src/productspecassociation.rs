@@ -24,11 +24,6 @@ pub async fn gen_product_spec_association_file_root_category(
     category_lookup.insert("Root Category".to_string(), 0);
     debug!("category_lookup: {:?}", category_lookup.len());
 
-    // Need HashMap to get Field Id
-    let field_id_lookup =
-        utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
-    debug!("field_id_lookup: {:?}", field_id_lookup);
-
     // Setup the input and output files
     debug!("current_directory: {:?}", env::current_dir());
     let in_file = File::open(prod_specs_assignment_file).unwrap();
@@ -36,8 +31,37 @@ pub async fn gen_product_spec_association_file_root_category(
     let out_path = file_path;
     let mut writer = csv::Writer::from_path(out_path)?;
 
+    // Read the input file and verify it can be deserialized, reject records that can't
+    let mut prod_specs: Vec<ProductSpecificationAssignmentAlternate> = Vec::new();
+    let mut e = 0;
     for line in reader.deserialize() {
-        let record: ProductSpecificationAssignmentAlternate = line.unwrap();
+        match line {
+            Ok(record) => {
+                let prod_spec: ProductSpecificationAssignmentAlternate = record;
+                prod_specs.push(prod_spec);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
+    }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        prod_specs.len(),
+        e
+    );
+
+    // Need HashMap to get Field Id
+    let field_id_lookup =
+        utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
+    debug!("field_id_lookup: {:?}", field_id_lookup);
+
+    for line in prod_specs {
+        let record = line;
+
+        debug!("record: {:?}", record);
 
         if record.short_desc.is_some() {
             debug!(
