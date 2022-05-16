@@ -208,7 +208,8 @@ pub async fn gen_specification_values_file(
         utils::create_field_id_lookup(&category_lookup, client, &account_name, &environment).await;
     debug!("field_id_lookup: {:?}", field_id_lookup.len());
     // Get a lookup HashMap for the parent category of a product
-    let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
+    let product_parent_category_lookup =
+        utils::create_product_parent_category_lookup(&product_file);
     debug!(
         "product_parent_category_lookkup: {:?}",
         product_parent_category_lookup.len()

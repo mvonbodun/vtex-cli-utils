@@ -34,12 +34,71 @@ pub async fn get_vtex_category_tree(
     account_name: &str,
     environment: &str,
 ) -> Vec<CategoryTree> {
-    // TODO: Fix that this is hardcoded to 3 levels
+    // TODO: Fix that this is hardcoded to 5 levels
     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pub/category/tree/5"
         .replace("{accountName}", account_name)
         .replace("{environment}", environment);
-    let categories: Vec<CategoryTree> = client.get(url).send().await.unwrap().json().await.unwrap();
-    categories
+    let get_category_tree = client.get(&url).send().await;
+    let response = match get_category_tree {
+        Ok(result) => {
+            if result.status() == StatusCode::OK {
+                let category_tree: Vec<CategoryTree> = result.json().await.unwrap();
+                Ok(category_tree)
+            } else {
+                let status = result.status().clone();
+                let other_errors = result.text().await;
+                match other_errors {
+                    Ok(s) => {
+                        let error = format!("response: {}  message: {}", status, s);
+                        Err(error)
+                    }
+                    Err(e) => Err(e.to_string()),
+                }
+            }
+        }
+        Err(err) => {
+            // Because we sometimes get incomplete errors, connection terminated, try again
+            error!(
+                "Connection error on get_category_tree() {:?}",
+                err.to_string()
+            );
+            Err(err.to_string())
+        }
+    };
+    if response.is_err() {
+        // Try again since likely a timeout
+        let get_category_tree = client.get(&url).send().await;
+        let response = match get_category_tree {
+            Ok(result) => {
+                if result.status() == StatusCode::OK {
+                    let category_tree: Vec<CategoryTree> = result.json().await.unwrap();
+                    category_tree
+                } else {
+                    let status = result.status().clone();
+                    let other_errors = result.text().await;
+                    match other_errors {
+                        Ok(s) => {
+                            let error = format!("response: {}  message: {}", status, s);
+                            panic!("Failed second time get_category_by_id(): {:?}", error);
+                        }
+                        Err(e) => {
+                            panic!("Failed second time get_category_by_id(): {:?}", e);
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                // Because we sometimes get incomplete errors, connection terminated, try again
+                panic!(
+                    "Connection error on get_category_tree() {:?}",
+                    err.to_string()
+                );
+            }
+        };
+        response
+    } else {
+        response.unwrap()
+    }
 }
 
 // Get the VTEX Category by Id
@@ -55,21 +114,67 @@ pub async fn get_category_by_id(
         + id.to_string().as_str();
     // let category: Category =
     //     client.get(url).send().await.unwrap().json().await.unwrap();
-    let response = client.get(url).send().await.unwrap();
-    match response.status() {
-        StatusCode::OK => {
-            let result: Category = response.json().await.unwrap();
-            debug!("category: {:?}", result);
-            result
+    let get_category_result = client.get(&url).send().await;
+    let response = match get_category_result {
+        Ok(result) => {
+            if result.status() == StatusCode::OK {
+                let category: Category = result.json().await.unwrap();
+                Ok(category)
+            } else {
+                let status = result.status().clone();
+                let other_errors = result.text().await;
+                match other_errors {
+                    Ok(s) => {
+                        let error = format!("response: {}  message: {}", status, s);
+                        Err(error)
+                    }
+                    Err(e) => Err(e.to_string()),
+                }
+            }
         }
-        _ => {
-            debug!(
-                "response.status: {}, error: {:#?}",
-                response.status(),
-                response.text().await.unwrap()
+        Err(err) => {
+            // Because we sometimes get incomplete errors, connection terminated, try again
+            error!(
+                "Connection error on get_category_by_id() {:?}",
+                err.to_string()
             );
-            panic!("failed to get category");
+            Err(err.to_string())
         }
+    };
+    if response.is_err() {
+        // Try again due to connection error
+        let get_category_result = client.get(&url).send().await;
+        let response = match get_category_result {
+            Ok(result) => {
+                if result.status() == StatusCode::OK {
+                    let category: Category = result.json().await.unwrap();
+                    category
+                } else {
+                    let status = result.status().clone();
+                    let other_errors = result.text().await;
+                    match other_errors {
+                        Ok(s) => {
+                            let error = format!("response: {}  message: {}", status, s);
+                            panic!("Failed second time get_category_by_id(): {:?}", error);
+                        }
+                        Err(e) => {
+                            panic!("Failed second time get_category_by_id(): {:?}", e);
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                // Because we sometimes get incomplete errors, connection terminated, try again
+                panic!(
+                    "Connection error on get_category_by_id() {:?}",
+                    err.to_string()
+                );
+            }
+        };
+        response
+    } else {
+        // Return the category
+        response.unwrap()
     }
 }
 
@@ -184,6 +289,27 @@ pub fn parse_category_tree(cat_tree: Vec<CategoryTree>) -> HashMap<String, i32> 
     category_ids
 }
 
+// Create category id lookup HashMap alternate version
+// Use when the category id is the same as the category unique id
+pub async fn create_category_id_lookup_alternate(product_file: &str) -> HashMap<String, i32> {
+    let file = File::open(product_file).unwrap();
+    let mut reader = csv::Reader::from_reader(file);
+    let mut category_id_lookup: HashMap<String, i32> = HashMap::new();
+
+    for line in reader.deserialize() {
+        let record: Product = line.unwrap();
+        category_id_lookup.insert(
+            record.category_unique_identifier.clone().unwrap(),
+            record.category_id.clone().unwrap(),
+        );
+    }
+    debug!(
+        "HashMap Category Identifiers Cat Id lookup alternate: {:?}",
+        category_id_lookup
+    );
+    category_id_lookup
+}
+
 // Create category id lookup HashMap
 pub async fn create_category_id_lookup(
     client: &Client,
@@ -269,8 +395,8 @@ pub async fn create_category_name_lookup(
 }
 
 // Create a lookup HashMap that allows lookup of the parent category_unique_identifier by the product ref_id
-pub fn create_product_parent_category_lookup(product_file: String) -> HashMap<String, String> {
-    let file = File::open(&product_file).unwrap();
+pub fn create_product_parent_category_lookup(product_file: &str) -> HashMap<String, String> {
+    let file = File::open(product_file).unwrap();
     let mut reader = csv::Reader::from_reader(file);
     let mut product_parent_category: HashMap<String, String> = HashMap::new();
 
@@ -434,95 +560,114 @@ pub async fn get_sku_id_by_ref_id(
 }
 
 // Get Sku Ids by RefIds
-// pub async fn get_sku_ids_by_ref_ids(
-//     ref_ids: Vec<String>,
-//     client: &Client,
-//     account_name: &str,
-//     environment: &str,
-// ) -> Result<HashMap<String, i32>, String> {
+pub async fn get_sku_ids_by_ref_ids(
+    ref_ids: Vec<String>,
+    client: &Client,
+    account_name: &str,
+    environment: &str,
+) -> HashMap<String, i32> {
+    // Build the URL's to the the sku_id's for the ref_id's passed in
+    let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/{refId}"
+            .replace("{accountName}", account_name)
+            .replace("{environment}", environment);
+    let mut urls: Vec<String> = Vec::with_capacity(ref_ids.len());
+    for ref_id in ref_ids {
+        let url = url.replace("{refId}", ref_id.to_string().as_str());
+        urls.push(url);
+    }
+    debug!("sku urls.len(): {}", urls.len());
+    struct SkuIdentifiers {
+        ref_id: String,
+        sku_id: String,
+    }
 
-//     // Build up the URL's passed in
-//     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/{refId}"
-//             .replace("{accountName}", account_name)
-//             .replace("{environment}", environment);
-//     let mut urls: Vec<String> = Vec::with_capacity(ref_ids.len());
-//     for ref_id in ref_ids {
-//         let url = url.replace("{refId}", ref_id.to_string().as_str());
-//         urls.push(url);
-//     }
-//     debug!("sku urls.len(): {}", urls.len());
+    let item_lookup: Arc<Mutex<HashMap<String, i32>>> = Arc::new(Mutex::new(HashMap::new()));
+    let bodies = stream::iter(urls)
+        .map(|url| {
+            let client = &client;
+            async move {
+                let sku_id_result = client.get(url.clone()).send().await;
+                // Get the ref_id from the end of the URL
+                // Use split logic because some ref_id's have a / in them
+                // TODO: enhance this in the future using a REGEX
+                let split = url.split("/");
+                let count = split.clone().count();
+                let s_last = split.clone().nth(count - 1).unwrap();
+                let s_next_to_last = split.clone().nth(count - 2).unwrap();
+                let s_2nd_to_last = split.clone().nth(count - 3).unwrap();
+                debug!(
+                    "last: {:?}, next to last: {:?}, second to last: {:?} ",
+                    s_last, s_next_to_last, s_2nd_to_last
+                );
+                let mut ref_id = String::new();
+                if s_next_to_last.eq("stockkeepingunitidbyrefid") {
+                    ref_id = s_last.to_string();
+                } else {
+                    ref_id = format!("{}{}{}", s_next_to_last, "/", s_last);
+                }
 
-//     let item_lookup: Arc<Mutex<HashMap<String, i32>>> = Arc::new(Mutex::new(HashMap::new()));
-//     let bodies = stream::iter(urls)
-//         .map(|url| {
-//             let client = &client;
-//             async move {
-//                 let resp = client.get(url.clone()).send().await?;
+                let response = match sku_id_result {
+                    Ok(result) => {
+                        if result.status() == StatusCode::OK {
+                            let sku_id: String = result.json().await.unwrap();
+                            Ok(SkuIdentifiers {
+                                ref_id: ref_id,
+                                sku_id,
+                            })
+                        } else if result.status() == StatusCode::NOT_FOUND {
+                            let error = format!(
+                                "response: {} sku with ref_id: {} not found",
+                                result.status(),
+                                ref_id
+                            );
+                            Err(error)
+                        } else {
+                            let status = result.status().clone();
+                            let other_errors = result.text().await;
+                            match other_errors {
+                                Ok(s) => {
+                                    let error = format!("response: {}  message: {}", status, s);
+                                    Err(error)
+                                }
+                                Err(e) => Err(e.to_string()),
+                            }
+                        }
+                    }
+                    Err(err) => Err(err.to_string()),
+                };
+                response
+            }
+        })
+        .buffer_unordered(2);
+    bodies
+        .for_each(|b| async {
+            let item_lookup = item_lookup.clone();
+            match b {
+                Ok(b) => {
+                    let sku_identifiers: SkuIdentifiers = b;
+                    debug!(
+                        "sku_identifiers.ref_id: {} sku_identifiers.sku_id {}",
+                        sku_identifiers.ref_id, sku_identifiers.sku_id
+                    );
+                    let mut item_lookup = item_lookup.lock().unwrap();
+                    item_lookup.insert(
+                        sku_identifiers.ref_id,
+                        sku_identifiers.sku_id.parse::<i32>().clone().unwrap(),
+                    );
+                }
+                Err(e) => error!("Got an error on : {}", e),
+            }
+        })
+        .await;
 
-//                 // let sctx: SkuAndContext = resp.json().await?;
-//                 debug!("end of async move - url: {}", url);
-//                 // resp.text().await
-//                 let r = resp.json::<String>().await
-//             }
-//         })
-//         .buffer_unordered(CONCURRENT_REQUESTS);
-//     bodies
-//         .for_each(|b| async {
-//             let item_lookup = item_lookup.clone();
-//             match b {
-//                 Ok(b) => {
-//                     // let result: Result<SkuAndContext, serde_json::Error> = serde_json::from_str(b).unwrap();
-//                     let sku_id: String = b;
-//                     let mut item_lookup = item_lookup.lock().unwrap();
-//                     item_lookup.insert(sku_ctx.id, sku_ctx.clone());
-//                     debug!("Got: {:?}", sku_ctx)
-//                 }
-//                 Err(e) => error!("Got an error: {}", e),
-//             }
-//         })
-//         .await;
-
-//     let ir = item_lookup.lock().unwrap().clone();
-//     info!(
-//         "finished get_item_records(): item_recs.len(): {:?}",
-//         ir.len()
-//     );
-
-//     let url = "https://{accountName}.{environment}.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/"
-//             .replace("{accountName}", account_name)
-//             .replace("{environment}", environment)
-//             + ref_id;
-
-//     // let sku_id_result = client.get(url).send().await.unwrap().json().await.unwrap();
-//     let sku_id_result = client.get(url).send().await;
-//     let response = match sku_id_result {
-//         Ok(result) => {
-//             if result.status() == StatusCode::OK {
-//                 let sku_id: String = result.json().await.unwrap();
-//                 Ok(sku_id.parse::<i32>().unwrap())
-//             } else if result.status() == StatusCode::NOT_FOUND {
-//                 let error = format!(
-//                     "response: {} sku with ref_id: {} not found",
-//                     result.status(),
-//                     ref_id
-//                 );
-//                 Err(error)
-//             } else {
-//                 let status = result.status().clone();
-//                 let other_errors = result.text().await;
-//                 match other_errors {
-//                     Ok(s) => {
-//                         let error = format!("response: {}  message: {}", status, s);
-//                         Err(error)
-//                     }
-//                     Err(e) => Err(e.to_string()),
-//                 }
-//             }
-//         }
-//         Err(err) => Err(err.to_string()),
-//     };
-//     response
-// }
+    let ir = item_lookup.lock().unwrap().clone();
+    info!(
+        "finished get_item_records(): item_recs.len(): {:?}",
+        ir.len()
+    );
+    debug!("item_lookup {:?}", ir);
+    ir
+}
 
 // Create field value id lookup. key = field_id + "|" + value, returns field_value_id
 pub async fn create_field_value_id_lookup(
@@ -705,15 +850,62 @@ pub async fn create_sku_id_lookup(
     sku_lookup
 }
 
-// #[cfg(test)]
-// mod tests {
+#[cfg(test)]
+mod tests {
+    use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 
-//     #[test]
-//     fn get_product_id_by_ref_id() {
+    //  #[test]
+    // fn get_product_id_by_ref_id() {
+    //     let url = "https://pitstopusa.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/ALL99852";
+    //     let re = Regex::new(r"/.*?byrefid(.*?)g").unwrap();
+    //     let cap = re.captures(url);
+    //     print!("ref_id: {:?}", &cap);
+    //  }
 
-//     }
+    #[test]
+    fn get_product_id_by_ref_id_split() {
+        let url = "https://pitstopusa.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/ALL99852";
+        let split = url.split("/");
+        println!("ref_id: {:?}", split.last());
+        // for s in split {
+        //     println!("{}", s);
+        // }
+    }
 
-// }
+    #[test]
+    fn get_product_id_by_ref_id_split_2() {
+        let url = "https://pitstopusa.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitidbyrefid/ALP4752117-106-M/L";
+        let split = url.split("/");
+        let count = split.clone().count();
+        let s_last = split.clone().nth(count - 1).unwrap();
+        let s_next_to_last = split.clone().nth(count - 2).unwrap();
+        let s_2nd_to_last = split.clone().nth(count - 3).unwrap();
+        println!(
+            "last: {:?}, next to last: {:?}, second to last: {:?} ",
+            s_last, s_next_to_last, s_2nd_to_last
+        );
+
+        let mut s = String::new();
+        if s_next_to_last.eq("stockkeepingunitidbyrefid") {
+            s = s_last.to_string();
+        } else {
+            s = format!("{}{}{}", s_next_to_last, "/", s_last);
+        }
+        println!("s: {:?}", s);
+        // println!("ref_id: {:?}", split.last());
+        // for s in split {
+        //     println!("{}", s);
+        // }
+    }
+
+    #[test]
+    fn percent_encode_ref_id() {
+        const FRAGMENT: &AsciiSet = &CONTROLS.add(b'/');
+        let ref_id = "ALP4752117-106-M/L";
+        let result = utf8_percent_encode(ref_id, FRAGMENT);
+        println!("result: {:?}: ", result.to_string());
+    }
+}
 
 //     #[test]
 //     fn find_brand_id() {

@@ -216,7 +216,8 @@ pub async fn gen_product_spec_association_file(
     debug!("field_id_lookup: {:?}", field_id_lookup.len());
 
     // Get a lookup HashMap for the parent category of a product
-    let product_parent_category_lookup = utils::create_product_parent_category_lookup(product_file);
+    let product_parent_category_lookup =
+        utils::create_product_parent_category_lookup(&product_file);
     debug!(
         "product_parent_category_lookkup: {:?}",
         product_parent_category_lookup.len()

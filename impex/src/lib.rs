@@ -85,6 +85,7 @@ arg_enum! {
         import,
         genproductspecsfile,
         genskuspecsfile,
+        genskuspecsfilealternate
     }
 }
 
@@ -131,6 +132,7 @@ arg_enum! {
     enum SkuSpecAssocActions {
         import,
         genskuspecassocfile,
+        genskuspecassignfilealternate,
         genskuspecassocfilealternate
     }
 }
@@ -807,7 +809,7 @@ impl Command {
                 command.product_file = m.value_of("PRODUCT_FILE").unwrap_or("").to_string();
                 command.sku_file = m.value_of("SKU_FILE").unwrap_or("").to_string();
                 command.concurrency = m.value_of("CONCURRENCY").unwrap_or("1").parse::<usize>().expect("CONCURRENCY must be a positive integer between 1 and 24. Default is 1 - Recommended");
-                command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("40").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 40 - Recommended");
+                command.rate_limit = m.value_of("RATE_LIMIT").unwrap_or("30").parse::<NonZeroU32>().expect("RATE_LIMIT must be a positive integer between 1 and 200. Default is 30 - Recommended");
             }
             ("skufile", Some(m)) => {
                 command.object = "skufile".to_string();
@@ -894,7 +896,7 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
         header::HeaderValue::from_str(&vtex_api_apptoken)?,
     );
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(3))
+        .timeout(Duration::from_secs(12))
         .default_headers(headers)
         .build()?;
 
@@ -973,6 +975,16 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
             .await?;
         } else if cmd.action.eq("genskuspecsfile") {
             specifications::gen_sku_specifications_file(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.sku_spec_allowed_values_file,
+                cmd.product_file,
+            )
+            .await?;
+        } else if cmd.action.eq("genskuspecsfilealternate") {
+            specifications::gen_sku_specifications_file_alternate(
                 cmd.input_file.to_string(),
                 &client,
                 account_name,
@@ -1107,8 +1119,19 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 cmd.sku_file,
             )
             .await?;
-        } else if cmd.action.eq("genskuspecassocfilealternate") {
+        } else if cmd.action.eq("genskuspecassignfilealternate") {
             skuspecassociation::gen_sku_spec_assign_file_alternate(
+                cmd.input_file,
+                &client,
+                account_name,
+                environment,
+                cmd.sku_spec_assign_file,
+                cmd.product_file,
+                cmd.sku_file,
+            )
+            .await?
+        } else if cmd.action.eq("genskuspecassocfilealternate") {
+            skuspecassociation::gen_sku_spec_association_file_alternate(
                 cmd.input_file,
                 &client,
                 account_name,

@@ -1218,6 +1218,7 @@ dependencies = [
  "csv",
  "futures",
  "log",
+ "percent-encoding",
  "reqwest",
  "serde",
  "serde_json",
