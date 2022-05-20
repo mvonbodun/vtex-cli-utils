@@ -693,7 +693,7 @@ pub async fn create_field_value_id_lookup(
     field_value_id_lookup
 }
 
-async fn get_all_sku_ids(client: &Client, account_name: &str, environment: &str) -> Vec<i32> {
+pub async fn get_all_sku_ids(client: &Client, account_name: &str, environment: &str) -> Vec<i32> {
     let start = Instant::now();
     info!("Start get_all_sku_ids()");
     // Get all the skus

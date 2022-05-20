@@ -511,6 +511,12 @@ You should see output like the following:
 250.835 [INFO] - finished SKU load
 250.836 [INFO] - Finished data load
 ```
+### Running a SKU Update
+To run a SKU update make sure the **Id** column in the CSV file is populated.  Then run the following command:
+```
+RUST_LOG=debug vtex_impex sku -a update -f ~/data/skus.csv
+```
+
 
 ## Product Specification Association
 The Product Specification Association file is generated from two files:

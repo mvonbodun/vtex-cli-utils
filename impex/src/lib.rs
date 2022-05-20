@@ -112,7 +112,9 @@ arg_enum! {
     #[derive(Debug)]
     #[allow(non_camel_case_types)]
     enum SkuActions {
-        import
+        import,
+        update,
+        count
     }
 }
 
@@ -1063,6 +1065,18 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
                 cmd.rate_limit,
             )
             .await?;
+        } else if cmd.action.eq("update") {
+            skus::update_skus(
+                cmd.input_file.to_string(),
+                &client,
+                account_name,
+                environment,
+                cmd.concurrency,
+                cmd.rate_limit,
+            )
+            .await?;
+        } else if cmd.action.eq("count") {
+            skus::count_skus(&client, account_name, environment).await?;
         }
     } else if cmd.object.eq("productspecassociation") {
         // Load product specs
