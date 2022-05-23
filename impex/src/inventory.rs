@@ -26,21 +26,55 @@ pub async fn load_inventory(
     let mut rdr = csv::Reader::from_reader(input);
 
     let mut inv_recs: Vec<Inventory> = Vec::new();
-
-    // Build a sku_id lookup
-    let sku_id_lookup = utils::create_sku_id_lookup(client, &account_name, &environment).await;
-
+    let mut ref_ids: Vec<String> = Vec::new();
+    let mut e = 0;
     for line in rdr.deserialize() {
-        let mut record: Inventory = line?;
-        let sku_id = *sku_id_lookup.get(&record.ref_id).unwrap();
-        record.sku_id = Some(sku_id);
-        inv_recs.push(record);
+        match line {
+            Ok(record) => {
+                let inventory: Inventory = record;
+                let ref_id = inventory.ref_id.clone();
+                inv_recs.push(inventory);
+                ref_ids.push(ref_id);
+            }
+            Err(err) => {
+                error!("Error parsing row: {:?}", err);
+                e += 1;
+            }
+        }
     }
+    info!("Finished: Reading input file");
+    info!(
+        "Records successfully read: {}. Records not read (errors): {}",
+        inv_recs.len(),
+        e
+    );
+    debug!("ref_ids.len(): {}", ref_ids.len());
+
     info!("inventory records: {:?}", inv_recs.len());
 
+    // Build a Sku_id lookup fn
+    let sku_id_lookup =
+        utils::get_sku_ids_by_ref_ids(ref_ids, client, &account_name, &environment).await;
+    debug!("sku_id_lookup: {}", sku_id_lookup.len());
+
+    let mut inv_recs_with_sku_id: Vec<Inventory> = Vec::new();
+    for mut line in inv_recs {
+        debug!("Before sku_id lookup. ref_id: {}", line.ref_id);
+        let sku_id = sku_id_lookup.get(&line.ref_id);
+        if sku_id.is_some() {
+            let s = *sku_id.unwrap();
+            line.sku_id = Some(s);
+            inv_recs_with_sku_id.push(line);
+        } else {
+            error!(
+                "sku_id for ref_id: {} not found in sku_id_lookup. Skipping record.",
+                line.ref_id
+            );
+        }
+    }
     //    let lim = Arc::new(RateLimiter::direct(Quota::per_second(rate_limit)));
 
-    let bodies = stream::iter(inv_recs)
+    let bodies = stream::iter(inv_recs_with_sku_id)
         .map(|record| {
             let client = &client;
             let url = &url;
