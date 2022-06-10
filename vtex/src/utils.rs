@@ -490,8 +490,16 @@ pub async fn get_product_by_ref_id(
     let response = match product_id_result {
         Ok(result) => {
             if result.status() == StatusCode::OK {
-                let product: Product = result.json().await.unwrap();
-                Ok(product.id.unwrap())
+                // This API returns a 200 even if not found. The body contains "null"
+                let result = result.json::<Product>().await;
+                match result {
+                    Ok(product) => Ok(product.id.unwrap()),
+                    Err(e) => {
+                        let error =
+                            format!("product with ref_id: {} not found. error: {}", ref_id, e);
+                        Err(error)
+                    }
+                }
             } else if result.status() == StatusCode::NOT_FOUND {
                 let error = format!(
                     "response: {} product with ref_id: {} not found",

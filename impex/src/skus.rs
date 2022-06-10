@@ -67,6 +67,7 @@ pub async fn load_skus(
                     Ok(product_id) => {
                         product_lookup.insert(line.product_ref_id.clone(), product_id);
                         line.product_id = Some(product_id);
+                        sku_recs_with_product_id.push(line);
                     }
                     Err(err) => {
                         error!("Error: SKU record will be skipped: {}", err);
@@ -78,9 +79,10 @@ pub async fn load_skus(
                     line.product_ref_id
                 );
                 line.product_id = Some(*product_lookup.get(&line.product_ref_id).unwrap());
+                sku_recs_with_product_id.push(line);
             }
         }
-        sku_recs_with_product_id.push(line);
+        // sku_recs_with_product_id.push(line);
     }
     info!("Finished: Looking up ProductId if not passed in the file");
     debug!("sku_recs length: {}", sku_recs_with_product_id.len());
